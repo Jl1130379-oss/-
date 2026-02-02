@@ -2,52 +2,36 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | Lobby Core 3.0</title>
+    <title>江家智慧城市 | Admin Control 3.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --neon-blue: #00f2fe; --neon-pink: #ff00de; --gold: #ffd700;
-            --panel: rgba(6, 12, 28, 0.98);
-        }
+        :root { --neon-blue: #00f2fe; --neon-pink: #ff00de; --gold: #ffd700; --panel: rgba(6, 12, 32, 0.98); }
         * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; cursor: crosshair; }
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; overflow: hidden; }
-
-        /* 全局背景 */
-        #master-bg {
-            position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?w=1920');
-            background-size: cover; background-position: center; z-index: -2;
-        }
-
-        /* 賽博框線 */
+        #master-bg { position: fixed; inset: 0; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?w=1920'); background-size: cover; z-index: -2; }
         .hud-frame { position: fixed; inset: 15px; border: 2px solid var(--neon-blue); border-radius: 40px; box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue); pointer-events: none; z-index: 1000; }
-
-        /* 側邊導航 (不跳頁) */
         #main-nav { position: fixed; left: 45px; top: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 1100; }
-        .nav-orb { width: 70px; height: 70px; border-radius: 20px; background: var(--panel); border: 1px solid var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--neon-blue); transition: 0.4s; backdrop-filter: blur(10px); cursor: pointer; }
+        .nav-orb { width: 70px; height: 70px; border-radius: 20px; background: var(--panel); border: 1px solid var(--neon-blue); display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--neon-blue); transition: 0.4s; cursor: pointer; }
         .nav-orb.active { background: var(--neon-blue); color: #000; box-shadow: 0 0 30px var(--neon-blue); }
-
-        /* 視窗容器 */
         .viewport { position: fixed; left: 145px; right: 50px; top: 90px; bottom: 50px; background: var(--panel); border-radius: 35px; border: 1px solid rgba(0,242,254,0.3); display: none; padding: 40px; overflow-y: auto; backdrop-filter: blur(30px); }
+        
+        /* 難度切換中控台 */
+        .difficulty-selector { display: flex; gap: 15px; margin: 20px 0; }
+        .diff-btn { padding: 10px 20px; border: 1px solid var(--neon-blue); background: transparent; color: var(--neon-blue); border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .diff-btn.active { background: var(--neon-blue); color: #000; font-weight: bold; }
 
-        /* 老師肖像 - 採用穩定動漫 API */
         .teacher-box { display: flex; gap: 30px; margin-top: 20px; }
-        .sprite { width: 300px; height: 450px; border: 2px solid var(--neon-blue); border-radius: 25px; background-size: cover; background-position: center; position: relative; box-shadow: 0 0 20px var(--neon-blue); }
-        .sprite::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent, #000); border-radius: 23px; }
-        .sprite-name { position: absolute; bottom: 20px; width: 100%; text-align: center; z-index: 2; font-weight: 900; letter-spacing: 2px; }
-
-        /* 聊天室 */
-        .chat-area { height: 400px; overflow-y: auto; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .msg { max-width: 80%; padding: 12px 18px; border-radius: 15px; line-height: 1.5; }
+        .sprite { width: 300px; height: 450px; border: 2px solid var(--neon-blue); border-radius: 25px; background-size: cover; background-position: center; position: relative; }
+        .sprite-name { position: absolute; bottom: 20px; width: 100%; text-align: center; font-weight: 900; background: rgba(0,0,0,0.7); padding: 10px 0; }
+        
+        .chat-area { height: 350px; overflow-y: auto; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .msg { max-width: 80%; padding: 12px 18px; border-radius: 15px; }
         .msg.teacher { background: rgba(0,242,254,0.1); border-left: 4px solid var(--neon-blue); align-self: flex-start; }
         .msg.user { background: rgba(255,255,255,0.05); align-self: flex-end; }
 
-        /* 商場格柵 */
         .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
         .shop-item { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
-
-        /* 雪花開關 */
-        #admin-snow { position: fixed; bottom: 35px; right: 35px; font-size: 45px; color: var(--neon-blue); cursor: pointer; z-index: 2000; filter: drop-shadow(0 0 10px var(--neon-blue)); }
+        #admin-snow { position: fixed; bottom: 35px; right: 35px; font-size: 45px; color: var(--neon-blue); cursor: pointer; z-index: 2000; }
     </style>
 </head>
 <body onload="bootSystem()">
@@ -75,48 +59,63 @@
     <h1 style="color:var(--neon-blue); letter-spacing:8px;">江家控制大廳 | LOBBY</h1>
     <div class="teacher-box">
         <div class="sprite" style="background-image:url('https://api.dicebear.com/7.x/adventurer/svg?seed=Ling&hairColor=2c1b18')">
-            <div class="sprite-name">江鈴 | 流動極光裙</div>
+            <div class="sprite-name">江鈴 (流動極光裙)</div>
         </div>
         <div class="sprite" style="background-image:url('https://api.dicebear.com/7.x/adventurer/svg?seed=Yi&hairColor=402020')">
-            <div class="sprite-name">江依 | 落櫻繽紛漢服</div>
+            <div class="sprite-name">江依 (落櫻繽紛漢服)</div>
         </div>
-        <div style="flex:1; background:rgba(255,255,255,0.03); border-radius:25px; padding:30px; border:1px solid rgba(0,242,254,0.1);">
-            <h2 style="color:var(--gold)">管理系統日誌</h2>
-            <p>● 歡迎，江管理員。系統已鎖定 2026 課程模式。</p>
-            <p>● 商城特惠已開啟：全場 1 折。</p>
-            <p>● 您可以點擊雪花進行身份認證。</p>
+        <div style="flex:1; background:rgba(255,255,255,0.03); border-radius:25px; padding:25px; border:1px solid rgba(0,242,254,0.1);">
+            <h3 style="color:var(--gold); margin-top:0;">自訂今日課程難度</h3>
+            <div class="difficulty-selector">
+                <button class="diff-btn active" id="btn-elem" onclick="setDiff('國小')">國小 (3分鐘)</button>
+                <button class="diff-btn" id="btn-univ" onclick="setDiff('大學')">大學 (無限時)</button>
+                <button class="diff-btn" id="btn-comp" onclick="setDiff('競賽')">競賽 (無限時)</button>
+            </div>
+            <p id="diff-status" style="color:var(--neon-blue)">目前設定：國小課程模式</p>
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
+            <p>點擊雪花驗證管理員身份以同步明燈。</p>
         </div>
     </div>
 </div>
 
 <div id="view-study" class="viewport">
-    <h1 id="q-lvl" style="color:var(--neon-blue)">加載中...</h1>
+    <h1 id="q-lvl" style="color:var(--neon-blue)"></h1>
     <div id="timer-wrap" style="color:var(--neon-pink); font-weight:bold; font-size:1.2rem; margin:10px 0;"></div>
     <div style="background:rgba(255,255,255,0.05); padding:40px; border-radius:30px; border:1px solid var(--neon-blue);">
-        <h2 id="q-text" style="font-size:2rem;">正在生成題目...</h2>
+        <h2 id="q-text" style="font-size:1.8rem;">正在加載題目...</h2>
         <div id="q-options" style="display:grid; gap:15px; margin-top:30px;"></div>
     </div>
 </div>
 
 <div id="view-chat" class="viewport">
-    <h1 style="color:var(--neon-blue)">江家私人群聊</h1>
+    <h1 style="color:var(--neon-blue)">師生私人群聊</h1>
     <div id="chat-disp" class="chat-area"></div>
-    <div style="margin-top:20px; display:flex; gap:15px;">
-        <input type="text" id="chat-in" style="flex:1; background:transparent; border:1px solid var(--neon-blue); padding:15px; border-radius:12px; color:#fff;" placeholder="與老師對話...">
+    <div style="margin-top:20px; display:flex; gap:10px;">
+        <input type="text" id="chat-in" style="flex:1; background:transparent; border:1px solid var(--neon-blue); padding:15px; border-radius:12px; color:#fff;" placeholder="回覆老師...">
         <button onclick="sendChat()" style="background:var(--neon-blue); border:none; padding:15px 30px; border-radius:12px; color:#000; font-weight:bold; cursor:pointer;">發送</button>
     </div>
 </div>
 
 <div id="view-shop" class="viewport">
-    <h1 style="color:var(--neon-blue)">萬物精品商場 (10000+ 品項)</h1>
+    <h1 style="color:var(--neon-blue)">萬物精品商場</h1>
     <div class="shop-grid" id="shop-box"></div>
 </div>
 
 <script>
-    let state = { coin: 500, sta: 10, adminClaimed: false };
+    let state = { coin: 0, sta: 10, currentDiff: '國小', adminClaimed: false };
     let timer;
 
-    function bootSystem() { show('lobby'); updateUI(); addChat("江鈴", "江管理員，控制大廳已準備就緒。"); }
+    function bootSystem() { show('lobby'); updateUI(); addChat("江鈴", "江管理員，大廳已解鎖。請先選擇今日難度。"); }
+
+    function setDiff(d) {
+        state.currentDiff = d;
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+        if(d === '國小') document.getElementById('btn-elem').classList.add('active');
+        if(d === '大學') document.getElementById('btn-univ').classList.add('active');
+        if(d === '競賽') document.getElementById('btn-comp').classList.add('active');
+        document.getElementById('diff-status').innerText = `目前設定：${d}課程模式`;
+        addChat("江鈴", `已切換至 ${d} 難度。準備好後請前往課程。`);
+    }
 
     function show(id) {
         document.querySelectorAll('.viewport').forEach(v => v.style.display = 'none');
@@ -127,56 +126,22 @@
         if(id === 'study') nextQuiz();
     }
 
-    // 商場修復與生成
-    function renderShop() {
-        const box = document.getElementById('shop-box');
-        let html = "";
-        for(let i=1; i<=100; i++) { // 示範 100 件，可滾動
-            html += `<div class="shop-item">
-                <div style="font-size:40px;">🎁</div>
-                <h4>家具/服飾 #${i}</h4>
-                <p style="color:var(--neon-blue)">🏮 <s>1000</s> 100</p>
-                <button onclick="buy()" style="background:var(--neon-blue); border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">購買</button>
-            </div>`;
-        }
-        box.innerHTML = html;
-    }
-
-    function buy() {
-        if(state.coin >= 100) { state.coin -= 100; updateUI(); alert("同步購買成功！已存入江家相簿。"); }
-        else { alert("明燈不足！"); }
-    }
-
-    // 管理員認證 (解決重複領取與輸不出的問題)
-    function adminLogin() {
-        if(state.adminClaimed) {
-            alert("⚠️ 管理員身份已確認，資源已在帳戶內，不可重複領取。");
-            return;
-        }
-        if(prompt("請輸入管理員金鑰：") === "江憶婷") {
-            state.coin += 10000;
-            state.adminClaimed = true;
-            updateUI();
-            addChat("江依", "管理員，10000 明燈已同步至您的核心帳戶。");
-            alert("👑 認證成功！10000 明燈已入帳。");
-        }
-    }
-
-    // 課程邏輯 (國小3分 / 大學無限)
-    const db = [
-        { lvl: '國小', t: '「學而不思則罔」的下一句是？', o: ['思而不學則殆','學而時習之','不知為不知'], a: 0, time: 180 },
-        { lvl: '博士', t: '關於黑洞熵的 Bekenstein-Hawking 公式，熵與什麼成正比？', o: ['表面積','體積','質量'], a: 0, time: 0 }
-    ];
+    // 題目庫
+    const db = {
+        '國小': [{t:'「三更燈火五更雞」的下一句是？', o:['正是男兒讀書時','少壯不努力','學而不思則罔'], a:0, s:180}],
+        '大學': [{t:'關於量子力學中的「糾纏態」，下列敘述何者正確？', o:['瞬時傳遞資訊且不受空間限制','僅在宏觀世界發生','與電子質量無關'], a:0, s:0}],
+        '競賽': [{t:'【競賽】在 M-理論中，第 11 維度是透過什麼場引入的？', o:['超引力場','強作用力場','希格斯場'], a:0, s:0}]
+    };
 
     function nextQuiz() {
         clearInterval(timer);
-        const q = db[Math.floor(Math.random()*db.length)];
-        document.getElementById('q-lvl').innerText = q.lvl + "課程難度";
+        const q = db[state.currentDiff][0]; // 根據自訂難度抓題
+        document.getElementById('q-lvl').innerText = `${state.currentDiff} 難度課程`;
         document.getElementById('q-text').innerText = q.t;
         document.getElementById('q-options').innerHTML = q.o.map((o,i) => `<button onclick="ans(${i===q.a})" style="padding:20px; background:rgba(255,255,255,0.05); border:1px solid var(--neon-blue); color:#fff; border-radius:10px; cursor:pointer; text-align:left;">${o}</button>`).join('');
         
-        if(q.time > 0) startClock(q.time);
-        else document.getElementById('timer-wrap').innerText = "思考時間：∞ (大學以上競賽級)";
+        if(q.s > 0) startClock(q.s);
+        else document.getElementById('timer-wrap').innerText = "思考時間：∞ (大學/競賽模式)";
     }
 
     function startClock(s) {
@@ -189,17 +154,38 @@
     }
 
     function ans(c) {
-        if(c) { state.coin += 300; alert("✨ 解析正確！獲得 300 明燈。"); }
-        else { state.sta -= 2; alert("❌ 邏輯錯誤。體力扣除 2。"); }
+        if(c) { state.coin += 500; alert("正確！獲得 500 明燈。"); addChat("江依", "真不愧是江家管理員！"); }
+        else { state.sta -= 2; alert("解析失敗，體力扣除 2。"); }
         updateUI(); nextQuiz();
     }
 
-    // 聊天邏輯
-    function addChat(sender, text) {
+    function renderShop() {
+        const box = document.getElementById('shop-box');
+        let html = "";
+        for(let i=1; i<=20; i++) {
+            html += `<div class="shop-item">🎁 <h4>江家收藏 #${i}</h4><p style="color:var(--neon-blue)">🏮 100</p><button onclick="buy()" style="background:var(--neon-blue); border:none; border-radius:5px; padding:5px 10px; cursor:pointer;">購買</button></div>`;
+        }
+        box.innerHTML = html;
+    }
+
+    function buy() {
+        if(state.coin >= 100) { state.coin -= 100; updateUI(); alert("同步購買成功！"); }
+        else alert("明燈不足！");
+    }
+
+    function adminLogin() {
+        if(state.adminClaimed) return alert("身份已鎖定。");
+        if(prompt("請輸入管理員識別：") === "江憶婷") {
+            state.coin += 10000; state.adminClaimed = true; updateUI();
+            addChat("江鈴", "管理員，10000 明燈已同步，系統全開。");
+        }
+    }
+
+    function addChat(s, t) {
         const d = document.getElementById('chat-disp');
         const div = document.createElement('div');
-        div.className = sender === "妳" ? "msg user" : "msg teacher";
-        div.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        div.className = s === "妳" ? "msg user" : "msg teacher";
+        div.innerHTML = `<strong>${s}:</strong> ${t}`;
         d.appendChild(div);
         d.scrollTop = d.scrollHeight;
     }
@@ -210,9 +196,8 @@
         addChat("妳", i.value);
         const v = i.value; i.value = "";
         setTimeout(() => {
-            if(v.includes("課程")) addChat("江鈴", "課程系統已校準至 2026 版，隨時可以開始。");
-            else if(v.includes("管理員")) addChat("江依", "管理員有何吩咐？我們會全程協助。");
-            else addChat("江鈴", "收到，數據已同步至江家雲端。");
+            if(v.includes("難度")) addChat("江鈴", "您可以隨時在大廳自訂今日難度喔。");
+            else addChat("江依", "收到了，我們正看著您的進度呢！");
         }, 800);
     }
 
