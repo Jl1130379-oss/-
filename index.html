@@ -3,126 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>江家姊妹私人收藏</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <title>江家智慧城市：學術禁衛終極版</title>
     <style>
-        :root {
-            --primary-pink: #ffb6c1;
-            --aurora-blue: #a0e9ff;
-            --sakura-red: #ffb7c5;
-        }
-        body {
-            margin: 0;
-            font-family: 'Noto Sans TC', sans-serif;
-            background: #fffafa;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-        }
-        .image-card {
-            width: 100%;
-            max-width: 400px;
-            height: 65vh;
-            border-radius: 25px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-            background-size: cover;
-            background-position: center;
-            margin-bottom: 20px;
-            border: 5px solid white;
-        }
-        h2 { color: #d63384; margin: 10px 0 5px 0; font-size: 1.5rem; }
-        p { color: #777; font-size: 0.95rem; line-height: 1.4; padding: 0 10px; }
+        :root { --sci: #22d3ee; --art: #fb7185; --gold: #facc15; --bg: #020617; }
+        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; transition: 0.4s; }
+        body { margin: 0; background: var(--bg); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* 狀態列 */
+        header { padding: 15px 25px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--sci); display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+        .status-badge { font-size: 0.75rem; font-weight: bold; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); }
+        .cheat-warning { color: #ef4444; border-color: #ef4444; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* 導覽列 */
-        .navbar {
-            height: 75px;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 -2px 15px rgba(0,0,0,0.05);
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .nav-item {
-            cursor: pointer;
-            text-align: center;
-            color: #bbb;
-            transition: 0.3s;
-            flex: 1;
-        }
-        .nav-item.active { color: #ff69b4; }
-        .nav-icon { font-size: 26px; margin-bottom: 2px; }
-        .nav-text { font-size: 12px; }
+        /* 主舞台 */
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; position: relative; overflow-y: auto; }
+        .teacher-box { width: 220px; height: 300px; position: relative; margin-bottom: 10px; }
+        .teacher-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 20px rgba(34,211,238,0.2)); }
+        
+        /* 碩博模式特效 */
+        .pondering { filter: drop-shadow(0 0 30px var(--gold)) !important; transform: scale(1.05); }
+
+        /* 難度切換 */
+        .ladder { display: flex; gap: 8px; margin-bottom: 20px; width: 100%; max-width: 500px; }
+        .ladder-btn { flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #334155; background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 0.8rem; }
+        .ladder-active { background: var(--sci); color: #020617; border-color: var(--sci); font-weight: bold; }
+
+        /* 題目區域 */
+        .quiz-card { background: white; color: #1e293b; padding: 30px; border-radius: 30px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); position: relative; }
+        .timer-container { height: 6px; background: #e2e8f0; border-radius: 3px; margin: 15px 0; overflow: hidden; }
+        #timer-bar { height: 100%; width: 100%; background: var(--sci); transition: linear; }
+        .opt-btn { width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 15px; background: #f8fafc; font-weight: bold; cursor: pointer; text-align: left; font-size: 1rem; }
+        .opt-btn:hover { border-color: var(--sci); background: #f0f9ff; }
+
+        /* 鎖定通知 */
+        #lock-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="content" id="mainContent">
-        <div class="image-card" id="displayImage"></div>
-        <h2 id="displayTitle">載入中...</h2>
-        <p id="displayDesc"></p>
+<div id="lock-overlay">
+    <h1 style="color:#ef4444;">⚠️ 偵測到違規切換頁面</h1>
+    <p>學術誠實是江家智慧城市的最高原則。<br>本題已判定失敗，請點擊下方按鈕重啟測驗。</p>
+    <button class="opt-btn" style="width:200px; text-align:center;" onclick="resetQuiz()">重新挑戰</button>
+</div>
+
+<header>
+    <div>
+        <div id="edu-label" class="status-badge" style="color:var(--gold)">碩博/競賽：無時限模式</div>
+        <div id="teacher-label" style="font-weight: 900; margin-top:5px;">江鈴：醫學理科系統</div>
+    </div>
+    <div style="text-align: right;">
+        <div style="font-size: 0.9rem; font-weight: bold;">🪙 <span id="coin-val">500</span></div>
+        <div id="timer-text" style="font-family: monospace; font-size: 0.8rem;">REMAINING: 180s</div>
+    </div>
+</header>
+
+<main>
+    <div class="ladder">
+        <button class="ladder-btn" onclick="setEdu(1)">國小</button>
+        <button class="ladder-btn" onclick="setEdu(2)">國高中</button>
+        <button class="ladder-btn" onclick="setEdu(3)">大學</button>
+        <button class="ladder-btn ladder-active" onclick="setEdu(4)">碩博/競賽</button>
     </div>
 
-    <nav class="navbar">
-        <div class="nav-item" onclick="switchPage(0)">
-            <div class="nav-icon">🏰</div>
-            <div class="nav-text">商場入口</div>
-        </div>
-        <div class="nav-item active" onclick="switchPage(1)">
-            <div class="nav-icon">💎</div>
-            <div class="nav-text">兩位江老師</div>
-        </div>
-        <div class="nav-item" onclick="switchPage(2)">
-            <div class="nav-icon">✨</div>
-            <div class="nav-text">商場內部</div>
-        </div>
-    </nav>
+    <div class="teacher-box">
+        <img id="t-img" class="teacher-img" src="IMG_3812.jpeg">
+    </div>
 
-    <script>
-        // 這裡已經換上妳最後確認的兩位老師合照連結
-        const data = [
-            {
-                title: "夢幻商場入口",
-                desc: "通往江家姊妹世界的華麗大門",
-                img: "https://r.jina.ai/i/1121172490983283349_0" 
-            },
-            {
-                title: "江鈴(左) 與 江依(右)",
-                desc: "潔白長髮的醫學菁英與開朗女孩<br>極光裙與櫻漢服的珍貴合影",
-                img: "https://r.jina.ai/i/25032906b3e34f68be5f5f4803964175" // 此為兩姐妹合照
-            },
-            {
-                title: "商場內部景觀",
-                desc: "充滿動漫氛圍的奢華購物空間",
-                img: "https://r.jina.ai/i/15156582324246369377_0"
+    <div class="quiz-card">
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:bold; color:#64748b;">
+            <span id="stage-info">關卡 1 / 5</span>
+            <span id="reward-info">獎勵: +800🪙</span>
+        </div>
+        <div class="timer-container"><div id="timer-bar"></div></div>
+        <div id="q-text" style="font-weight:bold; margin: 15px 0; line-height: 1.5;">正在載入高階學術考題...</div>
+        <div id="q-options"></div>
+    </div>
+</main>
+
+<script>
+    const eduConfig = {
+        1: { name: "國小基礎", time: 180, reward: 20, limit: true },
+        2: { name: "國高中進階", time: 180, reward: 50, limit: true },
+        3: { name: "大學專業", time: 180, reward: 150, limit: true },
+        4: { name: "碩博/競賽", time: 180, reward: 800, limit: false }
+    };
+
+    let state = {
+        edu: 4, stage: 1, qIdx: 1, coins: 500,
+        timeLeft: 180, teacher: 'sci', isPondering: false
+    };
+
+    function init() {
+        setEdu(4);
+        setInterval(updateTimer, 1000);
+        
+        // --- 核心防弊邏輯 ---
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                document.getElementById('lock-overlay').style.display = 'flex';
             }
-        ];
+        });
+    }
 
-        function switchPage(index) {
-            document.getElementById('displayImage').style.backgroundImage = `url('${data[index].img}')`;
-            document.getElementById('displayTitle').innerText = data[index].title;
-            document.getElementById('displayDesc').innerHTML = data[index].desc;
+    function setEdu(lv) {
+        state.edu = lv;
+        state.stage = 1;
+        state.qIdx = 1;
+        state.timeLeft = 180;
+        state.isPondering = false;
 
-            const items = document.querySelectorAll('.nav-item');
-            items.forEach((item, i) => {
-                item.classList.toggle('active', i === index);
-            });
+        document.querySelectorAll('.ladder-btn').forEach((b, i) => {
+            b.classList.toggle('ladder-active', (i + 1) === lv);
+        });
+
+        const cfg = eduConfig[lv];
+        document.getElementById('edu-label').innerText = `${cfg.name}：${cfg.limit ? '180s 限時' : '無限時深思'}`;
+        document.getElementById('reward-info').innerText = `獎勵: +${cfg.reward}🪙`;
+        document.getElementById('t-img').classList.remove('pondering');
+        
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        document.getElementById('stage-info').innerText = `關卡 ${state.stage} / 5 - 第 ${state.qIdx} 題`;
+        document.getElementById('q-text').innerText = `【${eduConfig[state.edu].name}】關於${state.teacher === 'sci' ? '醫學邏輯' : '文學評論'}的高階研究題目？`;
+        
+        const box = document.getElementById('q-options');
+        box.innerHTML = "";
+        ["正確研析 (領取報酬)", "錯誤推論 A", "錯誤推論 B"].sort(() => Math.random() - 0.5).forEach(t => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = t;
+            btn.onclick = () => handleAnswer(t.includes("正確"));
+            box.appendChild(btn);
+        });
+        state.timeLeft = 180;
+        state.isPondering = false;
+        document.getElementById('t-img').classList.remove('pondering');
+    }
+
+    function updateTimer() {
+        const bar = document.getElementById('timer-bar');
+        const txt = document.getElementById('timer-text');
+        const cfg = eduConfig[state.edu];
+
+        if (state.timeLeft > 0) {
+            state.timeLeft--;
+            txt.innerText = `REMAINING: ${state.timeLeft}s`;
+            bar.style.width = `${(state.timeLeft / 180) * 100}%`;
+            bar.style.background = state.timeLeft < 30 ? "#ef4444" : "var(--sci)";
+        } else {
+            if (!cfg.limit) {
+                // 碩博/競賽：進入無限時模式
+                state.isPondering = true;
+                txt.innerText = "DEPTH PONDERING...";
+                txt.style.color = "var(--gold)";
+                bar.style.width = "100%";
+                bar.style.background = "var(--gold)";
+                document.getElementById('t-img').classList.add('pondering');
+            } else {
+                txt.innerText = "TIME OUT";
+                bar.style.width = "0%";
+            }
         }
+    }
 
-        // 預設顯示第二頁（兩位老師）
-        switchPage(1);
-    </script>
+    function handleAnswer(correct) {
+        if (correct) {
+            state.coins += eduConfig[state.edu].reward;
+            alert("✨ 導師讚許：見解精闢！");
+            if (state.qIdx < 10) state.qIdx++;
+            else { state.stage++; state.qIdx = 1; }
+        } else {
+            alert("❌ 導師提醒：學術研究不容疏漏。");
+        }
+        document.getElementById('coin-val').innerText = state.coins;
+        loadQuestion();
+    }
+
+    function resetQuiz() {
+        document.getElementById('lock-overlay').style.display = 'none';
+        setEdu(state.edu);
+    }
+
+    init();
+</script>
 </body>
 </html>
