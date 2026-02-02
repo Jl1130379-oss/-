@@ -2,41 +2,36 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | 無限進階系統</title>
+    <title>江家智慧城市 | 真·學術演進系統</title>
     <style>
         :root { --blue: #00f2fe; --pink: #ff00de; --gold: #ffd700; --bg: #010206; }
         body { margin: 0; background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; overflow: hidden; }
         .viewport { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
         
-        /* HUD 頂部數據 */
+        /* 數據欄位 */
         .hud { display: flex; justify-content: space-between; padding: 20px 45px; background: rgba(0, 242, 254, 0.05); border-bottom: 2px solid var(--blue); }
         .stat { font-size: 1.2rem; font-weight: bold; text-shadow: 0 0 10px var(--blue); }
 
-        /* 導師舞台：圖片修正版 */
+        /* 導師舞台 */
         .stage { display: flex; justify-content: center; align-items: center; gap: 80px; flex: 1; }
-        .pod { text-align: center; cursor: pointer; transition: 0.5s ease; position: relative; width: 220px; }
+        .pod { text-align: center; cursor: pointer; transition: 0.5s ease; width: 220px; }
         .avatar { 
             width: 200px; height: 200px; border-radius: 50%; border: 4px solid var(--blue);
             background-size: cover; background-position: center; box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
             margin: 0 auto;
         }
-        .locked { filter: grayscale(1) brightness(0.15) contrast(0.8); opacity: 0.3; pointer-events: none; transform: scale(0.9); }
+        .locked { filter: grayscale(1) brightness(0.15); opacity: 0.3; pointer-events: none; transform: scale(0.9); }
 
-        /* 全新難度選擇選單 */
-        .diff-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
-        .diff-btn { padding: 10px; border: 1px solid var(--gold); background: transparent; color: var(--gold); border-radius: 10px; cursor: pointer; }
-        .diff-btn:hover, .diff-btn.active { background: var(--gold); color: #000; }
-
-        /* 教學與考驗面板 */
+        /* 交互面板 */
         .panel {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 900px; background: rgba(5, 10, 25, 0.98);
+            width: 90%; max-width: 900px; background: rgba(5, 12, 30, 0.98);
             border: 2px solid var(--gold); border-radius: 40px; padding: 35px;
-            display: none; z-index: 2000; border-top: 10px solid var(--gold);
+            display: none; z-index: 2000; box-shadow: 0 0 50px #000;
         }
-        .timer { float: right; font-size: 2rem; color: var(--pink); font-family: monospace; }
-        .btn { padding: 15px 40px; border-radius: 50px; border: 1px solid var(--blue); background: transparent; color: #fff; cursor: pointer; font-weight: bold; margin: 10px; }
+        .btn { padding: 12px 30px; border-radius: 50px; border: 1px solid var(--blue); background: transparent; color: #fff; cursor: pointer; font-weight: bold; margin: 10px; transition: 0.3s; }
         .btn:hover { background: var(--blue); color: #000; }
+        .opt-btn { width: 100%; text-align: left; margin: 8px 0; background: rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -44,7 +39,7 @@
 <div class="viewport">
     <div class="hud">
         <div class="stat" style="color:var(--gold)">🏮 明燈: <span id="coin-ui">0</span></div>
-        <div id="status-tag">🏛️ 大廳暫歇 - 請選擇難度與課題</div>
+        <div id="status-tag">🏛️ 江家智慧城市 - 請點擊自動加課</div>
         <div class="stat" style="color:var(--pink)">❤️ HP: <span id="hp-ui">100</span></div>
     </div>
 
@@ -62,52 +57,56 @@
     </div>
 
     <div class="panel" id="main-panel">
-        <div id="timer-ui" class="timer"></div>
-        <h2 id="panel-title" style="color:var(--gold)">課程準備中</h2>
-        <div id="panel-content" style="line-height:1.8; margin-bottom: 20px;"></div>
-        <div id="difficulty-selector" class="diff-menu">
-            <button class="diff-btn" onclick="setDiff('國小')">國小</button>
-            <button class="diff-btn" onclick="setDiff('國中')">國中</button>
-            <button class="diff-btn" onclick="setDiff('高中')">高中</button>
-            <button class="diff-btn" onclick="setDiff('大學')">大學</button>
-            <button class="diff-btn" onclick="setDiff('碩博')">碩博</button>
+        <div id="timer-ui" style="float:right; font-size:2rem; color:var(--pink); font-family:monospace;"></div>
+        <h2 id="panel-title" style="color:var(--gold)"></h2>
+        <div id="panel-content" style="line-height:1.8; margin-bottom: 20px; font-size: 1.1rem;"></div>
+        <div id="difficulty-selector" style="display:none; grid-template-columns: repeat(3, 1fr); gap:10px;">
+            <button class="btn" onclick="setDiff('國小')">國小</button>
+            <button class="btn" onclick="setDiff('國中')">國中</button>
+            <button class="btn" onclick="setDiff('高中')">高中</button>
+            <button class="btn" onclick="setDiff('大學')">大學</button>
+            <button class="btn" onclick="setDiff('碩博')">碩博</button>
         </div>
         <div id="options-area"></div>
         <div id="control-area" style="text-align:center;"></div>
     </div>
 
     <div style="text-align:center; padding-bottom: 40px;">
-        <button id="add-course-btn" class="btn" style="border-color:var(--gold); color:var(--gold)" onclick="triggerLoad()">⚡ 自動加題 (雲端獲取)</button>
+        <button id="add-btn" class="btn" style="border-color:var(--gold); color:var(--gold)" onclick="triggerLoad()">⚡ 自動加課 (真正的題目)</button>
         <button class="btn" onclick="exchange()">演化新動作 (歸零)</button>
     </div>
 </div>
 
 <script>
-    let state = { coin: 0, hp: 100, mode: 'idle', level: '', teacher: '', topic: null, timer: null };
+    let state = { coin: 0, hp: 100, mode: 'idle', level: '', teacher: '', currentQ: null, timer: null };
 
-    const CONFIG = {
-        '國小': { t: 180, r: 0.1, p: 2 },
-        '國中': { t: 60,  r: 0.5, p: 5 },
-        '高中': { t: 30,  r: 1.0, p: 10 },
-        '大學': { t: 0,   r: 2.5, p: 25 },
-        '碩博': { t: 0,   r: 5.0, p: 45 }
-    };
-
-    // 無限隨機題庫生成器
-    const TopicEngine = {
-        subjects: ["量子力學", "存在主義", "宇宙演化", "詩經解析", "微積分原理", "史記研讀"],
-        get() {
-            const s = this.subjects[Math.floor(Math.random() * this.subjects.length)];
-            return { title: s, q: `關於${s}的核心概念，下列敘述何者最嚴謹？`, a: "核心理論A", opts: ["核心理論A", "干擾項B", "干擾項C"] };
+    // 【真實題庫引擎】根據難度生成題目
+    const RealQuestionBank = {
+        fetch() {
+            const pool = [
+                { topic: "光學與能量", levels: {
+                    '國小': { q: "光在空氣中是怎麼走的？", opts: ["直線", "圓圈", "波浪"], a: "直線", t: "光是直線傳播的，所以才有影子。" },
+                    '大學': { q: "光電效應說明了光的什麼本質？", opts: ["波動性", "粒子性", "不連續性"], a: "粒子性", t: "愛因斯坦提出光子假說，證明能量是量子化的。" },
+                    '碩博': { q: "在貝爾實驗中，違反貝爾不等式意味著？", opts: ["定域實在論失效", "光速可超越", "能量不守恆"], a: "定域實在論失效", t: "這證明了量子糾纏是非定域的深層關聯。" }
+                }},
+                { topic: "文學與哲學", levels: {
+                    '國小': { q: "「床前明月光」的下一句是？", opts: ["疑是地上霜", "舉頭望明月", "低頭思故鄉"], a: "疑是地上霜", t: "這是李白的《靜夜思》，形容月光很亮。" },
+                    '大學': { q: "存在主義中「存在先於本質」是誰提出的？", opts: ["薩特", "海德格", "尼采"], a: "薩特", t: "這意味著人是透過自己的選擇來定義自己。" },
+                    '碩博': { q: "德希達的「延異」(Différance) 核心在於？", opts: ["意義的無限延遲", "語言的精確性", "結構的穩定"], a: "意義的無限延遲", t: "這是解構主義的核心，強調意義在符號鏈中永遠無法完全現身。" }
+                }}
+            ];
+            return pool[Math.floor(Math.random() * pool.length)];
         }
     };
 
+    const CONFIG = { '國小': { t: 180, r: 0.1, p: 2 }, '國中': { t: 60, r: 0.5, p: 5 }, '高中': { t: 30, r: 1.0, p: 10 }, '大學': { t: 0, r: 2.5, p: 25 }, '碩博': { t: 0, r: 5.0, p: 45 } };
+
     function triggerLoad() {
         if(state.mode !== 'idle') return;
-        state.topic = TopicEngine.get();
+        state.topicData = RealQuestionBank.fetch();
         document.getElementById('main-panel').style.display = 'block';
-        document.getElementById('panel-title').innerText = `新課題：${state.topic.title}`;
-        document.getElementById('panel-content').innerText = "第一步：請點選下方按鈕設定【學習難度】。";
+        document.getElementById('panel-title').innerText = `選題：${state.topicData.topic}`;
+        document.getElementById('panel-content').innerText = "請先選擇難度級別：";
         document.getElementById('difficulty-selector').style.display = 'grid';
         document.getElementById('options-area').innerHTML = "";
         document.getElementById('control-area').innerHTML = "";
@@ -115,32 +114,31 @@
 
     function setDiff(level) {
         state.level = level;
-        document.getElementById('panel-content').innerText = `難度設定為【${level}】。第二步：請點擊上方的一位【老師】開始專注授課。`;
+        if(!state.topicData.levels[level]) { alert("該難度題目正在雲端同步中，請選其他難度（測試版目前開放國小/大學/碩博）"); return; }
         document.getElementById('difficulty-selector').style.display = 'none';
+        document.getElementById('panel-content').innerText = `難度 [${level}] 設定成功。請點擊上方導師開始授課。`;
     }
 
     function selectTeacher(t) {
         if(!state.level || state.mode !== 'idle') return;
         state.mode = 'teaching';
         state.teacher = t;
-
-        // 【中途不可換課】鎖定邏輯
-        const other = t === 'ling' ? 'pod-yi' : 'pod-ling';
-        document.getElementById(other).classList.add('locked');
+        document.getElementById(t === 'ling' ? 'pod-yi' : 'pod-ling').classList.add('locked');
         
+        const qData = state.topicData.levels[state.level];
         document.getElementById('panel-title').innerText = `導師：江${t==='ling'?'鈴':'依'} [${state.level}]`;
-        document.getElementById('panel-content').innerText = `【授課中】${state.topic.title} 在 ${state.level} 階段的深度解析為：(導師正在透過雲端智慧傳輸知識...)`;
-        document.getElementById('control-area').innerHTML = `<button class="btn" onclick="startExam()">領悟完畢，開始考驗</button>`;
+        document.getElementById('panel-content').innerText = `【導師授課】${qData.t}`;
+        document.getElementById('control-area').innerHTML = `<button class="btn" onclick="startExam()">我學好了，開始考驗</button>`;
     }
 
     function startExam() {
         state.mode = 'exam';
+        const qData = state.topicData.levels[state.level];
         const conf = CONFIG[state.level];
-        document.getElementById('panel-content').innerText = `【隨堂考驗】${state.topic.q}`;
+        document.getElementById('panel-content').innerText = `【考驗】${qData.q}`;
         document.getElementById('control-area').innerHTML = "";
-        
-        document.getElementById('options-area').innerHTML = state.topic.opts.map(o => 
-            `<button class="btn" style="width:100%; text-align:left" onclick="submit('${o}')">${o}</button>`
+        document.getElementById('options-area').innerHTML = qData.opts.map(o => 
+            `<button class="btn opt-btn" onclick="submit('${o}')">${o}</button>`
         ).join('');
 
         if(conf.t > 0) {
@@ -150,21 +148,20 @@
                 document.getElementById('timer-ui').innerText = `${s}s`;
                 if(s <= 0) submit('');
             }, 1000);
-        } else {
-            document.getElementById('timer-ui').innerText = "∞ 研討";
-        }
+        } else { document.getElementById('timer-ui').innerText = "∞ 研討"; }
     }
 
     function submit(ans) {
         clearInterval(state.timer);
+        const qData = state.topicData.levels[state.level];
         const conf = CONFIG[state.level];
-        if(ans === state.topic.a) {
+        if(ans === qData.a) {
             const gain = Math.floor(1000 * conf.r);
             state.coin += gain;
             alert(`正確！獲得 ${gain} 盞明燈。`);
         } else {
             state.hp -= conf.p;
-            alert(`錯誤！江老師對妳的表現感到堪憂，扣除 ${conf.p} HP。`);
+            alert(`錯誤！扣除 ${conf.p} HP。正確答案是：${qData.a}`);
         }
         reset();
     }
@@ -179,9 +176,9 @@
     }
 
     function exchange() {
-        if(state.coin <= 0) return alert("明燈不足以燃燒！");
-        state.coin = 0; // 兌換歸零
-        alert("演化啟動！明燈已重置為零，新動作已解鎖。");
+        if(state.coin <= 0) return alert("明燈不足！");
+        state.coin = 0;
+        alert("演化啟動！明燈重置歸零。");
         updateUI();
     }
 
