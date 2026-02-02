@@ -3,195 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>江家姊妹：醫道與文心</title>
+    <title>江家姊妹雲端教室</title>
     <style>
-        :root { --sci: #4FC3F7; --art: #9575CD; --dark: #263238; --gold: #FFD700; }
-        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
-        
-        body { margin: 0; height: 100vh; background: #f0f4f8; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --sci: #4FC3F7; --art: #9575CD; --dark: #263238; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; height: 100vh; font-family: sans-serif; background: #f0f4f8; display: flex; flex-direction: column; overflow: hidden; }
 
         /* 導覽列 */
-        header { 
-            background: var(--dark); color: white; padding: 12px 20px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 100; 
-        }
-        .menu-btn { background: rgba(255,255,255,0.1); border: 1px solid white; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+        header { background: var(--dark); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+        .menu-btn { background: #444; border: 1px solid #666; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
 
-        /* 響應式側欄 */
-        #sidebar {
-            position: fixed; left: 0; top: 0; bottom: 0; width: 280px; 
-            background: rgba(33, 33, 33, 0.98); backdrop-filter: blur(10px);
-            transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            z-index: 150; padding-top: 80px; box-shadow: 5px 0 15px rgba(0,0,0,0.2);
-        }
+        /* 側欄 */
+        #sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: rgba(30,30,30,0.95); transform: translateX(-100%); transition: 0.3s; z-index: 200; padding-top: 60px; }
         #sidebar.open { transform: translateX(0); }
-        .course-item { padding: 18px 25px; color: #ddd; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-size: 1.1rem; }
-        .course-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .course-item { padding: 15px 20px; color: white; border-bottom: 1px solid #333; cursor: pointer; }
 
-        /* 主舞台設計 */
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+        /* 主畫面 */
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
         
-        /* 老師頭像與呼吸特效 */
-        .char-zone { position: relative; width: 240px; height: 240px; margin-bottom: 25px; }
-        .teacher-img { 
-            width: 100%; height: 100%; border-radius: 50%; border: 6px solid white; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); object-fit: cover; background: white;
-            animation: breathe 4s ease-in-out infinite; display: none;
-        }
-        @keyframes breathe { 
-            0%, 100% { transform: translateY(0) scale(1); } 
-            50% { transform: translateY(-12px) scale(1.03); } 
-        }
+        /* 老師頭像 */
+        .char-box { position: relative; width: 220px; height: 220px; margin-bottom: 20px; }
+        .teacher-img { width: 100%; height: 100%; border-radius: 50%; border: 5px solid white; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.1); animation: float 4s infinite ease-in-out; display: none; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 
-        /* 語意氣泡 */
-        .bubble { 
-            background: white; padding: 15px 20px; border-radius: 20px; margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 340px; 
-            text-align: center; font-size: 1.1rem; color: #333; position: relative;
-        }
-        .bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; }
+        /* 氣泡與題目 */
+        .bubble { background: white; padding: 12px 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 300px; font-size: 1.1rem; }
+        .quiz-card { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; }
+        .ans-btn { width: 100%; padding: 15px; margin: 8px 0; border: 1px solid #ddd; border-radius: 12px; background: white; cursor: pointer; font-size: 1.1rem; }
+        .ans-btn:active { background: #f0f0f0; }
 
-        /* 題目卡片 */
-        .quiz-card { 
-            background: rgba(255,255,255,0.9); padding: 25px; border-radius: 30px; 
-            width: 100%; max-width: 450px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.05); 
-        }
-        .ans-btn { 
-            width: 100%; padding: 16px; margin: 8px 0; border: 2px solid #eee; 
-            border-radius: 15px; background: white; font-size: 1.15rem; cursor: pointer; transition: 0.2s;
-        }
-        .ans-btn:hover { border-color: var(--sci); background: #f0faff; }
-        .ans-btn:active { transform: scale(0.98); }
-
-        /* 答對獎勵 */
+        /* 🌟 金色獎勵特效 (已修復卡住問題) */
         #reward { 
-            display: none; position: fixed; inset: 0; background: rgba(255,215,0,0.15); 
-            z-index: 200; pointer-events: none; align-items: center; justify-content: center;
-            font-size: 8rem; animation: star-pop 1s ease-out;
+            position: fixed; inset: 0; display: none; 
+            align-items: center; justify-content: center; 
+            font-size: 8rem; color: gold; 
+            z-index: 500; pointer-events: none; /* 關鍵：這行讓按鈕可以穿透點擊 */
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+            animation: popOut 1s forwards;
         }
-        @keyframes star-pop { 0% { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(1.5); } }
+        @keyframes popOut { 0% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(1.5); } }
 
-        /* 冬櫻管理員專區 */
-        #admin-link { position: fixed; bottom: 0; right: 0; width: 40px; height: 40px; z-index: 99; cursor: default; }
-        
-        #loading-screen { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 1000; font-size: 1.2rem; }
+        #loader { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 1000; }
     </style>
 </head>
 <body>
 
-<div id="loading-screen">📡 正在連接資料庫...</div>
+<div id="loader">📡 正在接通江家姊妹頻道...</div>
 <div id="reward">✨</div>
 
 <header>
-    <button class="menu-btn" onclick="toggleSidebar()">☰ 選單</button>
-    <div style="letter-spacing: 1px; font-weight: 600;">江家姊妹雲端教室</div>
-    <div style="width: 60px;"></div>
+    <button class="menu-btn" onclick="toggleMenu()">☰ 課程</button>
+    <div style="font-weight:bold;">江家姊妹雲端教室</div>
+    <div style="width:50px;"></div>
 </header>
 
-<div id="sidebar">
+<nav id="sidebar">
     <div id="course-list"></div>
-</div>
+</nav>
 
-<main id="app-content">
-    <div id="msg" class="bubble">歡迎來到教室！請點擊左上角選單開始課程。</div>
-    
-    <div class="char-zone">
+<main>
+    <div id="msg" class="bubble">歡迎！請點選選單開始上課。</div>
+    <div class="char-box">
         <img id="img-sci" class="teacher-img" src="IMG_3812.jpeg">
         <img id="img-art" class="teacher-img" src="IMG_4392.jpg">
     </div>
-
     <div class="quiz-card">
-        <h2 id="question-text" style="margin-top:0; font-size: 1.4rem;">準備好了嗎？</h2>
-        <div id="options-box"></div>
+        <h2 id="q-text" style="font-size:1.3rem;">準備好了嗎？</h2>
+        <div id="q-opts"></div>
     </div>
 </main>
 
-<div id="admin-link" onclick="handleAdmin()"></div>
+<div onclick="checkAdmin()" style="position:fixed; bottom:0; right:0; width:40px; height:40px; z-index:10;"></div>
 
 <script>
-    const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pub?output=csv";
-    let database = [];
+    const CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pub?output=csv";
+    let dataList = [];
 
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
 
-    async function fetchData() {
+    async function init() {
         try {
-            const res = await fetch(SHEET_CSV + '&t=' + Date.now());
+            const res = await fetch(CSV + "&t=" + Date.now());
             const text = await res.text();
-            const lines = text.split("\n").filter(l => l.trim() !== "");
-            database = lines.slice(1).map(row => row.split(","));
+            dataList = text.split("\n").filter(l => l.trim() !== "").map(row => row.split(","));
             
             const list = document.getElementById('course-list');
             list.innerHTML = "";
-            database.forEach((data, i) => {
-                if(!data[1]) return;
+            dataList.slice(1).forEach((row, i) => {
                 let div = document.createElement('div');
                 div.className = "course-item";
-                div.innerText = "📖 " + data[1].trim();
-                div.onclick = () => { loadCourse(i); toggleSidebar(); };
+                div.innerText = "📖 " + row[1];
+                div.onclick = () => { start(i + 1); toggleMenu(); };
                 list.appendChild(div);
             });
-            document.getElementById('loading-screen').style.display = 'none';
-        } catch (err) {
-            document.getElementById('loading-screen').innerText = "連線失敗，請檢查網路。";
+            document.getElementById('loader').style.display = 'none';
+        } catch (e) {
+            document.getElementById('loader').innerText = "連線失敗";
         }
     }
 
-    function loadCourse(idx) {
-        const row = database[idx];
-        const teacher = row[0].trim().toLowerCase();
+    function start(idx) {
+        const row = dataList[idx];
+        const isSci = row[0].trim().toLowerCase() === 'sci';
         const msg = document.getElementById('msg');
         
-        // 切換圖式與對話
-        document.getElementById('img-sci').style.display = (teacher === 'sci') ? 'block' : 'none';
-        document.getElementById('img-art').style.display = (teacher === 'art') ? 'block' : 'none';
+        // 切換老師圖片
+        document.getElementById('img-sci').style.display = isSci ? 'block' : 'none';
+        document.getElementById('img-art').style.display = isSci ? 'none' : 'block';
         
-        msg.innerText = (teacher === 'sci') ? "我是江鈴醫生。讓我們用理性解開謎題！" : "我是江依博士。讓我們領略文字的智慧。";
-        document.getElementById('question-text').innerText = row[2];
+        msg.innerText = isSci ? "我是江鈴老師，這題你一定會！" : "我是江依老師，來看看這道題目。";
+        document.getElementById('q-text').innerText = row[2];
 
-        const box = document.getElementById('options-box');
-        box.innerHTML = "";
-        [row[3], row[4]].forEach((text, i) => {
+        const opts = document.getElementById('q-opts');
+        opts.innerHTML = "";
+        [row[3], row[4]].forEach((txt, i) => {
             let btn = document.createElement('button');
             btn.className = "ans-btn";
-            btn.innerText = text;
+            btn.innerText = txt;
             btn.onclick = () => {
                 if (i == row[5].trim()) {
-                    msg.innerText = "太優秀了！完全答對。";
-                    showStar();
+                    msg.innerText = "答對了！你太棒了！";
+                    document.getElementById('reward').style.display = 'flex';
+                    setTimeout(() => { document.getElementById('reward').style.display = 'none'; }, 1000);
                     say("答對了！");
                 } else {
-                    msg.innerText = "哎呀，再想一下看看？";
+                    msg.innerText = "再想一下？你可以的。";
                     say("再想一下？");
                 }
             };
-            box.appendChild(btn);
+            opts.appendChild(btn);
         });
         say(msg.innerText + " 題目是：" + row[2]);
     }
 
-    function showStar() {
-        const star = document.getElementById('reward');
-        star.style.display = 'flex';
-        setTimeout(() => { star.style.display = 'none'; }, 1000);
-    }
-
-    function handleAdmin() {
-        if (prompt("輸入冬櫻暗號：") === "江鈴的損友冬櫻") {
-            window.open('https://docs.google.com/spreadsheets/d/1XqT7X9p...你的試算表ID/edit', '_blank');
+    function checkAdmin() {
+        if (prompt("暗號：") === "江鈴的損友冬櫻") {
+            window.open('https://docs.google.com/spreadsheets/d/1XqT7X9p...你的ID/edit', '_blank');
         }
     }
 
     function say(t) {
         window.speechSynthesis.cancel();
-        const s = new SpeechSynthesisUtterance(t);
-        s.lang = 'zh-TW';
-        s.rate = 1.0;
-        window.speechSynthesis.speak(s);
+        const u = new SpeechSynthesisUtterance(t);
+        u.lang = 'zh-TW';
+        window.speechSynthesis.speak(u);
     }
 
-    fetchData();
+    init();
 </script>
 </body>
 </html>
