@@ -3,502 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>江家智慧城市 - 畫風整合版</title>
+    <title>江家智慧城市 - 官方穩定版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* 核心設計變數 */
         :root {
-            --main-color: #5a7d9b; /* 參考江老師畫風的藍灰色調 */
-            --accent-color: #e6b8a2; /* 參考畫風中的暖色調 */
-            --text-color: #333d47;
-            --bg-light: #f5f9fc; /* 淺背景 */
-            --bg-dark: #3a475a;  /* 深背景 */
-            --border-light: rgba(255, 255, 255, 0.5);
-            --border-dark: rgba(0, 0, 0, 0.1);
-            --font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
-            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.1);
-            --shadow-dark: 0 8px 25px rgba(0, 0, 0, 0.3);
+            --main: #5a7d9b; --accent: #e6b8a2; --gold: #d4af37;
+            --white: rgba(255, 255, 255, 0.95); --err: #ff4757;
         }
+        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; transition: 0.3s; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
 
-        /* 全局設定 */
-        * { box-sizing: border-box; font-family: var(--font-family); transition: all 0.3s ease-in-out; }
-        body { margin: 0; background: var(--bg-dark); color: var(--text-color); height: 100vh; overflow: hidden; display: flex; }
-
-        /* 背景：使用妳的圖片 'IMG_7210.jpg' */
-        #world-bg {
+        /* 背景層 */
+        #bg-layer {
             position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('IMG_7210.jpg'); /* 使用妳提供的圖片 */
-            background-size: cover; background-position: center;
-            z-index: -2; /* 確保在雪花下方 */
-        }
-        /* 如果圖片仍無法載入，提供一個優雅的降級方案 */
-        #world-bg:not([style*="background-image"]) {
-            background: linear-gradient(135deg, #4a6a8c 0%, #2e455e 100%);
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('IMG_7210.jpg');
+            background-size: cover; background-position: center; z-index: -2;
         }
 
-        /* 雪花系統 - 與畫風融合 */
+        /* 雪花層：最高優先權 */
+        #snow-container { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
         .snowflake {
-            position: fixed; top: -10%; color: var(--border-light); cursor: pointer;
-            user-select: none; z-index: 1000; pointer-events: auto;
-            animation: fall linear infinite; text-shadow: 0 0 5px rgba(255,255,255,0.7);
+            position: absolute; top: -10%; color: white; cursor: pointer;
+            pointer-events: auto; user-select: none; animation: fall linear infinite;
         }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
 
-        /* 左側導航 - 畫風整合 */
-        #sidebar {
-            width: 250px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
-            padding: 30px 0; box-shadow: var(--shadow-dark); z-index: 100;
-            display: flex; flex-direction: column; border-right: 1px solid var(--border-dark);
+        /* 1. 登入頁面 */
+        #auth-screen {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            display: flex; align-items: center; justify-content: center; z-index: 5000;
         }
-        .sidebar-header {
-            text-align: center; color: var(--main-color); font-size: 1.8rem;
-            font-weight: 800; margin-bottom: 40px; letter-spacing: 1px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        .auth-card {
+            background: var(--white); padding: 40px; border-radius: 25px;
+            width: 380px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5);
         }
-        .nav-link {
-            padding: 18px 25px; cursor: pointer; font-weight: 600; font-size: 1.1rem;
-            color: var(--text-color); border-bottom: 1px solid rgba(0,0,0,0.05);
-            display: flex; align-items: center; gap: 15px; text-decoration: none;
-        }
-        .nav-link:hover { background: var(--main-color); color: white; padding-left: 35px; }
-        .nav-link i { font-size: 1.3rem; } /* FontAwesome icons */
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; }
+        .auth-btn { width: 100%; padding: 12px; background: var(--main); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
 
-        /* 主內容區域 */
-        #main-content { flex: 1; position: relative; }
-
-        /* 頂部狀態欄 - 畫風整合 */
-        .status-bar {
-            position: absolute; top: 25px; right: 30px; display: flex; gap: 18px; z-index: 10;
+        /* 2. 城市總入口 Dashboard */
+        #dashboard {
+            display: none; height: 100vh; padding: 80px 40px;
+            grid-template-columns: repeat(3, 1fr); gap: 30px; z-index: 10;
         }
-        .stat-box {
-            background: rgba(255, 255, 255, 0.95); padding: 12px 25px; border-radius: 50px;
-            font-weight: 700; font-size: 1.1rem; color: var(--text-color);
-            box-shadow: var(--shadow-light); display: flex; align-items: center; gap: 8px;
-            cursor: pointer; border: 1px solid var(--border-dark);
+        .city-node {
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(15px);
+            border: 2px solid rgba(255,255,255,0.3); border-radius: 25px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; cursor: pointer; text-decoration: none; position: relative;
         }
-        .stat-box:hover { background: white; transform: translateY(-2px); }
+        .city-node:hover { background: var(--white); color: var(--main); transform: translateY(-10px); }
+        .city-node i { font-size: 3.5rem; margin-bottom: 20px; }
+        .city-node b { font-size: 1.3rem; }
 
-        /* AI 群聊視窗 - 畫風整合 */
+        /* 狀態 HUD */
+        #hud { position: fixed; top: 25px; right: 30px; display: none; gap: 15px; z-index: 4000; }
+        .hud-item { background: var(--white); padding: 10px 25px; border-radius: 50px; font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        /* 3. AI 群聊視窗 */
         #chat-window {
-            position: fixed; bottom: 30px; right: 30px; width: 420px; height: 620px;
-            background: rgba(255, 255, 255, 0.95); border-radius: 25px; display: none;
-            flex-direction: column; box-shadow: var(--shadow-dark); z-index: 200;
-            border: 1px solid rgba(0,0,0,0.1);
+            position: fixed; bottom: 30px; right: 30px; width: 400px; height: 600px;
+            background: #f8f9fa; border-radius: 25px; display: none; flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4); z-index: 3000; overflow: hidden;
         }
-        .chat-header {
-            background: var(--main-color); color: white; padding: 22px; border-top-left-radius: 25px;
-            border-top-right-radius: 25px; font-weight: 700; font-size: 1.3rem;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .chat-header span.close-btn { font-size: 1.8rem; cursor: pointer; opacity: 0.8; }
-        .chat-header span.close-btn:hover { opacity: 1; transform: rotate(90deg); }
+        .chat-header { background: var(--main); color: white; padding: 20px; font-weight: bold; display: flex; justify-content: space-between; }
+        .chat-msgs { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #f0f2f5; }
+        .msg { padding: 12px 18px; border-radius: 18px; max-width: 85%; font-size: 0.95rem; line-height: 1.5; }
+        .msg.teacher { background: white; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .msg.user { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-input-area { padding: 15px; background: white; border-top: 1px solid #eee; }
+        .chat-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .chat-actions button { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--main); background: white; color: var(--main); font-weight: bold; cursor: pointer; font-size: 0.8rem; }
 
-        .chat-msgs { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .msg { padding: 12px 18px; border-radius: 18px; max-width: 80%; font-size: 0.98rem; line-height: 1.5; }
-        .msg.teacher {
-            background: var(--bg-light); align-self: flex-start; border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); color: var(--text-color);
-            border: 1px solid var(--border-dark);
-        }
-        .msg.user {
-            background: var(--accent-color); color: white; align-self: flex-end;
-            border-bottom-right-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-        
-        .chat-input-area { padding: 20px; background: white; border-top: 1px solid #eee; }
-        .chat-input-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        input#user-input {
-            flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border-dark);
-            outline: none; font-size: 1rem;
-        }
-        .send-btn {
-            background: var(--main-color); color: white; border: none; border-radius: 10px;
-            padding: 0 20px; cursor: pointer; font-size: 1.1rem; font-weight: 600;
-        }
-        .chat-actions { display: flex; gap: 8px; }
-        .chat-actions button {
-            flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--accent-color);
-            background: white; color: var(--accent-color); font-weight: bold; cursor: pointer;
-            font-size: 0.95rem;
-        }
-        .chat-actions button:hover { background: var(--accent-color); color: white; }
-
-
-        /* 答題系統遮罩 - 畫風整合 */
-        #quiz-overlay {
-            position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 2000;
+        /* 4. 答題與模組遮罩 */
+        .full-modal {
+            position: fixed; inset: 0; background: white; z-index: 4500;
             display: none; flex-direction: column; align-items: center; justify-content: center;
         }
-        .quiz-card {
-            background: white; padding: 40px; border-radius: 20px; width: 70%; max-width: 800px;
-            box-shadow: var(--shadow-dark); text-align: center;
-            border: 2px solid var(--main-color);
-        }
-        #quiz-title-text { color: var(--main-color); font-size: 2.5rem; margin-bottom: 15px; }
-        #quiz-progress-text { color: var(--accent-color); font-size: 1.3rem; margin-bottom: 25px; }
-        #quiz-question-text { font-size: 1.8rem; line-height: 1.7; margin-bottom: 40px; color: var(--text-color); }
-        .quiz-options-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; }
-        .option-button {
-            padding: 18px 30px; border-radius: 12px; border: 2px solid var(--border-dark);
-            background: var(--bg-light); color: var(--text-color); font-size: 1.2rem;
-            cursor: pointer; font-weight: 600;
-        }
-        .option-button:hover { background: var(--accent-color); color: white; border-color: var(--accent-color); }
-        #quiz-timer-text { margin-top: 35px; font-weight: 900; color: var(--err); font-size: 1.8rem; }
-        .quiz-warning { color: #888; margin-top: 15px; font-size: 0.9rem; }
-
-        /* 相簿 modal - 畫風整合 */
-        #album-modal, #shop-modal, #closet-modal, #yard-modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1500;
-            display: none; align-items: center; justify-content: center;
-        }
-        .modal-content-area {
-            background: rgba(255,255,255,0.95); padding: 40px; border-radius: 20px;
-            box-shadow: var(--shadow-dark); width: 80%; max-width: 900px;
-            text-align: center; border: 2px solid var(--main-color);
-            position: relative;
-        }
-        .modal-title { color: var(--main-color); font-size: 2.2rem; margin-bottom: 30px; font-weight: 700; }
-        .modal-close-btn {
-            position: absolute; top: 20px; right: 25px; font-size: 2.5rem;
-            color: var(--text-color); cursor: pointer; opacity: 0.7;
-        }
-        .modal-close-btn:hover { opacity: 1; transform: scale(1.1); }
-
-        #album-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-            margin-top: 20px; max-height: 500px; overflow-y: auto;
-        }
-        .album-photo {
-            width: 100%; aspect-ratio: 16/9; background: var(--bg-light);
-            border: 2px solid var(--border-dark); border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-color); font-size: 0.9rem; overflow: hidden;
-            box-shadow: var(--shadow-light);
-        }
-        .album-photo img { width: 100%; height: 100%; object-fit: cover; }
-        .album-empty { color: #888; font-style: italic; grid-column: span 3; }
-
-        /* 商場/更衣室 */
-        .shop-item-card, .closet-item-card {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 25px; border: 1px solid var(--border-dark); border-radius: 15px;
-            box-shadow: var(--shadow-light); background: var(--bg-light); margin-bottom: 20px;
-        }
-        .shop-item-card img, .closet-item-card img {
-            width: 150px; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;
-            border: 1px solid #ddd;
-        }
-        .item-name { font-size: 1.4rem; font-weight: 600; color: var(--main-color); margin-bottom: 10px; }
-        .item-price { font-size: 1.1rem; color: var(--accent-color); margin-bottom: 15px; }
-        .buy-btn {
-            padding: 10px 25px; background: var(--accent-color); color: white;
-            border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
-        }
-        .buy-btn:hover { background: var(--main-color); }
-
-        /* 庭院 */
-        #yard-content {
-            background-image: url('yard_background.jpg'); /* 庭院背景圖 */
-            background-size: cover; background-position: center;
-            position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center;
-        }
-        #snap-button {
-            background: rgba(255,255,255,0.9); border: 3px solid var(--accent-color);
-            border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center;
-            justify-content: center; font-size: 2.5rem; color: var(--main-color);
-            box-shadow: var(--shadow-dark); cursor: pointer; margin-bottom: 40px;
-        }
-        #snap-button:hover { transform: scale(1.1); background: white; }
+        .quiz-box { text-align: center; width: 80%; max-width: 600px; }
+        .opt-btn { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; font-size: 1.1rem; font-weight: bold; }
+        .opt-btn:hover { border-color: var(--gold); background: #fffcf0; }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body onload="initSystem()">
 
-<div id="world-bg"></div>
+<div id="bg-layer"></div>
 <div id="snow-container"></div>
 
-<div id="sidebar">
-    <div class="sidebar-header">江家智慧城市</div>
-    <div class="nav-link" onclick="openChat('ling')"><i class="fas fa-flask"></i> 理科教研 (江鈴)</div>
-    <div class="nav-link" onclick="openChat('yi')"><i class="fas fa-book-open"></i> 文科品鑑 (江依)</div>
-    <div class="nav-link" onclick="openYard()"><i class="fas fa-leaf"></i> 江家庭院</div>
-    <div class="nav-link" onclick="openAlbum()"><i class="fas fa-images"></i> 江老師相簿</div>
-    <div class="nav-link" onclick="openShop()"><i class="fas fa-store"></i> 城市商場</div>
-    <div class="nav-link" onclick="openCloset()"><i class="fas fa-tshirt"></i> 私人更衣室</div>
+<div id="auth-screen">
+    <div class="auth-card">
+        <h2 style="color:var(--main)">江家智慧城市</h2>
+        <p>請輸入通行證進入</p>
+        <input type="text" id="username" class="auth-input" placeholder="您的名字">
+        <input type="password" id="password" class="auth-input" placeholder="訪問密碼">
+        <button class="auth-btn" onclick="login()">開始學習之旅</button>
+    </div>
 </div>
 
-<div id="main-content">
-    <div class="status-bar">
-        <div class="stat-box" onclick="refillStamina()" title="點擊補充體力">⚡ <span id="sta-val">10</span></div>
-        <div class="stat-box">🪙 <span id="coin-val">500</span></div>
+<div id="hud">
+    <div class="hud-item" onclick="refillStamina()" style="cursor:pointer">⚡ <span id="sta-val">10</span></div>
+    <div class="hud-item">🪙 <span id="coin-val">500</span></div>
+    <div class="hud-item" onclick="location.reload()" style="cursor:pointer"><i class="fas fa-home"></i></div>
+</div>
+
+<div id="dashboard">
+    <div class="city-node" onclick="openChat('ling')">
+        <i class="fas fa-microscope"></i>
+        <b>理科教室 (江鈴)</b>
+    </div>
+    <div class="city-node" onclick="openChat('yi')">
+        <i class="fas fa-feather-alt"></i>
+        <b>文科沙龍 (江依)</b>
+    </div>
+    <div class="city-node" onclick="alert('進入庭院拍照...')">
+        <i class="fas fa-tree"></i>
+        <b>江家庭院</b>
+    </div>
+    <div class="city-node" onclick="alert('相簿加載中...')">
+        <i class="fas fa-images"></i>
+        <b>回憶相簿</b>
+    </div>
+    <div class="city-node" onclick="alert('商場建設中...')">
+        <i class="fas fa-store"></i>
+        <b>城市商場</b>
+    </div>
+    <div class="city-node" onclick="alert('前往更衣室...')">
+        <i class="fas fa-tshirt"></i>
+        <b>私人更衣室</b>
     </div>
 </div>
 
 <div id="chat-window">
     <div class="chat-header">
-        <span id="chat-title">江老師群聊</span>
-        <span class="close-btn" onclick="toggleChat(false)"><i class="fas fa-times"></i></span>
+        <span id="teacher-name">與江老師聊聊</span>
+        <span onclick="toggleChat(false)" style="cursor:pointer">✕</span>
     </div>
     <div class="chat-msgs" id="chat-msgs"></div>
     <div class="chat-input-area">
-        <div class="input-row">
-            <input type="text" id="user-input" placeholder="想跟老師說什麼..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="send-btn" onclick="sendMessage()">發送</button>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="chat-input" placeholder="輸入訊息..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;">
+            <button onclick="sendMsg()" style="padding:10px 15px; background:var(--main); color:white; border:none; border-radius:8px;">發送</button>
         </div>
-        <div class="action-row">
-            <button onclick="triggerAction('brush')">我要刷題</button>
-            <button onclick="triggerAction('compete')">我想挑戰競賽</button>
-        </div>
-    </div>
-</div>
-
-<div id="quiz-overlay">
-    <div class="quiz-card">
-        <h2 id="quiz-title-text">難度：國小</h2>
-        <div id="quiz-progress-text">1 / 10 題</div>
-        <p id="quiz-question-text"></p>
-        <div id="quiz-options" class="quiz-options-container"></div>
-        <div id="quiz-timer-text"></div>
-        <p class="quiz-warning">作弊偵測：禁止重整頁面或切換標籤頁。</p>
-    </div>
-</div>
-
-<div id="album-modal">
-    <div class="modal-content-area">
-        <span class="modal-close-btn" onclick="closeModal('album')"><i class="fas fa-times"></i></span>
-        <h2 class="modal-title"><i class="fas fa-images"></i> 江老師相簿</h2>
-        <div id="album-grid">
-            <p class="album-empty">相簿空空的，快去庭院拍照吧！</p>
+        <div class="chat-actions">
+            <button onclick="startAction('brush')">刷題模式</button>
+            <button onclick="startAction('compete')">競賽模式 (1⚡)</button>
         </div>
     </div>
 </div>
 
-<div id="shop-modal">
-    <div class="modal-content-area">
-        <span class="modal-close-btn" onclick="closeModal('shop')"><i class="fas fa-times"></i></span>
-        <h2 class="modal-title"><i class="fas fa-store"></i> 城市商場</h2>
-        <div id="shop-items-container">
-            <div class="shop-item-card">
-                <img src="shop_item_fountain.jpg" alt="噴泉">
-                <div class="item-name">大理石噴泉</div>
-                <div class="item-price">🪙 <span id="fountain-price">1000</span></div>
-                <button class="buy-btn" onclick="buyItem('fountain')">購買</button>
-            </div>
-            </div>
+<div id="quiz-modal" class="full-modal">
+    <div class="quiz-box">
+        <h2 id="q-title" style="color:var(--main)"></h2>
+        <h4 id="q-prog" style="color:var(--gold)"></h4>
+        <p id="q-text" style="font-size:1.5rem; margin:30px 0;"></p>
+        <div id="q-opts"></div>
+        <div id="q-timer" style="margin-top:20px; font-weight:bold; color:var(--err)"></div>
     </div>
 </div>
-
-<div id="closet-modal">
-    <div class="modal-content-area">
-        <span class="modal-close-btn" onclick="closeModal('closet')"><i class="fas fa-times"></i></span>
-        <h2 class="modal-title"><i class="fas fa-tshirt"></i> 私人更衣室</h2>
-        <div id="closet-items-container">
-            <div class="closet-item-card">
-                <img src="closet_item_dress.jpg" alt="長裙">
-                <div class="item-name">優雅長裙</div>
-                <div class="item-price">🪙 <span id="dress-price">800</span></div>
-                <button class="buy-btn" onclick="buyItem('dress')">換裝</button>
-            </div>
-            </div>
-    </div>
-</div>
-
-<div id="yard-modal">
-    <div id="yard-content">
-        <button id="snap-button" onclick="capturePhoto()"><i class="fas fa-camera"></i></button>
-    </div>
-</div>
-
 
 <script>
     let state = {
         coins: 500, stamina: 10, teacher: '', isAdmin: false,
-        quiz: { active: false, current: 0, errors: 0, lv: 1, type: '', timerInterval: null },
-        photos: [] // 儲存相簿圖片的陣列
+        quiz: { active: false, current: 0, errors: 0, lv: 1, type: '' }
     };
 
-    const teacherProfiles = {
-        ling: { name: "江鈴", greet: "你好，我是江鈴。醫學的嚴謹需要冷靜的頭腦，妳準備好了嗎？" },
-        yi: { name: "江依", greet: "哈囉！我是江依。讓我們在文字與藝術的海洋裡找到寧靜吧。" }
-    };
-
-    // --- 系統初始化 ---
     function initSystem() {
-        // 從 localStorage 載入數據，如果沒有則使用預設值
-        state.stamina = parseInt(localStorage.getItem('savedSta')) || 10;
-        state.coins = parseInt(localStorage.getItem('savedCoin')) || 500;
-        state.photos = JSON.parse(localStorage.getItem('savedPhotos')) || [];
-        state.isAdmin = localStorage.getItem('isAdmin') === 'true';
-
-        // 防重整作弊偵測
-        if (sessionStorage.getItem('isGuilty') === 'true') {
-            state.stamina = Math.max(0, state.stamina - 2);
-            alert("🚨 系統偵測到您在挑戰中非法重整！已扣除 2 點體力作為處罰。");
-            sessionStorage.removeItem('isGuilty'); // 清除標記
-            saveState(); // 更新數據
+        // 1. 作弊偵測
+        if (sessionStorage.getItem('inQuiz')) {
+            state.stamina = Math.max(0, (parseInt(localStorage.getItem('sta')) || 10) - 2);
+            alert("⚠️ 偵測到非法刷新！已扣除 2 點體力。");
+            saveState();
+        } else {
+            state.stamina = parseInt(localStorage.getItem('sta')) || 10;
+            state.coins = parseInt(localStorage.getItem('coin')) || 500;
         }
-        
         updateUI();
-        setInterval(createSnow, 400);
+        setInterval(spawnSnow, 400);
 
-        // 防切頁偵測 (僅記錄，不立即處罰，最終結算時可能納入考量)
-        window.onblur = () => { if(state.quiz.active) console.warn("偵測到頁面失去焦點！"); };
-        window.onfocus = () => { if(state.quiz.active) console.log("頁面重新獲得焦點。"); };
+        // 2. 切頁偵測
+        window.onblur = () => { if(state.quiz.active) console.warn("偵測到離開！"); };
+    }
+
+    // --- 登入與 Dashboard ---
+    function login() {
+        const name = document.getElementById('username').value;
+        if(!name) return alert("請輸入名字");
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'grid';
+        document.getElementById('hud').style.display = 'flex';
+        alert(`歡迎，${name}！兩位江老師已經等候多時。`);
     }
 
     // --- 雪花系統 (管理者入口) ---
-    function createSnow() {
+    function spawnSnow() {
         const s = document.createElement('div');
-        s.className = 'snowflake'; s.innerText = '❄️';
-        s.style.left = Math.random() * 100 + 'vw';
-        s.style.animationDuration = (Math.random() * 3 + 4) + 's';
-        s.style.fontSize = (Math.random() * 15 + 10) + 'px'; // 雪花大小隨機
-        s.onclick = () => {
-            const code = prompt("發現隱藏雪花！請輸入管理者密鑰：");
-            if(code === "江憶婷") {
-                state.isAdmin = true; state.coins += 1000;
-                document.querySelector('.status-bar').classList.add('admin-glow'); // 管理者光暈效果
-                updateUI(); saveState();
-                alert("👑 歡迎管理者江憶婷！1000元啟動金已發放，商場與答題金幣加成已啟動。");
+        s.className = 'snowflake';
+        s.innerHTML = '❄️';
+        s.style.left = Math.random() * 95 + 'vw';
+        s.style.fontSize = (Math.random() * 20 + 15) + 'px';
+        s.style.animationDuration = (Math.random() * 3 + 5) + 's';
+        s.onclick = (e) => {
+            e.stopPropagation();
+            const pw = prompt("隱藏權限驗證：");
+            if(pw === "江憶婷") {
+                state.isAdmin = true; state.coins += 9999; updateUI();
+                alert("👑 管理者江憶婷，城市已為您全面解鎖。");
             }
         };
         document.getElementById('snow-container').appendChild(s);
-        setTimeout(() => s.remove(), 7000);
+        setTimeout(() => s.remove(), 8000);
     }
 
-    // --- AI 群聊與隨意聊 ---
-    function toggleChat(show) { document.getElementById('chat-window').style.display = show ? 'flex' : 'none'; }
+    // --- AI 隨意聊 ---
+    function openChat(t) {
+        state.teacher = t;
+        const name = t === 'ling' ? '江鈴' : '江依';
+        document.getElementById('teacher-name').innerText = `與 ${name} 老師聊聊`;
+        document.getElementById('chat-window').style.display = 'flex';
+        addMsg('teacher', `你好！我是${name}。今天想聊點什麼，還是直接開始考驗？`);
+    }
 
-    function sendMessage() {
-        const input = document.getElementById('user-input');
-        if(!input.value.trim()) return;
-        addChatMsg('user', input.value);
-        
-        const responses = [
-            "我也在想這件事呢，看來我們很有默契。",
-            "妳今天看起來特別有精神，是因為學習有進步嗎？",
-            "這就是江家精神，無論如何，江老師都會陪著妳。",
-            "雖然有難度，但我相信妳的潛力。",
-            "嗯，聽起來很不錯！妳打算怎麼做呢？",
-            "謝謝妳的分享，我感覺更了解妳了。"
-        ];
-        setTimeout(() => addChatMsg('teacher', responses[Math.floor(Math.random()*responses.length)]), 800);
+    function sendMsg() {
+        const input = document.getElementById('chat-input');
+        if(!input.value) return;
+        addMsg('user', input.value);
+        const replies = ["很有趣的想法。","我明白了，妳總是能給我驚喜。","這就是江家人的默契。"];
+        setTimeout(() => addMsg('teacher', replies[Math.floor(Math.random()*replies.length)]), 800);
         input.value = '';
     }
 
-    // --- 答題系統邏輯 ---
-    function triggerAction(mode) {
-        if(state.stamina <= 0) return addChatMsg('teacher', "體力不足喔！點擊右上方電池休息一下吧。");
-        
+    function addMsg(role, text) {
+        const box = document.getElementById('chat-msgs');
+        box.innerHTML += `<div class="msg ${role}">${text}</div>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // --- 刷題與競賽系統 ---
+    function startAction(mode) {
+        if(state.stamina <= 0) return alert("體力不足！");
         if(mode === 'brush') {
-            const lv = prompt("請選擇挑戰難度：\n1.國小(50🪙)\n2.國中(80🪙)\n3.高中(120🪙)\n4.大學(160🪙)\n5.碩博(200🪙)");
+            const lv = prompt("選擇難度 (1:國小 50幣 ... 5:碩博 200幣)");
             if(lv >= 1 && lv <= 5) startQuiz(parseInt(lv), 'brush');
         } else {
-            if(confirm("🏆 開始競賽挑戰：僅耗費 1 點體力，高難度，高回報！")) {
-                startQuiz(5, 'compete'); // 競賽題固定為碩博難度
-            }
+            if(confirm("挑戰競賽題？只需 1⚡，但錯誤率過高無獎勵！")) startQuiz(5, 'compete');
         }
     }
 
     function startQuiz(lv, type) {
-        state.stamina -= 1; // 競賽和刷題都扣 1 點體力
-        state.quiz = { active: true, current: 1, errors: 0, lv: lv, type: type, timerInterval: null };
-        
-        sessionStorage.setItem('isGuilty', 'true'); // 標記進入答題
-        document.getElementById('quiz-overlay').style.display = 'flex';
+        state.stamina -= 1;
+        state.quiz = { active: true, current: 1, errors: 0, lv: lv, type: type };
+        sessionStorage.setItem('inQuiz', 'true');
+        document.getElementById('quiz-modal').style.display = 'flex';
+        loadQ();
         updateUI();
-        loadQuestion();
     }
 
-    function loadQuestion() {
-        const lvNames = ['', '國小', '國中', '高中', '大學', '碩博'];
-        document.getElementById('quiz-title-text').innerText = `${lvNames[state.quiz.lv]}難度 - ${state.quiz.type==='compete'?'競賽題':'刷題模式'}`;
-        document.getElementById('quiz-progress-text').innerText = `第 ${state.quiz.current} / 10 題 (錯誤：${state.quiz.errors})`;
+    function loadQ() {
+        const lvs = ['', '國小', '國中', '高中', '大學', '碩博'];
+        document.getElementById('q-title').innerText = `${lvs[state.quiz.lv]}挑戰 (${state.quiz.type === 'compete' ? '競賽' : '刷題'})`;
+        document.getElementById('q-prog').innerText = `第 ${state.quiz.current} / 10 題`;
+        document.getElementById('q-text').innerText = state.teacher === 'ling' ? "【理科】細胞中負責產生能量的是？" : "【文科】《紅樓夢》的作者是？";
         
-        // 模擬題目內容
-        document.getElementById('quiz-question-text').innerText = state.teacher === 'ling' ? 
-            `【理科】關於生物進化論，下列哪項敘述是正確的？ (第 ${state.quiz.current} 題)` : 
-            `【文科】分析這段唐詩的意境與作者情感。 (第 ${state.quiz.current} 題)`;
-        
-        const optBox = document.getElementById('quiz-options');
-        optBox.innerHTML = '';
-        const opts = ["正確答案選項", "錯誤干擾選項 A", "錯誤干擾選項 B"]; // 增加選項多樣性
-        opts.sort(() => Math.random() - 0.5).forEach(o => {
-            const b = document.createElement('button');
-            b.className = 'option-button';
-            b.innerText = o;
-            b.onclick = () => handleAnswer(o === "正確答案選項");
-            optBox.appendChild(b);
+        const opts = ["正確答案", "干擾選項"].sort(() => Math.random() - 0.5);
+        const box = document.getElementById('q-opts');
+        box.innerHTML = '';
+        opts.forEach(o => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = o;
+            btn.onclick = () => handleAns(o === "正確答案");
+            box.appendChild(btn);
         });
 
-        // 計時邏輯
-        clearInterval(state.quiz.timerInterval);
-        const timerText = document.getElementById('quiz-timer-text');
-        if(state.quiz.lv >= 4 || state.quiz.type === 'compete') {
-            timerText.innerText = "⚖️ 高階挑戰：不計時 (請深思)";
-        } else {
-            let timeLeft = 20;
-            timerText.innerText = `⏳ 剩餘 ${timeLeft} 秒`;
-            state.quiz.timerInterval = setInterval(() => {
-                timeLeft--;
-                timerText.innerText = `⏳ 剩餘 ${timeLeft} 秒`;
-                if (timeLeft <= 0) {
-                    clearInterval(state.quiz.timerInterval);
-                    alert("時間到！未能及時作答，本次挑戰無效。");
-                    concludeQuiz(false); // 視為失敗
-                }
-            }, 1000);
-        }
+        const timer = document.getElementById('q-timer');
+        timer.innerText = (state.quiz.lv >= 4 || state.quiz.type === 'compete') ? "⌛ 不計時挑戰 (禁止切分頁)" : "⌛ 限時：20秒";
     }
 
-    function handleAnswer(isCorrect) {
-        if (state.quiz.timerInterval) clearInterval(state.quiz.timerInterval); // 答題後清除計時器
-        if(!isCorrect) state.quiz.errors++;
-        
+    function handleAns(right) {
+        if(!right) state.quiz.errors++;
         if(state.quiz.current < 10) {
             state.quiz.current++;
-            loadQuestion();
+            loadQ();
         } else {
-            concludeQuiz(true); // 答完所有題目
+            finishQuiz();
         }
     }
 
-    function concludeQuiz(completed) {
-        sessionStorage.removeItem('isGuilty'); // 解除作弊監控
-        clearInterval(state.quiz.timerInterval); // 清除可能殘留的計時器
+    function finishQuiz() {
+        sessionStorage.removeItem('inQuiz');
+        const errRate = state.quiz.errors / 10;
+        let reward = state.quiz.lv * 37.5 + 12.5; 
+        if(state.quiz.type === 'compete') reward = 500;
 
-        const errorRate = state.quiz.errors / 10;
-        let finalReward = 0;
-
-        if (!completed || errorRate > 0.3) {
-            alert(`江老師：挑戰結束，妳錯了 ${state.quiz.errors} 題 (錯誤率 ${(errorRate*100).toFixed(0)}%)。本次無法獲得獎勵，但請別氣餒！`);
+        if(errRate > 0.3) {
+            alert(`江老師：妳錯了 ${state.quiz.errors} 題，錯誤率超過 30%，本次挑戰無獎勵。`);
         } else {
-            // 獎勵計算 (50 -> 200)
-            finalReward = (state.quiz.lv * 37.5) + 12.5; 
-            if(state.quiz.type === 'compete') finalReward = 500; // 競賽固定高獎勵
-            
-            if(state.isAdmin) finalReward *= 10; // 管理者加成
-            state.coins += Math.round(finalReward);
-            alert(`🎉 太棒了！妳答對了 ${10 - state.quiz.errors} 題，獲得金幣 🪙${Math.round(finalReward)}！`);
+            if(state.isAdmin) reward *= 10;
+            state.coins += Math.round(reward);
+            alert(`🎉 太棒了！獲得金幣 🪙${Math.round(reward)}`);
         }
-
+        
         state.quiz.active = false;
-        document.getElementById('quiz-overlay').style.display = 'none';
+        document.getElementById('quiz-modal').style.display = 'none';
         updateUI();
         saveState();
     }
 
-
-    // --- 介面功能 (庭院, 相簿, 商場, 更衣室) ---
-    function openYard() {
-        document.getElementById('yard-modal').style.display = 'flex';
-        // 妳可以把 'yard_background.jpg' 替換成你實際的庭院背景圖
+    // --- 輔助 ---
+    function updateUI() {
+        document.getElementById('sta-val').innerText = state.stamina;
+        document.getElementById('coin-val').innerText = state.coins;
     }
-    function capturePhoto() {
-        const photoId = state.photos.length + 1;
-        // 這裡可以放一張預設的老師照片，或讓用戶自行上傳
-        const photoUrl = `https://via.placeholder.com/160x90?text=Photo+${photoId}`; // 替換為實際圖片路徑或AI生成
-        state.photos.push({ id: photoId, url: photoUrl, timestamp: new Date().toLocaleString() });
-        saveState();
-        alert("📸 捕捉到老師們的唯美畫面！已收藏至相簿。");
-        close
+    function saveState() {
+        localStorage.setItem('sta', state.stamina);
+        localStorage.setItem('coin', state.coins);
+    }
+    function refillStamina() { state.stamina = 10; updateUI(); saveState(); alert("江鈴：體力充滿了！"); }
+    function toggleChat(s) { document.getElementById('chat-window').style.display = s ? 'flex' : 'none'; }
+</script>
+</body>
+</html>
