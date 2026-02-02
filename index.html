@@ -2,137 +2,137 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | 完整學術進階版</title>
+    <title>江家智慧城市 | 專注學術系統</title>
     <style>
-        :root { --blue: #00f2fe; --pink: #ff00de; --gold: #ffd700; --bg: #01040a; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; overflow: hidden; }
+        :root { --blue: #00f2fe; --pink: #ff00de; --gold: #ffd700; --bg: #010206; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; overflow-x: hidden; }
         .viewport { width: 100vw; height: 100vh; display: flex; flex-direction: column; position: relative; }
         
-        /* HUD 頂部數據 */
-        .hud { display: flex; justify-content: space-between; padding: 20px 40px; background: rgba(255,255,255,0.03); border-bottom: 2px solid var(--blue); }
-        .stat { font-size: 1.2rem; font-weight: bold; text-shadow: 0 0 10px var(--blue); }
+        /* 頂部數據狀態 */
+        .hud { display: flex; justify-content: space-between; padding: 20px 40px; background: rgba(0,0,0,0.6); border-bottom: 2px solid var(--blue); }
+        .stat-box { font-size: 1.2rem; font-weight: bold; text-shadow: 0 0 10px var(--blue); }
 
-        /* 導師舞台 */
-        .stage { display: flex; justify-content: center; align-items: center; gap: 100px; flex: 1; }
-        .char-pod { text-align: center; cursor: pointer; transition: 0.5s ease; width: 230px; }
+        /* 導師生命艙 */
+        .stage { display: flex; justify-content: center; align-items: center; gap: 80px; flex: 1; transition: 0.5s; }
+        .char-pod { text-align: center; cursor: pointer; transition: 0.5s ease; width: 220px; position: relative; }
         .avatar { 
-            width: 210px; height: 210px; border-radius: 50%; border: 4px solid var(--blue);
-            background-size: cover; background-position: center; box-shadow: 0 0 30px rgba(0, 242, 254, 0.2); margin-bottom: 15px;
+            width: 200px; height: 200px; border-radius: 50%; border: 4px solid var(--blue);
+            background-size: cover; background-position: center; box-shadow: 0 0 30px rgba(0, 242, 254, 0.3); margin-bottom: 10px;
         }
-        .locked { filter: grayscale(1) brightness(0.2); opacity: 0.3; pointer-events: none; transform: scale(0.9); }
+        
+        /* 【規則】中途不可換課鎖定 */
+        .locked { filter: grayscale(1) brightness(0.2) blur(2px); opacity: 0.3; pointer-events: none; transform: scale(0.9); }
 
-        /* 智慧教學面板 */
+        /* 智慧交互面板 */
         .panel {
             position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 950px; background: rgba(5, 12, 25, 0.98);
-            border: 2px solid var(--gold); border-radius: 40px; padding: 35px;
+            width: 90%; max-width: 900px; background: rgba(5, 12, 30, 0.98);
+            border: 2px solid var(--gold); border-radius: 35px; padding: 35px;
             display: none; z-index: 2000; box-shadow: 0 0 60px #000;
         }
-        .timer { float: right; font-size: 2.2rem; color: var(--pink); font-family: monospace; }
-        .btn { padding: 14px 35px; border-radius: 50px; border: 1px solid var(--blue); background: transparent; color: #fff; cursor: pointer; font-weight: bold; margin: 8px; transition: 0.3s; }
-        .btn:hover { background: var(--blue); color: #000; }
-        .opt-btn { width: 100%; text-align: left; background: rgba(255,255,255,0.05); }
-        
-        .diff-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
+        .timer-ui { float: right; font-size: 2.2rem; color: var(--pink); font-family: 'Courier New', monospace; }
+        .btn { padding: 12px 30px; border-radius: 50px; border: 1px solid var(--blue); background: transparent; color: #fff; cursor: pointer; font-weight: bold; margin: 8px; transition: 0.3s; }
+        .btn:hover { background: var(--blue); color: #000; box-shadow: 0 0 15px var(--blue); }
+        .opt-btn { width: 100%; text-align: left; margin: 8px 0; background: rgba(255,255,255,0.05); border-color: rgba(0,242,254,0.3); }
+
+        .diff-selector { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="viewport">
     <div class="hud">
-        <div class="stat" style="color:var(--gold)">🏮 明燈: <span id="coin-ui">0</span></div>
-        <div id="status-tag">🏛️ 大廳暫歇 - 請選擇自動加題</div>
-        <div class="stat" style="color:var(--pink)">❤️ HP: <span id="hp-ui">100</span></div>
+        <div class="stat-box" style="color:var(--gold)">🏮 明燈: <span id="coin-ui">0</span></div>
+        <div id="status-tag">🏛️ 城市大廳 - 請點擊自動加題</div>
+        <div class="stat-box" style="color:var(--pink)">❤️ HP: <span id="hp-ui">100</span></div>
     </div>
 
     <div class="stage">
-        <div class="char-pod" id="pod-ling" onclick="selectTeacher('ling')">
+        <div class="char-pod" id="pod-ling" onclick="handleTeacher('ling')">
             <div class="avatar" style="background-image: url('https://i.postimg.cc/mrhp4G1r/ling.png');"></div>
-            <h3 style="color:var(--blue)">江鈴 (理科導師)</h3>
+            <h3 style="color:var(--blue)">江鈴 (理科)</h3>
             <div style="font-size:0.8rem; color:var(--gold)">👗 流動極光裙</div>
         </div>
-        <div class="char-pod" id="pod-yi" onclick="selectTeacher('yi')">
+        <div class="char-pod" id="pod-yi" onclick="handleTeacher('yi')">
             <div class="avatar" style="background-image: url('https://i.postimg.cc/pT3Y0yB0/yi.png'); border-color:var(--pink)"></div>
-            <h3 style="color:var(--pink)">江依 (文科導師)</h3>
+            <h3 style="color:var(--pink)">江依 (文科)</h3>
             <div style="font-size:0.8rem; color:var(--gold)">👘 落櫻繽紛漢服</div>
         </div>
     </div>
 
-    <div class="panel" id="panel">
-        <div id="timer-ui" class="timer"></div>
-        <h2 id="title-ui" style="color:var(--gold)"></h2>
-        <div id="content-ui" style="line-height:1.8; margin-bottom: 20px; font-size: 1.15rem;"></div>
-        <div id="diff-selector" class="diff-grid"></div>
+    <div class="panel" id="main-panel">
+        <div id="timer-ui" class="timer-ui"></div>
+        <h2 id="panel-title" style="color:var(--gold)"></h2>
+        <div id="panel-text" style="font-size: 1.15rem; line-height: 1.8; margin-bottom: 20px;"></div>
+        <div id="diff-grid" class="diff-selector"></div>
         <div id="options-area"></div>
-        <div id="control-area" style="text-align:center;"></div>
+        <div id="footer-ctrl" style="text-align:center;"></div>
     </div>
 
     <div style="text-align:center; padding-bottom: 40px;">
-        <button id="add-btn" class="btn" style="border-color:var(--gold); color:var(--gold)" onclick="triggerLoad()">⚡ 自動加題 (線上抓取)</button>
-        <button class="btn" onclick="exchange()">演化新動作 (扣5000)</button>
+        <button id="add-course-btn" class="btn" style="border-color:var(--gold); color:var(--gold)" onclick="autoLoad()">⚡ 自動加課 (線上真題)</button>
+        <button class="btn" onclick="exchange()">動作演化 (扣5000)</button>
     </div>
 </div>
 
 <script>
-    let state = { coin: 0, hp: 100, mode: 'idle', level: '', teacher: '', topic: null, timer: null };
+    let state = { coin: 0, hp: 100, mode: 'idle', level: '', teacher: '', currentTopic: null, timer: null };
 
-    // 【五難度全題庫】
-    const MasterBank = [
-        { topic: "宇宙學", levels: {
-            '國小': { q: "太陽系中哪顆行星有美麗的土星環？", opts: ["土星", "木星", "火星"], a: "土星", t: "土星環是由無數冰塊和碎石組成的。" },
-            '國中': { q: "第一位觀測到星系紅移現象，證明宇宙正在膨脹的人是？", opts: ["哈伯", "牛頓", "伽利略"], a: "哈伯", t: "哈伯定律是現代宇宙學的重要基石。" },
-            '高中': { q: "當恆星核心燃料耗盡，質量約為太陽 1.4 倍時會塌縮成？", opts: ["中子星", "白矮星", "黑洞"], a: "白矮星", t: "這被稱為錢德拉塞卡極限。" },
-            '大學': { q: "廣義相對論中，重力被解釋為？", opts: ["時空曲率", "神秘拉力", "電磁吸引"], a: "時空曲率", t: "物質告訴時空如何彎曲，時空告訴物質如何運動。" },
-            '碩博': { q: "關於暴脹宇宙模型，其主要解決了什麼問題？", opts: ["視界問題與平坦性問題", "能量守恆問題", "熵增定律悖論"], a: "視界問題與平坦性問題", t: "暴脹理論解釋了宇宙微波背景輻射的高度均勻性。" }
+    // 真實題庫與深度數據
+    const DATA_BANK = [
+        { topic: "黑洞物理學", levels: {
+            '國小': { q: "黑洞之所以被稱為黑洞，是因為連什麼都跑不出來？", opts: ["光", "聲波", "小鳥"], a: "光", t: "黑洞的重力極強，連宇宙中最快的光也會被吸入。" },
+            '國中': { q: "黑洞的邊界被稱為什麼？", opts: ["事件視界", "地平線", "終止線"], a: "事件視界", t: "一旦越過事件視界，任何訊息都無法傳回外部宇宙。" },
+            '碩博': { q: "關於黑洞資訊悖論，霍金輻射意味著黑洞會？", opts: ["蒸發並丟失資訊", "永久擴張", "變成恆星"], a: "蒸發並丟失資訊", t: "這引發了量子力學么正性與廣義相對論的衝突討論。" }
         }},
-        { topic: "生命科學", levels: {
-            '國小': { q: "蜜蜂採蜜後，會用什麼方式告訴同伴花蜜的位置？", opts: ["跳舞", "大叫", "畫圖"], a: "跳舞", t: "蜜蜂透過「搖擺舞」來傳遞方位資訊。" },
-            '國中': { q: "被稱為「生命工廠」的細胞構造是？", opts: ["線粒體", "細胞核", "細胞膜"], a: "線粒體", t: "線粒體是細胞進行呼吸作用產生能量的地方。" },
-            '高中': { q: "DNA 分子結構中，與腺嘌呤 (A) 配對的是？", opts: ["胸腺嘧啶 (T)", "胞嘧啶 (C)", "鳥嘌呤 (G)"], a: "胸腺嘧啶 (T)", t: "鹼基互補配對原則是遺傳密碼穩定的關鍵。" },
-            '大學': { q: "在 CRISPR 技術中，引導 Cas9 蛋白質尋找目標序列的是？", opts: ["sgRNA", "DNA 聚合酶", "限制酶"], a: "sgRNA", t: "單鏈引導 RNA 負責精確定位目標基因片段。" },
-            '碩博': { q: "關於表觀遺傳學中的 DNA 甲基化，通常發生在？", opts: ["CpG 島", "端粒", "內含子"], a: "CpG 島", t: "胞嘧啶甲基化會抑制基因的轉錄活性。" }
+        { topic: "古典文學", levels: {
+            '國小': { q: "《靜夜思》中李白把月光比喻成什麼？", opts: ["霜", "雪", "糖"], a: "霜", t: "「疑是地上霜」形容月光潔白凝重。" },
+            '大學': { q: "王維詩句「行到水窮處，坐看雲起時」體現了哪種佛家境界？", opts: ["空靈禪意", "痛苦執著", "積極入世"], a: "空靈禪意", t: "這反映了隨遇而安、物我兩忘的灑脫境界。" },
+            '碩博': { q: "《紅樓夢》中「草蛇灰線，伏脈千里」是指？", opts: ["敘事結構的隱喻與鋪墊", "描寫手法生動", "背景故事宏大"], a: "敘事結構的隱喻與鋪墊", t: "脂批以此形容曹雪芹極其嚴密的伏筆佈局能力。" }
         }}
     ];
 
-    const CONFIG = { '國小':{t:180,r:0.1,p:5}, '國中':{t:60,r:0.5,p:10}, '高中':{t:30,r:1.0,p:15}, '大學':{t:0,r:2.5,p:25}, '碩博':{t:0,r:5.0,p:45} };
+    const CONFIG = { '國小':{t:180,r:0.1,p:5}, '國中':{t:60,r:0.5,p:10}, '高中':{t:30,r:1.0,p:20}, '大學':{t:0,r:2.5,p:30}, '碩博':{t:0,r:5.0,p:50} };
 
-    function triggerLoad() {
+    function autoLoad() {
         if(state.mode !== 'idle') return;
-        state.topic = MasterBank[Math.floor(Math.random() * MasterBank.length)];
-        document.getElementById('panel').style.display = 'block';
-        document.getElementById('title-ui').innerText = `選擇難度：${state.topic.topic}`;
-        document.getElementById('content-ui').innerText = "請選定學習難度，越高難度明燈獎勵越豐富：";
-        document.getElementById('diff-selector').innerHTML = Object.keys(CONFIG).map(l => 
-            `<button class="btn" onclick="setDiff('${l}')">${l}</button>`
+        state.currentTopic = DATA_BANK[Math.floor(Math.random() * DATA_BANK.length)];
+        document.getElementById('main-panel').style.display = 'block';
+        document.getElementById('panel-title').innerText = `選擇難度：${state.currentTopic.topic}`;
+        document.getElementById('panel-text').innerText = "請選定學習難度 (國小享 3 分鐘思考，大學以上不限時)：";
+        document.getElementById('diff-grid').innerHTML = Object.keys(CONFIG).map(l => 
+            `<button class="btn" onclick="setLevel('${l}')">${l}</button>`
         ).join('');
         document.getElementById('options-area').innerHTML = "";
-        document.getElementById('control-area').innerHTML = "";
+        document.getElementById('footer-ctrl').innerHTML = "";
     }
 
-    function setDiff(l) {
+    function setLevel(l) {
         state.level = l;
-        document.getElementById('diff-selector').innerHTML = "";
-        document.getElementById('content-ui').innerText = `已設定為 [${l}]。請點擊上方導師開始授課。`;
+        document.getElementById('diff-grid').innerHTML = "";
+        document.getElementById('panel-text').innerText = `[${l}] 難度設定完成。請選定一位導師進行授課。`;
     }
 
-    function selectTeacher(t) {
+    function handleTeacher(t) {
         if(!state.level || state.mode !== 'idle') return;
         state.mode = 'teaching';
         state.teacher = t;
+        
+        // 鎖定老師
         document.getElementById(t === 'ling' ? 'pod-yi' : 'pod-ling').classList.add('locked');
         
-        const qData = state.topic.levels[state.level];
-        document.getElementById('title-ui').innerText = `導師：江${t==='ling'?'鈴':'依'} [${state.level}]`;
-        document.getElementById('content-ui').innerText = `【授課】${qData.t}`;
-        document.getElementById('control-area').innerHTML = `<button class="btn" onclick="startExam()">研習完畢，進入考驗</button>`;
+        const qData = state.currentTopic.levels[state.level] || state.currentTopic.levels['國小']; // 備份
+        document.getElementById('panel-title').innerText = `導師：江${t==='ling'?'鈴':'依'} [${state.level}]`;
+        document.getElementById('panel-text').innerText = `【專注授課】${qData.t}`;
+        document.getElementById('footer-ctrl').innerHTML = `<button class="btn" onclick="startExam()">研習完畢，進入考驗</button>`;
     }
 
     function startExam() {
         state.mode = 'exam';
-        const qData = state.topic.levels[state.level];
+        const qData = state.currentTopic.levels[state.level] || state.currentTopic.levels['國小'];
         const conf = CONFIG[state.level];
-        document.getElementById('content-ui').innerText = `【考驗】${qData.q}`;
-        document.getElementById('control-area').innerHTML = "";
+        document.getElementById('panel-text').innerText = `【考驗】${qData.q}`;
+        document.getElementById('footer-ctrl').innerHTML = "";
         document.getElementById('options-area').innerHTML = qData.opts.map(o => 
             `<button class="btn opt-btn" onclick="submit('${o}')">${o}</button>`
         ).join('');
@@ -149,7 +149,7 @@
 
     function submit(ans) {
         clearInterval(state.timer);
-        const qData = state.topic.levels[state.level];
+        const qData = state.currentTopic.levels[state.level] || state.currentTopic.levels['國小'];
         const conf = CONFIG[state.level];
         if(ans === qData.a) {
             const gain = Math.floor(1000 * conf.r);
@@ -157,14 +157,14 @@
             alert(`正確！獎勵 ${gain} 盞明燈。`);
         } else {
             state.hp -= conf.p;
-            alert(`錯誤！扣除 ${conf.p} HP。\n答案：${qData.a}`);
+            alert(`錯誤！扣除 ${conf.p} HP。\n正解：${qData.a}`);
         }
         reset();
     }
 
     function reset() {
         state.mode = 'idle'; state.level = '';
-        document.getElementById('panel').style.display = 'none';
+        document.getElementById('main-panel').style.display = 'none';
         document.getElementById('pod-ling').classList.remove('locked');
         document.getElementById('pod-yi').classList.remove('locked');
         document.getElementById('timer-ui').innerText = "";
@@ -172,9 +172,9 @@
     }
 
     function exchange() {
-        if(state.coin < 5000) return alert("明燈不足 5000！");
+        if(state.coin < 5000) return alert("明燈不足 5000，無法演化動作。");
         state.coin -= 5000;
-        alert("演化成功！消耗 5000 明燈，餘額保留。");
+        alert("演化成功！消耗 5000 明燈，動作庫已更新。");
         updateUI();
     }
 
