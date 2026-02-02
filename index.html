@@ -5,209 +5,221 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>江家智慧城市</title>
     <style>
-        :root { --main: #2c3e50; --gold: #d4af37; --bg: #f9f7f2; }
-        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; transition: 0.3s; }
-        body { margin: 0; background: #000; color: #333; height: 100vh; overflow: hidden; }
+        :root { --main: #2c3e50; --gold: #d4af37; --white: rgba(255,255,255,0.95); --error: #ff4757; }
+        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; transition: 0.3s ease; }
+        body { margin: 0; background: #1a1a1a; color: #333; height: 100vh; overflow: hidden; }
 
-        /* 背景畫風依照老師合照 */
-        #world-bg {
-            position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.2)), url('江老師合照背景.jpg');
-            background-size: cover; background-position: center; z-index: -1;
-        }
+        #world-bg { position: fixed; inset: 0; background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.3)), url('江老師合照.jpg'); background-size: cover; background-position: center; z-index: -1; }
+        
+        /* 雪花系統 */
+        .snowflake { position: fixed; top: -10%; color: white; cursor: pointer; z-index: 1000; animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
 
-        /* 左側導航 */
-        #sidebar {
-            position: fixed; left: 0; top: 0; bottom: 0; width: 200px;
-            background: rgba(255,255,255,0.9); backdrop-filter: blur(15px);
-            display: flex; flex-direction: column; padding-top: 50px; z-index: 100;
-            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
-        }
-        .nav-link {
-            padding: 18px 25px; cursor: pointer; font-weight: bold; font-size: 0.95rem;
-            color: var(--main); border-bottom: 1px solid #eee;
-        }
+        /* 導航 */
+        #sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 200px; background: var(--white); display: flex; flex-direction: column; padding-top: 40px; z-index: 100; box-shadow: 2px 0 20px rgba(0,0,0,0.2); }
+        .nav-link { padding: 18px 25px; cursor: pointer; font-weight: bold; border-bottom: 1px solid #eee; }
         .nav-link:hover { background: var(--main); color: white; }
 
-        /* 主舞台 */
-        #stage { margin-left: 200px; height: 100vh; position: relative; }
-        
-        /* 老師動態氣泡 */
-        #teacher-bubble {
-            position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
-            background: white; padding: 20px 40px; border-radius: 50px;
-            font-weight: bold; border: 2px solid var(--gold); display: none; z-index: 200;
-        }
+        /* 狀態欄 */
+        .status-bar { position: fixed; top: 20px; right: 30px; display: flex; gap: 15px; z-index: 100; }
+        .stat-box { background: white; padding: 10px 20px; border-radius: 50px; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        /* 頂部資訊 */
-        .info-bar {
-            position: absolute; top: 20px; right: 30px; 
-            background: white; padding: 10px 25px; border-radius: 50px;
-            font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
+        /* AI 群聊視窗 */
+        #chat-window { position: fixed; bottom: 20px; right: 20px; width: 380px; height: 550px; background: #f0f2f5; border-radius: 25px; display: none; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.6); z-index: 500; overflow: hidden; border: 1px solid rgba(255,255,255,0.3); }
+        .chat-header { background: var(--main); color: white; padding: 20px; font-weight: bold; display: flex; justify-content: space-between; }
+        .chat-msgs { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .msg { padding: 12px 18px; border-radius: 18px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; }
+        .msg.teacher { background: white; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .msg.user { background: var(--main); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-ctrl { padding: 15px; background: white; display: flex; flex-direction: column; gap: 10px; }
+        .chat-input-area { display: flex; gap: 8px; }
+        input#user-text { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #ddd; outline: none; }
 
-        /* 答題系統 */
-        .quiz-container { display: none; text-align: left; }
-        .timer { color: #e74c3c; font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; }
-
-        /* 相簿 Grid */
-        .album-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .photo-card { border: 2px solid var(--gold); border-radius: 8px; height: 100px; background: #fff; }
-
-        .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-            display: none; align-items: center; justify-content: center; z-index: 1000;
-        }
-        .modal-body { background: white; width: 600px; padding: 40px; border-radius: 30px; text-align: center; }
-        .btn { padding: 10px 20px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; margin: 5px; font-weight: bold; }
-        .btn:hover { background: var(--gold); color: white; }
+        /* 答題遮罩 */
+        #quiz-overlay { position: fixed; inset: 0; background: white; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .btn-opt { padding: 15px 40px; margin: 10px; font-size: 1.1rem; border-radius: 12px; border: 2px solid #eee; background: white; cursor: pointer; width: 300px; }
+        .btn-opt:hover { border-color: var(--gold); background: #fffcf0; }
     </style>
 </head>
-<body>
+<body onload="init()">
 
 <div id="world-bg"></div>
+<div id="snow-container"></div>
 
 <div id="sidebar">
-    <div class="nav-link" onclick="openQuiz('science')">🧬 理科教研 (江鈴)</div>
-    <div class="nav-link" onclick="openQuiz('arts')">📜 文科品鑑 (江依)</div>
-    <div class="nav-link" onclick="enterYard()">🏡 江家庭院</div>
-    <div class="nav-link" onclick="openModal('shop')">🛒 城市商場</div>
-    <div class="nav-link" onclick="openModal('closet')">👗 私人更衣室</div>
-    <div class="nav-link" onclick="openModal('album')">📸 江老師相簿</div>
+    <div style="text-align:center; padding:20px; font-weight:900; color:var(--gold); font-size:1.2rem;">江家智慧城市</div>
+    <div class="nav-link" onclick="openChat('ling')">👩‍⚕️ 江鈴老師 (理)</div>
+    <div class="nav-link" onclick="openChat('yi')">🎨 江依老師 (文)</div>
+    <div class="nav-link" onclick="alert('拍攝成功！已存入相簿')">📸 拍攝唯美畫面</div>
+    <div class="nav-link" onclick="alert('商場建設中...')">🛒 城市商場</div>
 </div>
 
-<div id="stage">
-    <div class="info-bar">🪙 <span id="coin-val">500</span></div>
-    <div id="teacher-bubble"></div>
-    
-    <button id="snap-btn" style="display:none; position:absolute; bottom:50px; right:50px; font-size:40px; background:none; border:none; cursor:pointer;" onclick="snapPhoto()">📸</button>
+<div class="status-bar">
+    <div class="stat-box" onclick="refill()" style="cursor:pointer;">⚡ <span id="sta">10</span></div>
+    <div class="stat-box">🪙 <span id="coin">500</span></div>
 </div>
 
-<div onclick="admin()" style="position:fixed; top:15px; left:15px; font-size:40px; opacity:0.2; cursor:pointer; z-index:200;">❄️</div>
-
-<div id="modal" class="modal" onclick="closeModal()">
-    <div class="modal-body" onclick="event.stopPropagation()">
-        <h2 id="m-title"></h2>
-        <div id="m-content"></div>
-        <button class="btn" onclick="closeModal()" style="margin-top:20px;">離開</button>
+<div id="chat-window">
+    <div class="chat-header">
+        <span id="chat-name">江老師群聊</span>
+        <span onclick="document.getElementById('chat-window').style.display='none'" style="cursor:pointer;">✕</span>
+    </div>
+    <div class="chat-msgs" id="chat-msgs"></div>
+    <div class="chat-ctrl">
+        <div class="chat-input-area">
+            <input type="text" id="user-text" placeholder="跟老師聊聊..." onkeypress="if(event.key==='Enter') sendChat()">
+            <button onclick="sendChat()" style="border:none; background:var(--gold); color:white; border-radius:10px; padding:0 15px;">發送</button>
+        </div>
+        <div style="display:flex; gap:5px;">
+            <button onclick="prepareQuiz('brush')" style="flex:1; padding:8px; font-size:0.8rem;">我要刷題</button>
+            <button onclick="prepareQuiz('compete')" style="flex:1; padding:8px; font-size:0.8rem;">我想挑戰</button>
+        </div>
     </div>
 </div>
 
-<script>
-    let state = { coins: 500, isAdmin: false, album: [], timer: null };
+<div id="quiz-overlay">
+    <h3 id="q-lv-title">國小難度</h3>
+    <div id="q-progress" style="margin-bottom:20px; color:var(--gold); font-weight:bold;">第 1 / 10 題</div>
+    <p id="q-content" style="font-size:1.4rem; padding:0 10%; text-align:center;"></p>
+    <div id="q-options"></div>
+    <p id="q-warn" style="color:var(--error); margin-top:40px; font-size:0.8rem;"></p>
+</div>
 
-    const quizData = {
-        science: [
-            { lv: '入門', q: '人體血液中負責運輸氧氣的是？', a: ['紅血球', '白血球'], r: 0, reward: 100, time: 20 },
-            { lv: '進階', q: '關於DNA雙螺旋結構，哪對鹼基是互相配對的？', a: ['A-T', 'A-C'], r: 0, reward: 300, time: 15 },
-            { lv: '專家', q: '下列何種激素主要由甲狀腺分泌？', a: ['甲狀腺素', '胰島素', '腎上腺素'], r: 0, reward: 800, time: 10 }
-        ],
-        arts: [
-            { lv: '入門', q: '《紅樓夢》的作者普遍認為是？', a: ['曹雪芹', '羅貫中'], r: 0, reward: 100, time: 20 },
-            { lv: '專家', q: '「落霞與孤鶩齊飛」下一句是？', a: ['秋水共長天一色', '長江之水天上來'], r: 0, reward: 800, time: 10 }
-        ]
+<script>
+    let state = {
+        coins: 500, stamina: 10, teacher: '', isAdmin: false,
+        quiz: { active: false, current: 0, errors: 0, lv: 1, type: '' }
     };
 
-    function talk(msg) {
-        const b = document.getElementById('teacher-bubble');
-        b.innerText = msg;
-        b.style.display = 'block';
-        setTimeout(() => b.style.display = 'none', 4000);
+    function init() {
+        // 重整罰則邏輯：利用 sessionStorage 偵測非法重載
+        if (sessionStorage.getItem('inQuiz') === 'true') {
+            state.stamina = Math.max(0, parseInt(localStorage.getItem('sta') || 10) - 2);
+            alert("⚠️ 偵測到答題中途非法重新整理！已扣除 2 點體力作為罰則。");
+            save();
+        }
+        updateUI();
+        setInterval(createSnow, 400);
+        window.onblur = () => { if(state.quiz.active) { alert("禁止離開頁面！"); } };
     }
 
-    function openQuiz(type) {
-        const qList = quizData[type];
-        const q = qList[Math.floor(Math.random() * qList.length)];
-        const title = type === 'science' ? '江鈴的理科教室' : '江依的文科沙龍';
-        
-        document.getElementById('m-title').innerText = `${title} [${q.lv}]`;
-        let optionsHtml = q.a.map((opt, i) => `<button class="btn" onclick="checkAnswer(${i}, ${q.r}, ${q.reward})">${opt}</button>`).join('');
-        
-        document.getElementById('m-content').innerHTML = `
-            <div class="timer" id="t-clock">剩餘時間: ${q.time}s</div>
-            <p style="font-size:1.2rem; font-weight:bold;">${q.q}</p>
-            ${optionsHtml}
-        `;
-        
-        openModal('custom');
-        startTimer(q.time);
+    function openChat(t) {
+        state.teacher = t;
+        document.getElementById('chat-window').style.display = 'flex';
+        const name = t === 'ling' ? '江鈴' : '江依';
+        document.getElementById('chat-name').innerText = `與 ${name} 老師對話`;
+        addMsg('teacher', `你好啊！我是${name}。今天想聊聊心情，還是想刷題考驗自己？`);
     }
 
-    function startTimer(sec) {
-        clearInterval(state.timer);
-        let left = sec;
-        state.timer = setInterval(() => {
-            left--;
-            document.getElementById('t-clock').innerText = `剩餘時間: ${left}s`;
-            if(left <= 0) {
-                clearInterval(state.timer);
-                alert("江鈴：時間到囉，思考要再果斷一點！");
-                closeModal();
-            }
-        }, 1000);
+    function sendChat() {
+        const input = document.getElementById('user-text');
+        if(!input.value) return;
+        addMsg('user', input.value);
+        
+        // 簡易 AI 回覆模擬
+        const reply = [
+            "聽起來很有意思呢，妳總是這麼有想法。",
+            "這就是江家精神！無論如何我都會支持妳的。",
+            "原來是這樣啊，那要不要喝杯茶放鬆一下？",
+            "這讓我想起了一句醫學/文學上的名言..."
+        ];
+        setTimeout(() => addMsg('teacher', reply[Math.floor(Math.random()*reply.length)]), 800);
+        input.value = '';
     }
 
-    function checkAnswer(idx, right, reward) {
-        clearInterval(state.timer);
-        if(idx === right) {
-            state.coins += reward;
-            updateUI();
-            talk(`老師：答對了！這份獎勵妳應得的 (🪙${reward})`);
+    function prepareQuiz(mode) {
+        if(state.stamina <= 0) return addMsg('teacher', "體力耗盡了，去休息一下吧。");
+        if(mode === 'brush') {
+            let lv = prompt("請選擇難度 (1:國小 50幣, 2:國中, 3:高中, 4:大學, 5:碩博 200幣)");
+            if(lv >= 1 && lv <= 5) startQuiz(parseInt(lv), 'brush');
         } else {
-            talk("老師：哎呀，差一點點，下次要更細心喔。");
+            startQuiz(5, 'compete');
         }
-        closeModal();
     }
 
-    function enterYard() {
-        document.getElementById('snap-btn').style.display = 'block';
-        talk("江依：庭院的陽光正好，適合留下唯美的瞬間。");
+    function startQuiz(lv, type) {
+        state.stamina--;
+        state.quiz = { active: true, current: 1, errors: 0, lv: lv, type: type };
+        sessionStorage.setItem('inQuiz', 'true');
+        document.getElementById('quiz-overlay').style.display = 'flex';
+        loadQuestion();
+        updateUI();
     }
 
-    function snapPhoto() {
-        const id = state.album.length + 1;
-        state.album.push(`唯美合影 #${id}`);
-        alert("📸 喀擦！捕捉到老師最美的一面，已存入相簿。");
+    function loadQuestion() {
+        const lvs = ['', '國小', '國中', '高中', '大學', '碩博'];
+        document.getElementById('q-lv-title').innerText = lvs[state.quiz.lv] + (state.quiz.type==='compete'?'【競賽】':'日常題');
+        document.getElementById('q-progress').innerText = `第 ${state.quiz.current} / 10 題 (錯誤次數: ${state.quiz.errors})`;
+        document.getElementById('q-content').innerText = `這是第 ${state.quiz.current} 題的內容... (假設題目數據已加載)`;
+        document.getElementById('q-warn').innerText = (state.quiz.lv >= 4) ? "⚖️ 高階題目：不計時，但禁止一切作弊與切頁行為。" : "⏳ 此難度需在 20 秒內作答。";
+        
+        const box = document.getElementById('q-options');
+        box.innerHTML = '';
+        ['正確選項', '錯誤選項'].sort(()=>Math.random()-0.5).forEach(txt => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-opt';
+            btn.innerText = txt;
+            btn.onclick = () => handleAns(txt === '正確選項');
+            box.appendChild(btn);
+        });
     }
 
-    function openModal(type) {
-        if(type !== 'custom') {
-            document.getElementById('m-title').innerText = 
-                type === 'shop' ? '江家商場' : 
-                type === 'closet' ? '更衣室' : '江老師相簿';
-            
-            let content = "";
-            if(type === 'shop') {
-                let p = state.isAdmin ? 100 : 1000;
-                content = `<p>大理石長椅 - 💰${p} <button onclick="buy(${p})">購買</button></p>`;
-            } else if(type === 'album') {
-                content = `<div class="album-grid">${state.album.map(p => `<div class="photo-card">${p}</div>`).join('')}</div>`;
-                if(state.album.length === 0) content = "相簿空空的，去庭院拍照吧！";
+    function handleAns(isRight) {
+        if(!isRight) state.quiz.errors++;
+        if(state.quiz.current < 10) {
+            state.quiz.current++;
+            loadQuestion();
+        } else {
+            finishQuiz();
+        }
+    }
+
+    function finishQuiz() {
+        sessionStorage.setItem('inQuiz', 'false');
+        const errRate = (state.quiz.errors / 10);
+        let reward = state.quiz.lv * 40 + 10; // 50 to 200
+        if(state.quiz.type === 'compete') reward = 1000;
+
+        if(errRate > 0.3) {
+            alert(`江老師：這套題妳錯了 ${state.quiz.errors} 題，錯誤率超過 30%，體力已扣除但無法給予獎勵喔。要再加油！`);
+        } else {
+            state.coins += (state.isAdmin ? reward * 10 : reward);
+            alert(`江老師：太棒了！妳完美的完成了挑戰，獲得金幣 🪙${reward}！`);
+        }
+        
+        state.quiz.active = false;
+        document.getElementById('quiz-overlay').style.display = 'none';
+        updateUI();
+        save();
+    }
+
+    function createSnow() {
+        const s = document.createElement('div');
+        s.className = 'snowflake'; s.innerText = '❄️';
+        s.style.left = Math.random() * 100 + 'vw';
+        s.style.animationDuration = (Math.random()*3+4)+'s';
+        s.onclick = () => {
+            if(prompt("江家權限驗證：") === "江憶婷") {
+                state.isAdmin = true; state.coins += 1000; updateUI();
+                alert("👑 歡迎管理者江憶婷！1折權限與 AI 深度對話模組已解鎖。");
             }
-            document.getElementById('m-content').innerHTML = content;
-        }
-        document.getElementById('modal').style.display = 'flex';
+        };
+        document.getElementById('snow-container').appendChild(s);
+        setTimeout(()=>s.remove(), 7000);
     }
 
-    function buy(p) {
-        if(state.coins >= p) {
-            state.coins -= p;
-            updateUI();
-            alert("江依：這件家具讓家裡更溫馨了。");
-        } else alert("錢幣不足，快去挑戰題目吧！");
+    function addMsg(role, text) {
+        const box = document.getElementById('chat-msgs');
+        box.innerHTML += `<div class="msg ${role}">${text}</div>`;
+        box.scrollTop = box.scrollHeight;
     }
 
-    function admin() {
-        if(prompt("最高管理者代碼：") === "江憶婷") {
-            state.isAdmin = true;
-            state.coins += 1000;
-            updateUI();
-            alert("👑 歡迎管理者江憶婷！啟動金已發放，商場特權已開啟。");
-        }
+    function updateUI() {
+        document.getElementById('coin').innerText = state.coins;
+        document.getElementById('sta').innerText = state.stamina;
     }
-
-    function updateUI() { document.getElementById('coin-val').innerText = (state.isAdmin ? "❄️ " : "") + state.coins; }
-    function closeModal() { document.getElementById('modal').style.display = 'none'; clearInterval(state.timer); }
+    function refill() { state.stamina = 10; updateUI(); alert("江鈴：體力已充滿！"); }
+    function save() { localStorage.setItem('sta', state.stamina); }
 </script>
 </body>
 </html>
