@@ -2,164 +2,215 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | Cyber-Verse Infinity</title>
+    <title>江家智慧城市 | Eternal Competition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --neon-blue: #00f2fe; --neon-pink: #ff00de; --gold: #ffd700;
-            --glass: rgba(5, 12, 22, 0.95);
+            --panel-bg: rgba(6, 12, 24, 0.94); --card-glass: rgba(255, 255, 255, 0.03);
         }
-        * { box-sizing: border-box; cursor: crosshair; font-family: "PingFang TC", sans-serif; }
+        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; cursor: crosshair; }
         body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; overflow: hidden; }
 
-        /* 全場景背景：江家庭院 (動態光影) */
-        #garden-bg {
+        /* 江家庭院背景 (動態景深) */
+        #master-bg {
             position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), 
-                        url('https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&w=1920&q=80');
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?w=1920');
             background-size: cover; background-position: center; z-index: -2;
-            filter: contrast(1.1) brightness(0.8);
+            transition: 1s filter;
         }
 
-        /* 螢光 HUD 邊框 (復刻 IMG_7238) */
-        .hud-border {
-            position: fixed; inset: 25px; border: 2px solid var(--neon-blue);
-            border-radius: 40px; box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue);
+        .hud-frame {
+            position: fixed; inset: 15px; border: 2px solid var(--neon-blue);
+            border-radius: 40px; box-shadow: 0 0 25px var(--neon-blue), inset 0 0 25px var(--neon-blue);
             pointer-events: none; z-index: 1000;
         }
 
-        /* 導航側欄：半透明發光 */
-        #side-nav {
-            position: fixed; left: 50px; top: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 1100;
+        /* 側邊磁浮菜單 */
+        #nav-sidebar {
+            position: fixed; left: 45px; top: 50%; transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 20px; z-index: 1100;
         }
         .nav-orb {
-            width: 65px; height: 65px; border-radius: 18px; background: var(--glass);
+            width: 75px; height: 75px; border-radius: 20px; background: var(--panel-bg);
             border: 1px solid var(--neon-blue); display: flex; align-items: center; justify-content: center;
-            font-size: 22px; color: var(--neon-blue); transition: 0.4s; box-shadow: 0 0 10px rgba(0,242,254,0.2);
+            font-size: 28px; color: var(--neon-blue); transition: 0.4s; backdrop-filter: blur(25px);
         }
-        .nav-orb:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 30px var(--neon-blue); transform: scale(1.1); }
+        .nav-orb.active { background: var(--neon-blue); color: #000; box-shadow: 0 0 35px var(--neon-blue); }
 
-        /* 核心內容視窗：江家相簿、商店、課程 */
+        /* 單頁面顯示器 ( viewport 邏輯 ) */
         .viewport {
-            position: fixed; left: 160px; right: 80px; top: 100px; bottom: 60px;
-            background: var(--glass); border-radius: 35px; border: 1px solid rgba(255,255,255,0.08);
-            backdrop-filter: blur(25px); display: none; padding: 45px; overflow-y: auto;
+            position: fixed; left: 150px; right: 60px; top: 100px; bottom: 60px;
+            background: var(--panel-bg); border-radius: 35px; border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(40px); display: none; padding: 50px; overflow-y: auto;
         }
 
-        /* 產品與家具卡片：精美 AI 畫風 (非貼圖) */
+        /* 老師肖像區：江鈴 & 江依 */
+        .teacher-box { display: flex; gap: 40px; align-items: flex-start; margin-bottom: 30px; }
+        .portrait {
+            width: 320px; height: 480px; border: 2px solid var(--neon-blue); border-radius: 25px;
+            background-size: cover; background-position: center; position: relative;
+            box-shadow: 0 0 30px rgba(0,242,254,0.3); overflow: hidden;
+        }
+        .portrait-overlay {
+            position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 20px; text-align: center; border-top: 1px solid rgba(0,242,254,0.3);
+        }
+
+        /* 難度與計時系統 */
+        .lvl-badge { padding: 6px 18px; border-radius: 8px; font-weight: 900; color: #000; font-size: 14px; margin-bottom: 15px; display: inline-block; letter-spacing: 1px; }
+        .lvl-eternal { background: var(--gold); box-shadow: 0 0 20px var(--gold); }
+        .lvl-standard { background: #2ed573; }
+        
+        #timer-wrap { margin: 25px 0; }
+        .timer-bar { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; border: 1px solid rgba(0,242,254,0.2); }
+        #timer-fill { height: 100%; width: 100%; background: var(--neon-blue); transition: linear; }
+
+        /* 產品與家具卡片 */
+        .premium-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
         .premium-card {
-            background: rgba(255,255,255,0.03); border-radius: 20px; overflow: hidden;
-            border: 1px solid rgba(0,242,254,0.2); transition: 0.5s; position: relative;
+            background: var(--card-glass); border: 1px solid rgba(0,242,254,0.1);
+            border-radius: 25px; padding: 20px; text-align: center; transition: 0.4s;
         }
-        .premium-card:hover { transform: translateY(-8px); border-color: var(--neon-blue); background: rgba(0,242,254,0.08); }
-        .card-img {
-            width: 100%; height: 220px; background-size: cover; background-position: center;
-            border-bottom: 1px solid rgba(0,242,254,0.2);
-        }
-        .card-info { padding: 20px; text-align: center; }
+        .premium-card:hover { border-color: var(--neon-blue); transform: translateY(-10px); background: rgba(0,242,254,0.05); }
 
-        /* 江老師精美展示區 */
-        .teacher-stage {
-            display: flex; gap: 40px; padding: 30px; background: rgba(255,255,255,0.02);
-            border-radius: 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05);
-        }
-        .teacher-portrait {
-            width: 250px; height: 350px; border-radius: 20px; border: 2px solid var(--neon-blue);
-            background-size: cover; background-position: center; box-shadow: 0 0 20px rgba(0,242,254,0.3);
-        }
+        #admin-entry { position: fixed; bottom: 40px; right: 40px; font-size: 45px; color: var(--neon-blue); cursor: pointer; z-index: 2000; animation: spin 10s infinite linear; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
-<body onload="init()">
+<body onload="boot()">
 
-<div id="garden-bg"></div>
-<div class="hud-border"></div>
+<div id="master-bg"></div>
+<div class="hud-frame"></div>
+<div id="admin-entry" onclick="adminAccess()"><i class="fas fa-snowflake"></i></div>
 
-<div style="position:fixed; top:45px; right:100px; display:flex; gap:30px; z-index:1100;">
-    <div style="background:var(--glass); padding:8px 25px; border-radius:50px; border:1px solid var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue);">
-        <i class="fas fa-bolt" style="color:var(--neon-blue)"></i> <span id="sta">10</span>
-        <span style="margin:0 15px">|</span>
-        <i class="fas fa-coins" style="color:var(--gold)"></i> <span id="coin">5000</span>
+<div style="position:fixed; top:40px; right:70px; z-index:1100; display:flex; gap:25px;">
+    <div style="background:var(--panel-bg); border:1px solid var(--neon-blue); padding:12px 35px; border-radius:50px; box-shadow: 0 0 15px var(--neon-blue);">
+        <i class="fas fa-bolt" style="color:var(--neon-blue)"></i> <span id="val-sta">10</span>
+        <span style="margin:0 15px; opacity:0.3">|</span>
+        <i class="fas fa-coins" style="color:var(--gold)"></i> <span id="val-coin">5000</span>
     </div>
 </div>
 
-<div id="side-nav">
-    <div class="nav-orb" onclick="openMod('garden')"><i class="fas fa-torii-gate"></i></div>
-    <div class="nav-orb" onclick="openMod('study')"><i class="fas fa-book-open"></i></div>
-    <div class="nav-orb" onclick="openMod('shop')"><i class="fas fa-shopping-bag"></i></div>
-    <div class="nav-orb" onclick="openMod('gallery')"><i class="fas fa-images"></i></div>
+<div id="nav-sidebar">
+    <div class="nav-orb active" id="nav-study" onclick="to('study')"><i class="fas fa-brain"></i></div>
+    <div class="nav-orb" id="nav-garden" onclick="to('garden')"><i class="fas fa-torii-gate"></i></div>
+    <div class="nav-orb" id="nav-shop" onclick="to('shop')"><i class="fas fa-shopping-bag"></i></div>
+    <div class="nav-orb" id="nav-album" onclick="to('album')"><i class="fas fa-camera-retro"></i></div>
+</div>
+
+<div id="view-study" class="viewport">
+    <div class="teacher-box">
+        <div id="t-portrait" class="portrait" style="background-image:url('https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400')">
+            <div class="portrait-overlay"><h3 id="t-name">江鈴</h3><p id="t-gear">流動極光裙</p></div>
+        </div>
+        <div style="flex:1">
+            <div id="q-lvl" class="lvl-badge">難度分析中...</div>
+            <h1 id="q-title" style="margin:0 0 20px 0; font-size:2.2rem; line-height:1.4;">準備載入題庫...</h1>
+            <div id="timer-wrap">
+                <div id="timer-txt" style="color:var(--neon-blue); font-weight:bold; margin-bottom:10px;"></div>
+                <div class="timer-bar"><div id="timer-fill"></div></div>
+            </div>
+            <div id="options-box" style="display:grid; gap:20px;"></div>
+        </div>
+    </div>
 </div>
 
 <div id="view-garden" class="viewport">
-    <h1 style="letter-spacing:5px; color:var(--neon-blue)">江家庭院 <span style="font-size:12px; opacity:0.6;">COURTYARD</span></h1>
-    <div class="teacher-stage">
-        <div class="teacher-portrait" id="ling-portrait" style="background-image:url('https://images.unsplash.com/photo-1578632287117-c594419aa38c?w=500')"></div>
-        <div style="flex:1">
-            <h2 style="color:var(--neon-blue)">江鈴 老師</h2>
-            <p style="font-size:1.1rem; line-height:1.8; opacity:0.8;">正在「庭院研討室」準備碩博難度題庫。今天的流動極光裙在星光下顯得格外耀眼。</p>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <span style="background:rgba(0,242,254,0.1); padding:5px 15px; border-radius:5px; border:1px solid var(--neon-blue);">理科核心</span>
-                <span style="background:rgba(255,215,0,0.1); padding:5px 15px; border-radius:5px; border:1px solid var(--gold);">傳奇服飾裝備</span>
-            </div>
-        </div>
+    <h1 style="color:var(--neon-blue); letter-spacing:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:15px;">江家私人庭院設施</h1>
+    <div class="premium-grid" id="garden-content">
+        <div class="premium-card"><div style="height:200px; background:url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500') center/cover; border-radius:15px;"></div><h3>賽博休憩沙發</h3></div>
+        <div class="premium-card"><div style="height:200px; background:url('https://images.unsplash.com/photo-1528164344705-47542687000d?w=500') center/cover; border-radius:15px;"></div><h3>江家屏風</h3></div>
     </div>
 </div>
 
-<div id="view-shop" class="viewport">
-    <h1 style="color:var(--neon-blue)">江家精品虛擬商場 <span style="font-size:14px; color:red;">(全場一折)</span></h1>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:30px;" id="shop-grid">
-        </div>
-</div>
-
 <script>
-    let state = { coin: 5500, sta: 10, items: [] };
+    let state = { coin: 5000, sta: 10, gearL: "流動極光裙", gearY: "落櫻繽紛漢服" };
+    let clock;
 
-    const items = [
-        { id: 'f1', name: '極簡賽博沙發', type: '家具', price: 1200, img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500' },
-        { id: 'f2', name: '櫻花屏風', type: '庭院家具', price: 800, img: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=500' },
-        { id: 'c1', name: '江家學院服', type: '服飾', price: 600, img: 'https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=500' }
+    const DB = [
+        { lvl: '競賽', t: "【博士/競賽】多維度膜空間理論中，如何解釋重力遺失至額外維度？", o: ["大尺度額外維度理論","超弦震盪對偶","量子隧穿"], a: 0, time: 0 },
+        { lvl: '大學', t: "【大學/碩博】關於拓樸絕緣體的邊緣態，下列敘述何者正確？", o: ["受對稱性保護且無耗散","僅在超低溫下存在","與電子旋轉無關"], a: 0, time: 0 },
+        { lvl: '國小', t: "【基礎課程】下列哪一個行星是太陽系中最大的行星？", o: ["木星","土星","海王星"], a: 0, time: 180 }
     ];
 
-    function init() {
-        openMod('garden');
-        updateUI();
-    }
+    function boot() { to('study'); updateUI(); }
 
-    function openMod(id) {
+    function to(id) {
         document.querySelectorAll('.viewport').forEach(v => v.style.display = 'none');
+        document.querySelectorAll('.nav-orb').forEach(n => n.classList.remove('active'));
         document.getElementById('view-' + id).style.display = 'block';
-        if(id === 'shop') renderShop();
+        document.getElementById('nav-' + id).classList.add('active');
+        if(id === 'study') loadQuiz();
     }
 
-    function renderShop() {
-        const grid = document.getElementById('shop-grid');
-        grid.innerHTML = items.map(item => {
-            const salePrice = Math.floor(item.price * 0.1); // 一折標配
-            return `
-                <div class="premium-card">
-                    <div style="position:absolute; top:15px; right:15px; background:red; padding:3px 8px; border-radius:4px; font-size:11px;">1折</div>
-                    <div class="card-img" style="background-image:url('${item.img}')"></div>
-                    <div class="card-info">
-                        <div style="font-size:0.8rem; color:var(--neon-blue); margin-bottom:5px;">${item.type}</div>
-                        <h3 style="margin:5px 0">${item.name}</h3>
-                        <div style="color:var(--neon-blue); font-size:1.3rem; font-weight:900;">🏮 ${salePrice}</div>
-                        <button onclick="buy('${item.id}', ${salePrice})" style="margin-top:15px; width:100%; padding:12px; background:transparent; border:1px solid var(--neon-blue); color:var(--neon-blue); border-radius:10px; cursor:pointer; font-weight:bold;">同步購買</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
+    function loadQuiz() {
+        clearInterval(clock);
+        const q = DB[Math.floor(Math.random()*DB.length)];
+        const isSci = q.t.includes('理科') || q.lvl === '競賽' || q.lvl === '大學';
+
+        // 雙老師肖像與服飾同步
+        document.getElementById('t-name').innerText = isSci ? "江鈴 老師" : "江依 老師";
+        document.getElementById('t-gear').innerText = isSci ? state.gearL : state.gearY;
+        document.getElementById('t-portrait').style.backgroundImage = isSci ? "url('https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400')" : "url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=400')";
+
+        const badge = document.getElementById('q-lvl');
+        badge.innerText = q.lvl + "分級課程";
+        badge.className = 'lvl-badge ' + (q.time === 0 ? 'lvl-eternal' : 'lvl-standard');
+        
+        document.getElementById('q-title').innerText = q.t;
+        const box = document.getElementById('options-box');
+        box.innerHTML = q.o.map((o, i) => `<button onclick="check(${i === q.a})" style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid var(--neon-blue); color:#fff; border-radius:15px; text-align:left; cursor:pointer; font-size:1.1rem; transition:0.3s;">${o}</button>`).join('');
+
+        // 思考時間邏輯
+        const wrap = document.getElementById('timer-wrap');
+        const txt = document.getElementById('timer-txt');
+        if(q.time > 0) {
+            wrap.style.display = 'block';
+            startClock(q.time);
+        } else {
+            wrap.style.display = 'none'; // 大學以上無時間限制
+        }
     }
 
-    function buy(id, price) {
-        if(state.coin >= price) {
-            state.coin -= price;
-            state.items.push(id);
-            alert("✨ 物件已成功同步至江家庭院。");
+    function startClock(sec) {
+        let rem = sec;
+        const bar = document.getElementById('timer-fill');
+        const txt = document.getElementById('timer-txt');
+        bar.style.transition = 'none'; bar.style.width = '100%';
+        setTimeout(() => { bar.style.transition = `width ${sec}s linear`; bar.style.width = '0%'; }, 10);
+
+        clock = setInterval(() => {
+            rem--;
+            let m = Math.floor(rem/60), s = rem%60;
+            txt.innerText = `國小/基礎課程思考時間剩餘: ${m}:${s<10?'0':''}${s}`;
+            if(rem <= 0) { clearInterval(clock); check(false, true); }
+        }, 1000);
+    }
+
+    function check(correct, timeout = false) {
+        clearInterval(clock);
+        if(correct) {
+            state.coin += 400; state.sta = Math.min(10, state.sta + 1);
+            alert("✨ 解析成功！思考時間獎勵：400 明燈。");
+        } else {
+            state.sta -= 2;
+            alert(timeout ? "⏰ 時間耗盡！思考深度不足，體力扣除 2。" : "❌ 邏輯偏移。體力扣除 2。");
+        }
+        updateUI(); loadQuiz();
+    }
+
+    function adminAccess() {
+        if(prompt("江管理員識別：") === "江憶婷") {
+            state.coin += 1000;
+            alert("👑 認證成功：權限代碼已同步。1000 明燈入帳，全服飾已鎖定。");
             updateUI();
-        } else { alert("🏮 明燈能量不足！"); }
+        }
     }
 
     function updateUI() {
-        document.getElementById('coin').innerText = state.coin;
-        document.getElementById('sta').innerText = state.sta;
+        document.getElementById('val-sta').innerText = state.sta;
+        document.getElementById('val-coin').innerText = state.coin;
     }
 </script>
 </body>
