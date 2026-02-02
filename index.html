@@ -3,164 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>江家姊妹：全方位 AI 智慧教室</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <title>江家姊妹：雲端智慧學習系統</title>
     <style>
-        :root { --sci: #00BCD4; --art: #E91E63; --dark: #1A1A1B; --gold: #FFD700; }
-        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; }
-        body { margin: 0; background: #0F172A; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root { --sci: #00E5FF; --art: #FF4081; --dark: #0F172A; --gold: #FFD700; }
+        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--dark); color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* 註冊門檻 */
-        #auth-screen { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-        .auth-box { background: white; color: #333; padding: 40px; border-radius: 30px; width: 90%; max-width: 400px; text-align: center; }
+        /* 頂部狀態欄 */
+        header { padding: 10px 20px; background: #000; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
+        .stat-item { background: #1E293B; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .energy-bar { width: 50px; height: 8px; background: #333; border-radius: 4px; overflow: hidden; }
+        .energy-fill { height: 100%; background: #4CAF50; transition: 0.3s; }
 
-        /* 頂部狀態 */
-        header { padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        .user-info { display: flex; gap: 15px; font-size: 0.9rem; }
-        .badge { background: #334155; padding: 4px 12px; border-radius: 20px; color: var(--gold); border: 1px solid var(--gold); }
-
-        /* 主舞台 */
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .avatar-wrap { position: relative; width: 200px; height: 200px; margin-bottom: 20px; }
-        .teacher-img { width: 100%; height: 100%; border-radius: 50%; border: 4px solid white; object-fit: cover; display: none; }
+        /* 核心展示區 */
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+        .character-zone { position: relative; width: 200px; height: 320px; margin-bottom: 10px; }
+        .teacher-img { width: 100%; height: 100%; object-fit: contain; position: absolute; transition: 0.5s; }
         
-        .bubble { background: #1E293B; color: #F1F5F9; padding: 15px; border-radius: 20px; margin-bottom: 20px; text-align: center; width: 100%; max-width: 400px; border-left: 5px solid var(--sci); position: relative; }
+        /* 裝飾層：髮飾與服裝特效 */
+        #layer-hair { z-index: 10; width: 100%; height: 40%; position: absolute; top: 0; display: flex; justify-content: center; font-size: 2rem; }
+        #layer-dress { z-index: 5; width: 100%; height: 100%; position: absolute; mix-blend-mode: soft-light; pointer-events: none; }
 
-        .quiz-card { background: white; color: #333; padding: 25px; border-radius: 30px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .option { width: 100%; padding: 16px; margin: 10px 0; border: 2px solid #F1F5F9; border-radius: 15px; background: white; cursor: pointer; text-align: left; font-size: 1rem; transition: 0.3s; }
-        .option:hover { background: #F8FAFC; border-color: var(--sci); }
+        .bubble { background: #1E293B; border: 1px solid #334155; padding: 12px; border-radius: 18px; width: 90%; max-width: 400px; text-align: center; margin-bottom: 15px; font-size: 0.9rem; position: relative; border-left: 5px solid var(--sci); }
+        .quiz-card { background: white; color: #1E293B; padding: 20px; border-radius: 25px; width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); text-align: center; }
+        .btn { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #F1F5F9; border-radius: 12px; background: white; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .btn:active { transform: scale(0.98); }
 
-        /* 難度標籤 */
-        .level-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; background: #EEE; color: #666; margin-bottom: 10px; display: inline-block; }
+        /* 導航欄 */
+        nav { background: #000; display: flex; border-top: 1px solid #333; }
+        .nav-btn { flex: 1; padding: 15px; background: none; border: none; color: #64748B; cursor: pointer; font-size: 0.85rem; }
+        .nav-btn.active { color: white; border-bottom: 3px solid var(--sci); }
+
+        /* 快閃特效 */
+        #flash-alert { position: absolute; top: 10px; right: 10px; background: var(--gold); color: black; padding: 5px 10px; border-radius: 5px; font-weight: bold; animation: pulse 1s infinite; display: none; z-index: 100; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div id="auth-screen">
-    <div class="auth-box">
-        <h2 style="margin-top:0;">🎓 學生註冊</h2>
-        <input type="text" id="reg-name" placeholder="輸入姓名" style="width:100%; padding:12px; margin:10px 0;">
-        <select id="reg-level" style="width:100%; padding:12px; margin:10px 0;">
-            <option value="elementary">國小階段</option>
-            <option value="junior">國中會考階段</option>
-            <option value="senior">高中學測階段</option>
-            <option value="expert">碩博入學考/專業階段</option>
-        </select>
-        <button onclick="doRegister()" style="width:100%; padding:15px; background:var(--sci); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">建立學習檔案</button>
-    </div>
-</div>
-
 <header>
-    <div id="u-name">未登入</div>
-    <div class="user-info">
-        <div class="badge">🪙 金幣: <span id="u-coins">0</span></div>
-        <div class="badge">🔥 等級: <span id="u-rank">LV1</span></div>
-    </div>
+    <div class="stat-item">👤 <span id="u-name">學生</span></div>
+    <div class="stat-item">⚡ <div class="energy-bar"><div id="e-fill" class="energy-fill"></div></div></div>
+    <div class="stat-item">🪙 <span id="u-coins">0</span></div>
 </header>
 
 <main>
-    <div id="talk" class="bubble">正在為您從題庫抓取合適的考題...</div>
-    <div class="avatar-wrap">
-        <img id="pic-sci" class="teacher-img" src="IMG_3812.jpeg">
-        <img id="pic-art" class="teacher-img" src="IMG_4392.jpg">
-    </div>
+    <div id="flash-alert">⚡ 快閃課程：限定髮飾獎勵！</div>
+    <div id="talk" class="bubble">正在同步江老師的私聊系統...</div>
+
+    <div class="character-zone">
+        <div id="layer-hair"></div> <img id="pic-sci" class="teacher-img" src="IMG_3812.jpeg">
+        <img id="pic-art" class="teacher-img" src="IMG_4392.jpg" style="display:none;">
+        <div id="layer-dress"></div> </div>
 
     <div class="quiz-card">
-        <div id="diff-tag" class="level-tag">載入中...</div>
-        <h3 id="question" style="margin:0 0 20px 0;">題目載入中...</h3>
-        <div id="options-box"></div>
+        <h3 id="q-text" style="margin-top:0;">準備好開始挑戰了嗎？</h3>
+        <div id="options">
+            <button class="btn" onclick="startLesson()">開始課程 (耗費 20 ⚡)</button>
+        </div>
     </div>
 </main>
 
+<nav>
+    <button id="nav-sci" class="nav-btn active" onclick="switchTeacher('sci')">江鈴 (理科)</button>
+    <button id="nav-art" class="nav-btn" onclick="switchTeacher('art')">江依 (文科)</button>
+    <button class="nav-btn" onclick="openShop()">🛍️ 商城/換裝</button>
+</nav>
+
 <script>
-    // --- AI 自動抓題模擬與題庫 (可隨時擴展至 API) ---
-    const aiQuestionBank = {
-        elementary: [
-            { t: "sci", q: "【國小自然】下列哪種植物是透過種子傳播的？", o: ["蒲公英", "地衣", "青苔"], c: 0, r: 10 },
-            { t: "art", q: "【國小國語】「春眠不覺曉」的下一句是？", o: ["處處聞啼鳥", "舉頭望明月", "夜來風雨聲"], c: 0, r: 10 }
-        ],
-        junior: [
-            { t: "sci", q: "【會考理化】關於質量的敘述，何者正確？", o: ["隨地點改變", "物體所含物質的量", "即是重量"], c: 1, r: 50 },
-            { t: "art", q: "【會考國文】下列詞語何者形容「書法流暢」？", o: ["龍飛鳳舞", "畫餅充飢", "呆若木雞"], c: 0, r: 50 }
-        ],
-        senior: [
-            { t: "sci", q: "【學測生物】DNA 雙螺旋結構中，腺嘌呤(A)與誰配對？", o: ["胞嘧啶(C)", "鳥嘌呤(G)", "胸腺嘧啶(T)"], c: 2, r: 100 }
-        ],
-        expert: [
-            { t: "sci", q: "【碩博士入學】關於「熱力學第二定律」的熵增原理，下列敘述何者精確？", o: ["孤立系統熵值不減", "能量百分百轉換", "絕對零度可達到"], c: 0, r: 500 }
-        ]
+    // --- 遊戲數據核心 ---
+    let user = {
+        name: "小江", coins: 0, energy: 100,
+        sci_lv: 0, art_lv: 0, 
+        inventory: [], // 擁有的髮飾髮型
+        wearingHair: "",
+        lastSync: Date.now()
     };
 
-    let user = { name: "", level: "junior", coins: 0, exp: 0 };
+    const dressLibrary = {
+        sci: ["專業鉛筆裙", "醫用百褶裙", "知性長裙", "極光實驗裙"],
+        art: ["墨香傘裙", "古典旗袍裙", "文藝百葉裙", "落櫻長裙"]
+    };
 
-    function doRegister() {
-        const name = document.getElementById('reg-name').value;
-        const lv = document.getElementById('reg-level').value;
-        if(!name) return alert("請輸入姓名！");
+    const shopItems = [
+        { id: "h1", name: "蝴蝶結髮飾", price: 500, icon: "🎀" },
+        { id: "h2", name: "智慧髮箍", price: 1000, icon: "👑" },
+        { id: "h3", name: "文藝髮夾", price: 1500, icon: "🌸" }
+    ];
+
+    let currentT = 'sci';
+    let isLessonActive = false;
+    let wrongInLesson = 0;
+    let qCount = 0;
+    let isFlash = false;
+
+    // --- 初始化 ---
+    window.onload = () => {
+        const saved = localStorage.getItem('jiang_ultimate_v3');
+        if(saved) user = JSON.parse(saved);
+
+        // 防重整機制
+        if(sessionStorage.getItem('lesson_running')) {
+            user.energy = Math.max(0, user.energy - 10);
+            alert("偵測到重整！體力已強制扣除。");
+        }
         
-        user = { name: name, level: lv, coins: 0, exp: 0 };
-        saveAndSync();
-        document.getElementById('auth-screen').style.display = 'none';
-        startLesson();
+        checkHoliday();
+        updateUI();
+        switchTeacher('sci');
+    };
+
+    function checkHoliday() {
+        const m = new Date().getMonth() + 1;
+        if([1,2,7,8].includes(m)) user.energy = 100; // 寒暑假體力自動補滿
+    }
+
+    function switchTeacher(t) {
+        currentT = t;
+        document.getElementById('pic-sci').style.display = t === 'sci' ? 'block' : 'none';
+        document.getElementById('pic-art').style.display = t === 'art' ? 'block' : 'none';
+        document.getElementById('nav-sci').className = t === 'sci' ? 'nav-btn active' : 'nav-btn';
+        document.getElementById('nav-art').className = t === 'art' ? 'nav-btn active' : 'nav-btn';
+        
+        applyAutoDress();
+        updateUI();
+    }
+
+    function applyAutoDress() {
+        const lv = currentT === 'sci' ? user.sci_lv : user.art_lv;
+        const dressIndex = Math.min(lv, 3);
+        const dressName = dressLibrary[currentT][dressIndex];
+        document.getElementById('talk').innerText = `我是${currentT==='sci'?'江鈴':'江依'}。目前穿著：${dressName}。`;
+        
+        // 用顏色模擬裙裝變化
+        const colors = ["#E0F7FA", "#B2EBF2", "#80DEEA", "#FFFFFF"];
+        document.getElementById('layer-dress').style.backgroundColor = colors[dressIndex];
     }
 
     function startLesson() {
-        renderHeader();
-        const bank = aiQuestionBank[user.level];
-        const randomQ = bank[Math.floor(Math.random() * bank.length)];
+        if(user.energy < 20) return alert("體力不足！刷20題補能題庫方可繼續。");
         
-        // 切換老師
-        const isSci = randomQ.t === 'sci';
-        document.getElementById('pic-sci').style.display = isSci ? 'block' : 'none';
-        document.getElementById('pic-art').style.display = !isSci ? 'block' : 'none';
+        isLessonActive = true;
+        sessionStorage.setItem('lesson_running', 'true');
+        isFlash = Math.random() < 0.2; // 20% 快閃
+        document.getElementById('flash-alert').style.display = isFlash ? 'block' : 'none';
         
-        document.getElementById('talk').innerText = isSci ? "我是江鈴，這題理科考驗妳的邏輯喔！" : "我是江依，文科的奧祕就在這裡。";
-        document.getElementById('diff-tag').innerText = "目標： " + user.level.toUpperCase();
-        document.getElementById('question').innerText = randomQ.q;
+        qCount = 0;
+        wrongInLesson = 0;
+        nextQuestion();
+    }
 
-        const box = document.getElementById('options-box');
+    function nextQuestion() {
+        qCount++;
+        document.getElementById('q-text').innerText = `第 ${qCount}/10 題：${currentT==='sci'?'(理科) 光的折射定律是？':'(文科) 唐詩三百首之首是？'}`;
+        const box = document.getElementById('options');
         box.innerHTML = "";
-        randomQ.o.forEach((txt, i) => {
+        ["選項 A", "選項 B", "選項 C"].forEach((txt, i) => {
             let b = document.createElement('button');
-            b.className = "option";
+            b.className = "btn";
             b.innerText = txt;
-            b.onclick = () => checkAns(i, randomQ.c, randomQ.r);
+            b.onclick = () => handleAns(i === 0);
             box.appendChild(b);
         });
     }
 
-    function checkAns(idx, correct, reward) {
-        if(idx == correct) {
-            user.coins += reward;
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            alert(`🎉 答對了！獲得 ${reward} 金幣！`);
-            saveAndSync();
-            startLesson();
+    function handleAns(isCorrect) {
+        if(!isCorrect) wrongInLesson++;
+        if(qCount < 10) nextQuestion();
+        else finishLesson();
+    }
+
+    function finishLesson() {
+        isLessonActive = false;
+        sessionStorage.removeItem('lesson_running');
+        user.energy -= 20;
+
+        const errRate = wrongInLesson / 10;
+        if(errRate <= 0.3) {
+            user.coins += isFlash ? 1000 : 200;
+            if(currentT === 'sci') user.sci_lv++; else user.art_lv++;
+            
+            if(isFlash) {
+                const prize = shopItems[Math.floor(Math.random()*shopItems.length)];
+                if(!user.inventory.includes(prize.id)) {
+                    user.inventory.push(prize.id);
+                    alert(`🔥 快閃成功！獲得限定髮飾：${prize.name}`);
+                }
+            }
+            alert(`課程完成！解鎖下一套裙裝，獲得金幣。`);
         } else {
-            alert("再想一下，妳一定可以的！");
+            alert(`錯誤率達 ${errRate*100}%，江老師沒收了獎勵。體力照樣扣除。`);
         }
+        
+        save();
+        updateUI();
+        applyAutoDress();
+        resetHome();
     }
 
-    function renderHeader() {
-        document.getElementById('u-name').innerText = "👤 " + user.name;
+    function resetHome() {
+        document.getElementById('q-text').innerText = "本堂課結束，休息一下吧。";
+        document.getElementById('options').innerHTML = `<button class="btn" onclick="startLesson()">開始下一堂課</button>`;
+    }
+
+    function openShop() {
+        let msg = "【金幣商城 / 換裝】\n目前金幣：" + user.coins + "\n\n可購買：\n";
+        shopItems.forEach(item => {
+            msg += `${item.id}: ${item.name} (${item.price}🪙)\n`;
+        });
+        msg += "\n輸入ID購買，或輸入已擁有的ID進行換裝。";
+        const choice = prompt(msg);
+        
+        const item = shopItems.find(i => i.id === choice);
+        if(item) {
+            if(user.inventory.includes(choice)) {
+                user.wearingHair = item.icon;
+                alert("換裝成功！");
+            } else if(user.coins >= item.price) {
+                user.coins -= item.price;
+                user.inventory.push(choice);
+                user.wearingHair = item.icon;
+                alert("購買並穿戴成功！");
+            } else {
+                alert("金幣不足！");
+            }
+        }
+        save();
+        updateUI();
+    }
+
+    function updateUI() {
         document.getElementById('u-coins').innerText = user.coins;
-        document.getElementById('u-rank').innerText = "LV." + (Math.floor(user.coins/200) + 1);
+        document.getElementById('e-fill').style.width = user.energy + "%";
+        document.getElementById('layer-hair').innerText = user.wearingHair;
+        localStorage.setItem('jiang_ultimate_v3', JSON.stringify(user));
     }
 
-    // --- 儲存資料庫邏輯 ---
-    function saveAndSync() {
-        // 目前儲存於本地，未來只需替換為 Firebase API 即可實現真正的雲端帳號
-        localStorage.setItem('jiangs_classroom_user', JSON.stringify(user));
-    }
-
-    window.onload = () => {
-        const saved = localStorage.getItem('jiangs_classroom_user');
-        if(saved) {
-            user = JSON.parse(saved);
-            document.getElementById('auth-screen').style.display = 'none';
-            startLesson();
-        }
-    }
+    function save() { localStorage.setItem('jiang_ultimate_v3', JSON.stringify(user)); }
 </script>
 </body>
 </html>
