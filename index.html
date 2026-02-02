@@ -5,193 +5,193 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>江家姊妹：醫道與文心</title>
     <style>
-        :root { --sci: #4FC3F7; --art: #9575CD; --dark: #263238; --win: #FFD700; }
+        :root { --sci: #4FC3F7; --art: #9575CD; --dark: #263238; --gold: #FFD700; }
         * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
         
-        body { margin: 0; height: 100vh; background: #f4f7f9; display: flex; flex-direction: column; overflow: hidden; }
+        body { margin: 0; height: 100vh; background: #f0f4f8; display: flex; flex-direction: column; overflow: hidden; }
 
         /* 導覽列 */
-        header { background: var(--dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 100; }
-        .menu-btn { background: none; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+        header { 
+            background: var(--dark); color: white; padding: 12px 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 100; 
+        }
+        .menu-btn { background: rgba(255,255,255,0.1); border: 1px solid white; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
 
-        /* 側欄選單 */
+        /* 響應式側欄 */
         #sidebar {
             position: fixed; left: 0; top: 0; bottom: 0; width: 280px; 
-            background: rgba(38, 50, 56, 0.95); backdrop-filter: blur(10px);
-            transform: translateX(-100%); transition: 0.3s; z-index: 150; padding-top: 70px;
+            background: rgba(33, 33, 33, 0.98); backdrop-filter: blur(10px);
+            transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 150; padding-top: 80px; box-shadow: 5px 0 15px rgba(0,0,0,0.2);
         }
         #sidebar.open { transform: translateX(0); }
-        .course-item { padding: 20px; color: white; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
-        .course-item:hover { background: rgba(255,255,255,0.1); }
+        .course-item { padding: 18px 25px; color: #ddd; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; font-size: 1.1rem; }
+        .course-item:hover { background: rgba(255,255,255,0.1); color: white; }
 
-        /* 主畫面佈局 */
+        /* 主舞台設計 */
         main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
         
-        /* 老師圖式容器 */
-        .avatar-container { position: relative; width: 260px; height: 260px; margin-bottom: 20px; }
-        .avatar-img { 
-            width: 100%; height: 100%; border-radius: 50%; border: 8px solid white; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover; background: #eee;
+        /* 老師頭像與呼吸特效 */
+        .char-zone { position: relative; width: 240px; height: 240px; margin-bottom: 25px; }
+        .teacher-img { 
+            width: 100%; height: 100%; border-radius: 50%; border: 6px solid white; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); object-fit: cover; background: white;
             animation: breathe 4s ease-in-out infinite; display: none;
         }
-        @keyframes breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.02); } }
+        @keyframes breathe { 
+            0%, 100% { transform: translateY(0) scale(1); } 
+            50% { transform: translateY(-12px) scale(1.03); } 
+        }
 
-        /* 對話泡泡 */
+        /* 語意氣泡 */
         .bubble { 
-            background: white; padding: 15px 25px; border-radius: 25px; margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 90%; max-width: 350px; 
-            text-align: center; font-size: 1.1rem; line-height: 1.5; color: #444;
+            background: white; padding: 15px 20px; border-radius: 20px; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 340px; 
+            text-align: center; font-size: 1.1rem; color: #333; position: relative;
         }
+        .bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); border-width: 10px 10px 0; border-style: solid; border-color: white transparent; }
 
-        /* 答題區 */
-        .quiz-card { background: white; padding: 30px; border-radius: 35px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
-        .option-btn { 
-            width: 100%; padding: 18px; margin: 10px 0; border: 2px solid #eee; 
-            border-radius: 20px; background: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+        /* 題目卡片 */
+        .quiz-card { 
+            background: rgba(255,255,255,0.9); padding: 25px; border-radius: 30px; 
+            width: 100%; max-width: 450px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.05); 
         }
-        .option-btn:active { transform: scale(0.97); background: #fafafa; }
+        .ans-btn { 
+            width: 100%; padding: 16px; margin: 8px 0; border: 2px solid #eee; 
+            border-radius: 15px; background: white; font-size: 1.15rem; cursor: pointer; transition: 0.2s;
+        }
+        .ans-btn:hover { border-color: var(--sci); background: #f0faff; }
+        .ans-btn:active { transform: scale(0.98); }
 
-        /* 獎勵特效 */
-        #reward-overlay { 
-            display: none; position: fixed; inset: 0; background: rgba(255,215,0,0.2); 
+        /* 答對獎勵 */
+        #reward { 
+            display: none; position: fixed; inset: 0; background: rgba(255,215,0,0.15); 
             z-index: 200; pointer-events: none; align-items: center; justify-content: center;
-            font-size: 5rem; animation: celebrate 1s ease-out forwards;
+            font-size: 8rem; animation: star-pop 1s ease-out;
         }
-        @keyframes celebrate { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1.2); } }
+        @keyframes star-pop { 0% { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(1.5); } }
 
-        /* 管理員入口 */
-        #admin-trigger { position: fixed; bottom: 0; right: 0; width: 50px; height: 50px; z-index: 99; cursor: default; }
-        #admin-panel { 
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
-            z-index: 300; align-items: center; justify-content: center; color: white;
-        }
+        /* 冬櫻管理員專區 */
+        #admin-link { position: fixed; bottom: 0; right: 0; width: 40px; height: 40px; z-index: 99; cursor: default; }
         
-        #loader { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        #loading-screen { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 1000; font-size: 1.2rem; }
     </style>
 </head>
 <body>
 
-<div id="loader">📡 正在載入課程...</div>
-<div id="reward-overlay">🌟</div>
+<div id="loading-screen">📡 正在連接資料庫...</div>
+<div id="reward">✨</div>
 
 <header>
-    <button class="menu-btn" onclick="toggleMenu()">☰ 選擇課程</button>
-    <div style="font-weight: bold;">江家姊妹雲端教室</div>
-    <div style="width: 80px;"></div>
+    <button class="menu-btn" onclick="toggleSidebar()">☰ 選單</button>
+    <div style="letter-spacing: 1px; font-weight: 600;">江家姊妹雲端教室</div>
+    <div style="width: 60px;"></div>
 </header>
 
 <div id="sidebar">
     <div id="course-list"></div>
 </div>
 
-<main>
-    <div id="talk-bubble" class="bubble">歡迎來到教室！請點擊選單開始學習。</div>
+<main id="app-content">
+    <div id="msg" class="bubble">歡迎來到教室！請點擊左上角選單開始課程。</div>
     
-    <div class="avatar-container">
-        <img id="avatar-sci" class="avatar-img" src="IMG_3812.jpeg">
-        <img id="avatar-art" class="avatar-img" src="IMG_4392.jpg">
+    <div class="char-zone">
+        <img id="img-sci" class="teacher-img" src="IMG_3812.jpeg">
+        <img id="img-art" class="teacher-img" src="IMG_4392.jpg">
     </div>
 
     <div class="quiz-card">
-        <h2 id="q-text" style="margin-top:0; color:var(--dark);">準備好了嗎？</h2>
-        <div id="q-options"></div>
+        <h2 id="question-text" style="margin-top:0; font-size: 1.4rem;">準備好了嗎？</h2>
+        <div id="options-box"></div>
     </div>
 </main>
 
-<div id="admin-trigger" onclick="openAdmin()"></div>
-<div id="admin-panel" onclick="this.style.display='none'">
-    <div style="background:white; color:#333; padding:40px; border-radius:30px; text-align:center;">
-        <h2 style="color:var(--art);">🌸 管理員模式 (冬櫻)</h2>
-        <p>目前資料讀取自 Google Sheets</p>
-        <button class="option-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pubhtml')">進入後台修改題目</button>
-    </div>
-</div>
+<div id="admin-link" onclick="handleAdmin()"></div>
 
 <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pub?output=csv";
-    let allData = [];
+    const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pub?output=csv";
+    let database = [];
 
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
-    async function loadSheets() {
+    async function fetchData() {
         try {
-            const res = await fetch(CSV_URL + '&t=' + Date.now());
+            const res = await fetch(SHEET_CSV + '&t=' + Date.now());
             const text = await res.text();
-            const rows = text.split("\n").map(r => r.split(","));
-            allData = rows.slice(1).filter(r => r[1]); // 排除標題與空行
+            const lines = text.split("\n").filter(l => l.trim() !== "");
+            database = lines.slice(1).map(row => row.split(","));
             
             const list = document.getElementById('course-list');
             list.innerHTML = "";
-            allData.forEach((row, index) => {
+            database.forEach((data, i) => {
+                if(!data[1]) return;
                 let div = document.createElement('div');
                 div.className = "course-item";
-                div.innerText = `● ${row[1].trim()}`;
-                div.onclick = () => { selectCourse(index); toggleMenu(); };
+                div.innerText = "📖 " + data[1].trim();
+                div.onclick = () => { loadCourse(i); toggleSidebar(); };
                 list.appendChild(div);
             });
-            document.getElementById('loader').style.display = 'none';
-        } catch (e) {
-            document.getElementById('loader').innerText = "連線失敗，請檢查網路或試算表發佈設定。";
+            document.getElementById('loading-screen').style.display = 'none';
+        } catch (err) {
+            document.getElementById('loading-screen').innerText = "連線失敗，請檢查網路。";
         }
     }
 
-    function selectCourse(idx) {
-        const data = allData[idx];
-        const bubble = document.getElementById('talk-bubble');
-        const qText = document.getElementById('q-text');
-        const optBox = document.getElementById('q-options');
+    function loadCourse(idx) {
+        const row = database[idx];
+        const teacher = row[0].trim().toLowerCase();
+        const msg = document.getElementById('msg');
         
-        // 切換老師圖片
-        const isSci = data[0].trim().toLowerCase() === 'sci';
-        document.getElementById('avatar-sci').style.display = isSci ? 'block' : 'none';
-        document.getElementById('avatar-art').style.display = isSci ? 'none' : 'block';
+        // 切換圖式與對話
+        document.getElementById('img-sci').style.display = (teacher === 'sci') ? 'block' : 'none';
+        document.getElementById('img-art').style.display = (teacher === 'art') ? 'block' : 'none';
+        
+        msg.innerText = (teacher === 'sci') ? "我是江鈴醫生。讓我們用理性解開謎題！" : "我是江依博士。讓我們領略文字的智慧。";
+        document.getElementById('question-text').innerText = row[2];
 
-        bubble.innerText = isSci ? "我是江鈴，讓我們用醫學邏輯來解題。" : "我是江依，讓我們從文學中尋找答案。";
-        qText.innerText = data[2];
-        
-        optBox.innerHTML = "";
-        [data[3], data[4]].forEach((txt, i) => {
+        const box = document.getElementById('options-box');
+        box.innerHTML = "";
+        [row[3], row[4]].forEach((text, i) => {
             let btn = document.createElement('button');
-            btn.className = "option-btn";
-            btn.innerText = txt;
-            btn.onclick = () => checkAnswer(i, data[5].trim(), isSci);
-            optBox.appendChild(btn);
+            btn.className = "ans-btn";
+            btn.innerText = text;
+            btn.onclick = () => {
+                if (i == row[5].trim()) {
+                    msg.innerText = "太優秀了！完全答對。";
+                    showStar();
+                    say("答對了！");
+                } else {
+                    msg.innerText = "哎呀，再想一下看看？";
+                    say("再想一下？");
+                }
+            };
+            box.appendChild(btn);
         });
-        speak(bubble.innerText + " 題目是：" + data[2]);
+        say(msg.innerText + " 題目是：" + row[2]);
     }
 
-    function checkAnswer(userIdx, correctIdx, isSci) {
-        const bubble = document.getElementById('talk-bubble');
-        if (userIdx == correctIdx) {
-            bubble.innerText = "太棒了！答對了，獲得 1 枚智慧金幣！";
-            showReward();
-            speak("太棒了！答對了。");
-        } else {
-            bubble.innerText = "很有趣的想法，但正確答案不是這個喔，再試試看？";
-            speak("再想一下？");
-        }
+    function showStar() {
+        const star = document.getElementById('reward');
+        star.style.display = 'flex';
+        setTimeout(() => { star.style.display = 'none'; }, 1000);
     }
 
-    function showReward() {
-        const rw = document.getElementById('reward-overlay');
-        rw.style.display = 'flex';
-        setTimeout(() => { rw.style.display = 'none'; }, 1500);
-    }
-
-    function openAdmin() {
+    function handleAdmin() {
         if (prompt("輸入冬櫻暗號：") === "江鈴的損友冬櫻") {
-            document.getElementById('admin-panel').style.display = 'flex';
+            window.open('https://docs.google.com/spreadsheets/d/1XqT7X9p...你的試算表ID/edit', '_blank');
         }
     }
 
-    function speak(t) {
+    function say(t) {
         window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(t);
-        u.lang = 'zh-TW';
-        window.speechSynthesis.speak(u);
+        const s = new SpeechSynthesisUtterance(t);
+        s.lang = 'zh-TW';
+        s.rate = 1.0;
+        window.speechSynthesis.speak(s);
     }
 
-    loadSheets();
+    fetchData();
 </script>
 </body>
 </html>
