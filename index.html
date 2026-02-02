@@ -3,54 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>江家智慧城市：沉浸互動教室</title>
+    <title>江家智慧城市：導師教室系統</title>
     <style>
-        :root { --sci: #22d3ee; --art: #fb7185; --gold: #facc15; --bg: #020617; }
-        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; transition: 0.6s; }
+        :root { 
+            --sci: #22d3ee; --art: #fb7185; --gold: #facc15; 
+            --snow: #f0f9ff; --bg: #020617; --glass: rgba(255, 255, 255, 0.08);
+        }
+        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
         body { margin: 0; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* 動態背景 */
-        #bg-layer { position: fixed; inset: 0; z-index: -1; opacity: 0.4; background-size: cover; background-position: center; transition: 1s; }
+        /* 動態背景層 */
+        #bg-layer { 
+            position: fixed; inset: 0; z-index: -1; opacity: 0.4; 
+            background-size: cover; background-position: center; transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
         .bg-sci { background-image: url('https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=2000'); }
         .bg-art { background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2000'); }
 
-        /* 介面佈局 */
-        header { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        .menu-icon { font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 50%; }
-
-        .container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        
-        /* 老師立繪與對話 */
-        .teacher-stage { position: relative; cursor: pointer; transition: 0.3s; }
-        .teacher-stage:hover { transform: scale(1.02); }
-        .teacher-img { height: 450px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.2)); }
-        
-        .dialog-bubble { 
-            background: white; color: #1e293b; padding: 15px 25px; border-radius: 20px; 
-            max-width: 300px; font-weight: bold; position: absolute; top: -20px; right: -150px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); opacity: 0; transform: translateY(10px);
-            pointer-events: none; transition: 0.4s;
+        /* 頂部導航 */
+        header { 
+            position: fixed; top: 0; width: 100%; padding: 25px 40px; 
+            display: flex; justify-content: space-between; align-items: center; z-index: 100;
+            background: linear-gradient(to bottom, rgba(2,6,23,0.8), transparent);
         }
-        .dialog-bubble.show { opacity: 1; transform: translateY(0); }
+        .menu-btn { 
+            font-size: 1.1rem; cursor: pointer; color: var(--snow); font-weight: bold;
+            padding: 10px 20px; background: var(--glass); border-radius: 15px;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .menu-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
 
-        /* 答題面板 */
-        .quiz-panel { 
-            background: white; color: #1e293b; padding: 25px; border-radius: 25px; 
-            width: 380px; margin-top: 20px; display: none; box-shadow: 0 15px 40px rgba(0,0,0,0.5); 
+        /* 主舞台 */
+        .stage { 
+            height: 100vh; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; position: relative;
         }
 
-        /* 目錄彈窗 */
-        #menu-overlay { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; 
-            justify-content: center; align-items: center; z-index: 200; 
+        /* 導師立繪與對話 */
+        .teacher-container { position: relative; cursor: pointer; transition: 0.5s; }
+        .teacher-img { 
+            height: 520px; filter: drop-shadow(0 0 30px rgba(34,211,238,0.2));
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .menu-card { background: #1e293b; padding: 30px; border-radius: 25px; text-align: center; border: 1px solid var(--sci); }
+        .teacher-container:hover .teacher-img { transform: scale(1.03); filter: drop-shadow(0 0 40px rgba(34,211,238,0.4)); }
 
-        .btn { padding: 12px 30px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; margin: 10px; }
-        .btn-sci { background: var(--sci); color: #020617; }
-        .btn-art { background: var(--art); color: white; }
+        .bubble { 
+            position: absolute; top: 10%; right: -180px; background: white; 
+            color: #1e293b; padding: 18px 25px; border-radius: 25px; 
+            width: 240px; font-weight: 900; box-shadow: 0 15px 45px rgba(0,0,0,0.4);
+            opacity: 0; transform: translateX(-20px); pointer-events: none; transition: 0.4s;
+            z-index: 50; line-height: 1.5;
+        }
+        .bubble.active { opacity: 1; transform: translateX(0); }
+        .bubble::after {
+            content: ''; position: absolute; left: -10px; top: 20px;
+            border-top: 10px solid transparent; border-bottom: 10px solid transparent;
+            border-right: 15px solid white;
+        }
 
-        .snow-btn { position: fixed; bottom: 20px; right: 20px; font-size: 30px; cursor: pointer; opacity: 0.5; }
+        /* 下方資訊與按鈕 */
+        .info-panel { 
+            margin-top: -20px; text-align: center; z-index: 10;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(15px);
+            padding: 25px 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-main {
+            background: var(--sci); color: #020617; border: none;
+            padding: 15px 45px; border-radius: 50px; font-size: 1.1rem;
+            font-weight: 900; cursor: pointer; box-shadow: 0 0 25px var(--sci);
+            margin-top: 15px; transition: 0.3s;
+        }
+        .btn-main:hover { transform: scale(1.05); box-shadow: 0 0 40px var(--sci); }
+
+        /* 答題彈窗（還原妳提供的視覺） */
+        .quiz-modal { 
+            position: fixed; top: 55%; left: 50%; transform: translate(-50%, -50%);
+            background: white; color: #1e293b; padding: 40px; border-radius: 35px;
+            width: 90%; max-width: 480px; display: none; z-index: 1000;
+            box-shadow: 0 30px 100px rgba(0,0,0,0.8);
+        }
+        .quiz-modal h3 { margin: 0 0 20px 0; font-size: 1.3rem; color: #0f172a; }
+        .opt-btn { 
+            width: 100%; padding: 16px; margin: 10px 0; border: 2px solid #f1f5f9;
+            border-radius: 18px; font-weight: bold; cursor: pointer;
+            text-align: left; font-size: 1rem; color: #2563eb; transition: 0.2s;
+        }
+        .opt-btn:hover { border-color: var(--sci); background: #f0f9ff; }
+
+        /* 巨大雪花管理者特權 ❄️ */
+        .admin-snow { 
+            position: fixed; bottom: 40px; right: 40px; font-size: 65px; 
+            cursor: pointer; z-index: 2000; opacity: 0.7;
+            filter: drop-shadow(0 0 20px var(--sci));
+            animation: snowFloat 3s infinite ease-in-out;
+        }
+        @keyframes snowFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-15px) rotate(15deg) scale(1.15); opacity: 1; }
+        }
+
+        /* 目錄選單 */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95);
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;
+        }
+        .menu-card { background: var(--glass); padding: 50px; border-radius: 40px; border: 1px solid var(--sci); text-align: center; }
+        .teacher-select-btn {
+            display: block; width: 280px; padding: 18px; margin: 15px;
+            border-radius: 20px; border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -58,129 +119,143 @@
 <div id="bg-layer" class="bg-sci"></div>
 
 <header>
-    <div class="menu-icon" onclick="toggleMenu()">☰</div>
-    <div style="font-weight: bold;">🪙 <span id="coin-val">500</span></div>
+    <div class="menu-btn" onclick="toggleMenu(true)">☰ 目錄切換</div>
+    <div style="text-align: right;">
+        <div style="font-size: 0.8rem; color: var(--sci); font-weight: bold; letter-spacing: 1px;">江家智慧城市財富</div>
+        <div style="font-size: 1.4rem; font-weight: 900;">🪙 <span id="coin-val">500</span></div>
+    </div>
 </header>
 
-<div class="container">
-    <div class="teacher-stage" onclick="teacherTalk()">
+<div class="stage">
+    <div class="teacher-container" onclick="triggerChat()">
+        <div id="bubble" class="bubble"></div>
         <img id="teacher-img" class="teacher-img" src="IMG_3812.jpeg">
-        <div id="bubble" class="dialog-bubble"></div>
     </div>
 
-    <div id="intro-box" style="margin-top: 20px; text-align: center;">
-        <div id="intro-text" style="background: rgba(0,0,0,0.6); padding: 15px; border-radius: 15px; margin-bottom: 15px;">
-            江鈴導師：準備好進入醫學的世界了嗎？
-        </div>
-        <button class="btn btn-sci" onclick="startClass()">開始授課</button>
-    </div>
-
-    <div id="quiz-panel" class="quiz-panel">
-        <div id="q-text" style="font-weight:bold; margin-bottom:15px;"></div>
-        <div id="q-options"></div>
+    <div id="intro-panel" class="info-panel">
+        <h2 id="teacher-name" style="margin: 0; color: var(--sci);">江鈴 導師</h2>
+        <p id="intro-desc" style="color: #cbd5e1; font-size: 0.95rem; margin: 10px 0 20px 0; max-width: 320px;">
+            歡迎回到理科醫學系統。今日我們將針對人體邏輯進行深度研析。
+        </p>
+        <button class="btn-main" onclick="openClass()">開始授課</button>
     </div>
 </div>
 
-<div id="menu-overlay" onclick="toggleMenu()">
-    <div class="menu-card" onclick="event.stopPropagation()">
-        <h3>切換授課導師</h3>
-        <button class="btn btn-sci" onclick="switchTeacher('sci')">江鈴 (醫學理科)</button>
-        <button class="btn btn-art" onclick="switchTeacher('art')">江依 (文學藝術)</button>
-        <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 15px;">* 課程進行中無法切換</p>
-    </div>
+<div id="quiz-modal" class="quiz-modal">
+    <div style="font-size: 0.75rem; color: var(--sci); font-weight: 900; margin-bottom: 5px; text-transform: uppercase;">Medical Analysis System</div>
+    <h3 id="q-text">題目加載中...</h3>
+    <div id="q-options"></div>
 </div>
 
-<div class="snow-btn" onclick="adminMode()">❄️</div>
+<div class="admin-snow" onclick="activateAdmin()">❄️</div>
+
+<div id="menu-overlay" class="overlay">
+    <div class="menu-card">
+        <h2 style="color: var(--snow); margin-bottom: 30px;">選擇您的研究導師</h2>
+        <button class="teacher-select-btn" style="background: var(--sci); color: #020617;" onclick="switchTeacher('sci')">江鈴：醫學理科系統</button>
+        <button class="teacher-select-btn" style="background: var(--art); color: white;" onclick="switchTeacher('art')">江依：文學藝術系統</button>
+        <button class="teacher-select-btn" style="background: transparent; border: 1px solid #475569; color: #94a3b8; font-size: 0.9rem;" onclick="toggleMenu(false)">返回當前教室</button>
+    </div>
+</div>
 
 <script>
     let state = {
-        teacher: 'sci', // sci or art
-        mode: 'idle', // idle, intro, class
+        teacher: 'sci',
         coins: 500,
-        isAdmin: false
+        isAdmin: false,
+        inClass: false
     };
 
-    const data = {
+    const teacherData = {
         sci: {
-            name: "江鈴",
+            name: "江鈴 導師",
+            intro: "醫學是邏輯與生命的交響。今日的課題將考驗妳的細節觀察力。",
             img: "IMG_3812.jpeg",
             bg: "bg-sci",
-            intro: "準備好進入醫學的世界了嗎？我們會探討人體的奧秘與邏輯。",
-            chat: ["這套實驗袍穿起來很專業吧？", "妳今天的眼神很專注，適合學習。", "記得隨時補充水分，健康是學習的基石。"],
-            q: "心臟瓣膜的主要功能是？",
-            opts: ["防止血液倒流 (正解)", "製造紅血球", "儲存氧氣"]
+            chats: ["這套醫學長裙是由抗菌纖維製成的。", "妳今天看起來非常有學術天份。", "記得，醫學容不下任何一個錯誤。"],
+            questions: [
+                { q: "關於血管的收縮與舒張，主要受哪個系統調控？", opts: ["自主神經系統 (正解)", "消化系統", "骨骼系統"], reward: 150 }
+            ]
         },
         art: {
-            name: "江依",
+            name: "江依 導師",
+            intro: "文學能讓人看見靈魂的厚度。讓我們在詩句中尋找寧靜。",
             img: "IMG_4392.jpg",
             bg: "bg-art",
-            intro: "詩歌與藝術能療癒心靈。今天，我們來聊聊文字背後的溫度。",
-            chat: ["這件櫻色漢服很適合午後的閱讀。", "妳喜歡這句詩嗎？它寫出了春天的靈魂。", "藝術沒有標準答案，只有心靈的共鳴。"],
-            q: "《紅樓夢》的作者通常被公認為？",
-            opts: ["曹雪芹 (正解)", "羅貫中", "施耐庵"]
+            chats: ["這件櫻色漢服是為了今日的課程挑選的。", "藝術不是課本，是妳對生活的體會。", "妳的文字裡藏著溫柔的力量。"],
+            questions: [
+                { q: "「採菊東籬下，悠然見南山」體現了哪種處世態度？", opts: ["淡泊名利 (正解)", "積極入世", "憂國憂民"], reward: 150 }
+            ]
         }
     };
 
+    function triggerChat() {
+        if(state.inClass) return;
+        const b = document.getElementById('bubble');
+        const pool = teacherData[state.teacher].chats;
+        b.innerText = pool[Math.floor(Math.random() * pool.length)];
+        b.classList.add('active');
+        setTimeout(() => b.classList.remove('active'), 3500);
+    }
+
+    function toggleMenu(show) {
+        if(state.inClass) return alert("課程進行中，嚴禁擅離職守。");
+        document.getElementById('menu-overlay').style.display = show ? 'flex' : 'none';
+    }
+
     function switchTeacher(t) {
-        if(state.mode === 'class') return alert("課程正在進行中，請完成後再下課切換。");
         state.teacher = t;
-        const info = data[t];
-        document.getElementById('teacher-img').src = info.img;
-        document.getElementById('bg-layer').className = info.bg;
-        document.getElementById('intro-text').innerText = `${info.name}導師：${info.intro}`;
-        toggleMenu();
+        const d = teacherData[t];
+        document.getElementById('teacher-name').innerText = d.name;
+        document.getElementById('intro-desc').innerText = d.intro;
+        document.getElementById('teacher-img').src = d.img;
+        document.getElementById('bg-layer').className = d.bg;
+        toggleMenu(false);
     }
 
-    function toggleMenu() {
-        const m = document.getElementById('menu-overlay');
-        m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    function startClass() {
-        state.mode = 'class';
-        document.getElementById('intro-box').style.display = 'none';
-        document.getElementById('quiz-panel').style.display = 'block';
+    function openClass() {
+        state.inClass = true;
+        document.getElementById('quiz-modal').style.display = 'block';
         loadQuiz();
     }
 
     function loadQuiz() {
-        const info = data[state.teacher];
-        document.getElementById('q-text').innerText = info.q;
+        const d = teacherData[state.teacher].questions[0];
+        document.getElementById('q-text').innerText = d.q;
         const box = document.getElementById('q-options');
         box.innerHTML = "";
-        info.opts.sort().forEach(o => {
+        
+        d.opts.sort(() => Math.random() - 0.5).forEach(o => {
             const btn = document.createElement('button');
-            btn.style.width = "100%"; btn.style.margin = "5px 0"; btn.style.padding = "10px";
+            btn.className = 'opt-btn';
             btn.innerText = o;
             btn.onclick = () => {
                 if(o.includes("正解")) {
-                    state.coins += 100;
-                    document.getElementById('coin-val').innerText = state.coins;
-                    alert("✨ 導師讚許：見解正確！");
-                    state.mode = 'idle'; // 回到下課模式
-                    document.getElementById('quiz-panel').style.display = 'none';
-                    document.getElementById('intro-box').style.display = 'block';
+                    state.coins += d.reward;
+                    updateUI();
+                    alert("✨ 導師讚許：見解獨到，非常優秀！");
+                    state.inClass = false;
+                    document.getElementById('quiz-modal').style.display = 'none';
+                } else {
+                    alert("❌ 導師提醒：再仔細思考一下。");
                 }
             };
             box.appendChild(btn);
         });
     }
 
-    function teacherTalk() {
-        if(state.mode === 'class') return; // 上課中不進行隨性對話
-        const bubble = document.getElementById('bubble');
-        const chats = data[state.teacher].chat;
-        bubble.innerText = chats[Math.floor(Math.random() * chats.length)];
-        bubble.classList.add('show');
-        setTimeout(() => bubble.classList.remove('show'), 3000);
+    function activateAdmin() {
+        if(prompt("❄️ 管理者授權碼：") === "江憶婷") {
+            state.isAdmin = true;
+            state.coins = 99999;
+            updateUI();
+            document.querySelector('.admin-snow').style.filter = "drop-shadow(0 0 35px var(--gold))";
+            alert("👑 歡迎管理者江憶婷！雪花特權已全數解鎖，妳現在可以自由調度所有資源。");
+        }
     }
 
-    function adminMode() {
-        if(prompt("授權碼：") === "江憶婷") {
-            state.isAdmin = true;
-            document.getElementById('coin-val').innerText = "❄️ 99999";
-            alert("👑 歡迎管理者江憶婷。");
-        }
+    function updateUI() {
+        document.getElementById('coin-val').innerText = (state.isAdmin ? "❄️ " : "") + state.coins;
     }
 </script>
 </body>
