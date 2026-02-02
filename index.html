@@ -2,463 +2,145 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | 生命體互動旗艦版</title>
+    <title>江家智慧城市 | 動作實體化</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --neon-blue: #00f2fe; --neon-pink: #ff00de; --gold: #ffd700;
-            --panel-bg: rgba(5, 15, 30, 0.95);
-            --char-bg: rgba(0, 0, 0, 0.2);
-        }
-        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; cursor: crosshair; }
-        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; overflow: hidden; }
-
-        /* 全局背景與 HUD 框架 */
-        #main-bg {
-            position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?w=1920');
-            background-size: cover; background-position: center; z-index: -2;
-        }
-        .hud-frame { position: fixed; inset: 15px; border: 2px solid var(--neon-blue); border-radius: 40px; box-shadow: 0 0 25px var(--neon-blue), inset 0 0 25px var(--neon-blue); pointer-events: none; z-index: 1000; }
-
-        /* 頂部狀態欄 */
-        .top-hud {
-            position: fixed; top: 40px; right: 75px; z-index: 1100;
-            background: var(--panel-bg); border: 1px solid var(--neon-blue); padding: 12px 30px; border-radius: 50px;
-            display: flex; gap: 30px; box-shadow: 0 0 10px var(--neon-blue);
-        }
-        .hp-bar-bg { width: 100px; height: 10px; background: #333; border-radius: 5px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 10px; }
-        #hp-fill { height: 100%; background: linear-gradient(90deg, var(--neon-pink), #ff77ff); width: 100%; transition: 0.5s; }
-
-        /* 左側導航 */
-        #main-nav { position: fixed; left: 45px; top: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 1100; }
-        .nav-orb {
-            width: 70px; height: 70px; border-radius: 20px; background: var(--panel-bg); border: 1px solid var(--neon-blue);
-            display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--neon-blue);
-            cursor: pointer; transition: 0.4s; backdrop-filter: blur(8px);
-        }
-        .nav-orb.active { background: var(--neon-blue); color: #000; box-shadow: 0 0 30px var(--neon-blue); }
-
-        /* 主要內容視窗 */
-        .viewport {
-            position: fixed; left: 145px; right: 50px; top: 90px; bottom: 50px;
-            background: var(--panel-bg); border-radius: 35px; border: 1px solid rgba(0,242,254,0.3);
-            display: none; padding: 40px; overflow-y: auto; backdrop-filter: blur(20px);
-        }
-
-        /* 大廳：江鈴江依生活場景 */
-        #view-lobby { display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-        .teacher-area {
-            display: flex; justify-content: space-around; align-items: flex-end; height: 80%;
-            position: relative;
-        }
-        .teacher-char {
-            width: 300px; height: 500px; border-radius: 25px; border: 2px solid var(--neon-blue);
-            background-size: contain; background-repeat: no-repeat; background-position: center bottom;
-            position: relative; transition: 0.5s ease-in-out;
-        }
-        .teacher-char.active { transform: translateY(-20px); box-shadow: 0 0 40px var(--neon-blue); }
-        .teacher-char.sleeping { filter: brightness(0.7); }
-        .char-bubble {
-            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
-            background: rgba(255,255,255,0.95); color: #333; padding: 10px 15px; border-radius: 15px;
-            white-space: nowrap; animation: bubbleAnim 0.8s ease-in-out; opacity: 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .char-bubble.show { opacity: 1; top: -70px; }
-        @keyframes bubbleAnim {
-            0% { opacity: 0; transform: translateX(-50%) translateY(0); }
-            50% { opacity: 1; transform: translateX(-50%) translateY(-20px); }
-            100% { opacity: 1; transform: translateX(-50%) translateY(-20px); }
-        }
-        .char-name-tag {
-            position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            padding: 15px; text-align: center; border-radius: 0 0 23px 23px;
-        }
-
-        /* 群聊區 */
-        .chat-display { height: 400px; overflow-y: auto; background: var(--char-bg); padding: 20px; border-radius: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .chat-msg { max-width: 80%; padding: 10px 15px; border-radius: 12px; line-height: 1.4; }
-        .chat-msg.teacher { background: rgba(0,242,254,0.1); border-left: 3px solid var(--neon-blue); align-self: flex-start; }
-        .chat-msg.user { background: rgba(255,255,255,0.05); align-self: flex-end; }
+        :root { --blue: #00f2fe; --pink: #ff00de; --gold: #ffd700; --panel: rgba(5, 12, 25, 0.98); }
+        body { margin: 0; background: #000; color: #fff; overflow: hidden; font-family: "PingFang TC", sans-serif; }
         
-        /* 課程區 */
-        .quiz-opts { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
-        .opt-btn { padding: 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; text-align: left; color: #fff; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
-        .opt-btn:hover { border-color: var(--neon-blue); background: rgba(0,242,254,0.1); }
-        .diff-btn { padding: 8px 15px; border: 1px solid var(--neon-blue); background: transparent; color: #fff; border-radius: 5px; cursor: pointer; }
-        .diff-btn.active { background: var(--neon-blue); color: #000; }
+        /* 老師舞台 */
+        .viewport { position: fixed; inset: 30px; background: var(--panel); border-radius: 35px; display: flex; flex-direction: column; padding: 20px; border: 1px solid var(--blue); }
+        .stage { display: flex; justify-content: space-around; align-items: center; flex: 1; }
+        
+        /* 頭像框核心 */
+        .avatar-container { position: relative; width: 220px; height: 220px; margin: 0 auto; }
+        .avatar-frame {
+            width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--blue);
+            background-size: cover; position: relative; overflow: hidden; z-index: 1;
+        }
 
-        /* 商城區 */
-        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-        .shop-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .shop-item.owned { filter: brightness(0.6); }
-        .shop-item.missed { background: #333; color: #888; text-decoration: line-through; }
-        .rarity-tag { position: absolute; top: -10px; right: -10px; background: var(--gold); color: #000; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; }
-        .unlock-tag { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        /* 動作實體化層 (框內出現物品) */
+        .action-layer {
+            position: absolute; inset: 0; z-index: 5; pointer-events: none;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: 0.5s;
+        }
+        .action-layer.active { opacity: 1; }
 
-        #admin-panel { position: fixed; bottom: 35px; right: 35px; color: var(--neon-blue); font-size: 45px; cursor: pointer; z-index: 2000; }
+        /* 物品動畫 */
+        .item-tea { width: 60px; filter: drop-shadow(0 0 5px var(--blue)); animation: drinkMove 3s infinite; }
+        .item-cake { width: 70px; filter: drop-shadow(0 0 5px var(--gold)); animation: eatMove 0.8s infinite alternate; }
+        .item-hand { width: 100px; position: absolute; top: -20px; animation: patMove 1s infinite alternate; }
+
+        @keyframes drinkMove { 0%, 100% { transform: translate(30px, 40px) rotate(0); } 50% { transform: translate(0, -10px) rotate(-20deg); } }
+        @keyframes eatMove { from { transform: scale(0.8) translate(-20px, 40px); } to { transform: scale(1) translate(-20px, 30px); } }
+        @keyframes patMove { from { transform: translateY(0) rotate(0); } to { transform: translateY(20px) rotate(-10deg); } }
+
+        /* 特效層 */
+        .aurora-fx { position: absolute; inset: 0; background: linear-gradient(125deg, transparent, rgba(0,242,254,0.1), transparent); animation: aurora 4s infinite; z-index: 2; }
+        @keyframes aurora { 0% {transform:translateX(-100%)} 100% {transform:translateX(100%)} }
+
+        /* 選擇框與 UI */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .select-card { width: 200px; padding: 20px; border: 1px solid var(--gold); border-radius: 20px; text-align: center; cursor: pointer; margin: 0 20px; transition: 0.3s; }
+        .select-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.05); }
+        .btn-box { text-align: center; padding-bottom: 20px; }
+        .btn { padding: 12px 30px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; margin: 0 10px; }
     </style>
 </head>
-<body onload="bootSystem()">
+<body onload="startLife()">
 
-<div id="main-bg"></div>
-<div class="hud-frame"></div>
+<div class="viewport">
+    <div style="text-align:right; padding:10px;">
+        <span style="color:var(--gold)">🏮 明燈: <span id="coin-ui">5000</span></span>
+    </div>
 
-<div class="top-hud">
-    <div><i class="fas fa-coins" style="color:var(--gold)"></i> 明燈：<span id="coin-val">0</span></div>
-    <div>生命值：<span id="hp-val">100</span>/100 <div class="hp-bar-bg"><div id="hp-fill"></div></div></div>
-</div>
-
-<div id="main-nav">
-    <div class="nav-orb active" id="nav-lobby" onclick="showView('lobby')"><i class="fas fa-home"></i></div>
-    <div class="nav-orb" id="nav-study" onclick="showView('study')"><i class="fas fa-graduation-cap"></i></div>
-    <div class="nav-orb" id="nav-chat" onclick="showView('chat')"><i class="fas fa-comments"></i></div>
-    <div class="nav-orb" id="nav-shop" onclick="showView('shop')"><i class="fas fa-shopping-bag"></i></div>
-</div>
-
-<div id="admin-panel" onclick="adminAccess()"><i class="fas fa-snowflake"></i></div>
-
-<div id="view-lobby" class="viewport">
-    <h1 style="color:var(--neon-blue); letter-spacing:8px;">江家智慧生活大廳</h1>
-    <div class="teacher-area">
-        <div id="ling-char" class="teacher-char" style="background-image:url('https://api.dicebear.com/7.x/adventurer/svg?seed=JiangLing&clothing=blazer&clothingColor=2c1b18&eyes=variant01')">
-            <div id="ling-bubble" class="char-bubble"></div>
-            <div class="char-name-tag"><h3>江鈴 (理科老師)</h3><p style="color:var(--gold);">👗 流動極光裙</p></div>
+    <div class="stage">
+        <div class="char-box">
+            <div class="avatar-container">
+                <div id="ling-fx" class="aurora-fx"></div>
+                <div id="ling-avatar" class="avatar-frame" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=JiangLing&clothing=blazer&accessories=glasses')"></div>
+                <div id="ling-action" class="action-layer">
+                    <img id="ling-item" src="" class="">
+                </div>
+            </div>
+            <h3 style="color:var(--blue)">江鈴 (理科)</h3>
+            <small style="color:var(--gold)">👗 流動極光裙</small>
         </div>
-        <div id="yi-char" class="teacher-char" style="background-image:url('https://api.dicebear.com/7.x/adventurer/svg?seed=JiangYi&clothing=shirt&clothingColor=ffcc99&eyes=variant16')">
-            <div id="yi-bubble" class="char-bubble"></div>
-            <div class="char-name-tag"><h3>江依 (文科老師)</h3><p style="color:var(--gold);">👘 落櫻繽紛漢服</p></div>
+
+        <div class="char-box">
+            <div class="avatar-container">
+                <div id="yi-avatar" class="avatar-frame" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=JiangYi&clothing=shirt'); border-color:var(--pink);"></div>
+                <div id="yi-action" class="action-layer">
+                    <img id="yi-item" src="" class="">
+                </div>
+            </div>
+            <h3 style="color:var(--pink)">江依 (文科)</h3>
+            <small style="color:var(--gold)">👘 落櫻繽紛漢服</small>
         </div>
     </div>
-    <div style="text-align:center; margin-top:20px;">
-        <button onclick="interact('ling')" style="background:var(--neon-blue); color:#000; padding:10px 20px; border-radius:10px; border:none; cursor:pointer;">與江鈴互動</button>
-        <button onclick="interact('yi')" style="background:var(--neon-pink); color:#000; padding:10px 20px; border-radius:10px; border:none; cursor:pointer; margin-left:15px;">與江依互動</button>
+
+    <div class="btn-box">
+        <button class="btn" style="background:var(--blue)" onclick="showSelect('quiz')">開始訓練</button>
+        <button class="btn" style="background:var(--gold)" onclick="showSelect('act')">互動解鎖</button>
     </div>
 </div>
 
-<div id="view-study" class="viewport">
-    <h1 style="color:var(--neon-blue)">課程挑戰</h1>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <div class="diff-panel">
-            <button class="diff-btn active" id="diff-elem" onclick="setDifficulty('國小')">國小 (文科)</button>
-            <button class="diff-btn" id="diff-univ" onclick="setDifficulty('大學')">大學 (理科)</button>
-        </div>
-        <div id="timer-display" style="font-size:2.5rem; color:var(--neon-pink);">--:--</div>
-    </div>
-    <div style="background:var(--char-bg); padding:30px; border-radius:20px; border:1px solid rgba(0,242,254,0.1);">
-        <h2 id="quiz-text" style="margin-top:0;"></h2>
-        <div id="quiz-options" class="quiz-opts"></div>
-    </div>
-</div>
-
-<div id="view-chat" class="viewport">
-    <h1 style="color:var(--neon-blue)">江家師生交流群</h1>
-    <div id="chat-box" class="chat-display"></div>
-    <div style="margin-top:20px; display:flex; gap:10px;">
-        <input type="text" id="chat-input" style="flex:1; background:transparent; border:1px solid var(--neon-blue); padding:15px; border-radius:10px; color:#fff;" placeholder="輸入訊息...">
-        <button onclick="sendChatMessage()" style="background:var(--neon-blue); border:none; padding:15px 25px; border-radius:10px; color:#000; font-weight:bold; cursor:pointer;">發送</button>
-    </div>
-</div>
-
-<div id="view-shop" class="viewport">
-    <h1 style="color:var(--neon-blue)">江家服裝典藏館</h1>
-    <div class="shop-grid" id="outfit-shop"></div>
-    <button onclick="healPlayer()" style="background:var(--gold); color:#000; padding:15px 30px; border-radius:10px; border:none; margin-top:30px; cursor:pointer;"><i class="fas fa-heart"></i> 1000 明燈 ➜ +20 生命</button>
+<div id="pop" class="overlay">
+    <div id="pop-content" style="display:flex;"></div>
 </div>
 
 <script>
-    let playerState = {
-        coin: 0,
-        hp: 100,
-        difficulty: '國小',
-        unlockedOutfits: { // 玩家已擁有的服裝
-            '極光裙': true, '漢服': true
-        },
-        adminMode: false,
-        lastOutfitAwardTime: 0 // 記錄上次獲得服裝獎勵的時間，用於「錯過即失」
+    const IMGS = {
+        tea: "https://cdn-icons-png.flaticon.com/512/3504/3504827.png",
+        cake: "https://cdn-icons-png.flaticon.com/512/3081/3081918.png",
+        hand: "https://cdn-icons-png.flaticon.com/512/1602/1602856.png"
     };
 
-    let gameTime = 0; // 模擬遊戲時間，影響老師行為
-    let teacherMood = { ling: 'normal', yi: 'normal' }; // 老師心情：normal, hungry, sleepy, playing
-    let activeTimer;
-    let autoSaveInterval;
-    let teacherLifeInterval;
-
-    // 題目資料庫
-    const quizDB = {
-        '國小': [{
-            q: "「春眠不覺曉，處處聞啼鳥」出自誰的詩？",
-            o: ["孟浩然", "李白", "杜甫"], a: 0, time: 180, rewardOutfit: '櫻花和服'
-        }, {
-            q: "太陽系最大的行星是？",
-            o: ["木星", "土星", "地球"], a: 0, time: 180, rewardOutfit: '星辰披風'
-        }],
-        '大學': [{
-            q: "在量子力學中，不確定性原理的提出者是？",
-            o: ["海森堡", "薛丁格", "愛因斯坦"], a: 0, time: 0, rewardOutfit: '未來戰甲'
-        }, {
-            q: "根據狹義相對論，當物體接近光速時，其時間會？",
-            o: ["變慢", "變快", "不變"], a: 0, time: 0, rewardOutfit: '時空旅行服'
-        }]
-    };
-
-    // 服裝資料庫
-    const outfitDB = [
-        { id: '極光裙', name: '流動極光裙', rarity: '史詩', price: 0, img: 'https://api.dicebear.com/7.x/adventurer/svg?seed=JiangLing&clothing=blazer&clothingColor=2c1b18&accessories=glasses', ownedBy: 'ling' },
-        { id: '漢服', name: '落櫻繽紛漢服', rarity: '史詩', price: 0, img: 'https://api.dicebear.com/7.x/adventurer/svg?seed=JiangYi&clothing=shirt&clothingColor=ffcc99&accessories=sunglasses', ownedBy: 'yi' },
-        { id: '櫻花和服', name: '櫻花和服', rarity: '稀有', price: 1500, img: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Sakura&clothing=turtleneck&clothingColor=f7d0dc', obtained: false, missed: false },
-        { id: '星辰披風', name: '星辰披風', rarity: '傳說', price: 3000, img: 'https://api.dicebear.com/7.x/adventurer/svg?seed=StarCape&clothing=hoodie&clothingColor=3a3a5a', obtained: false, missed: false },
-        { id: '未來戰甲', name: '未來戰甲', rarity: '傳說', price: 5000, img: 'https://api.dicebear.com/7.x/adventurer/svg?seed=FutureArmor&clothing=overall&clothingColor=6a5acd', obtained: false, missed: false },
-        { id: '時空旅行服', name: '時空旅行服', rarity: '傳說', price: 5000, img: 'https://api.dicebear.com/7.x/adventurer/svg?seed=TimeTravel&clothing=sweater&clothingColor=5a7a9a', obtained: false, missed: false }
-    ];
-
-    // --- 遊戲啟動與基礎功能 ---
-    function bootSystem() {
-        loadGameState();
-        showView('lobby');
-        updateUI();
-        startTeacherLifeCycle();
-        autoSaveInterval = setInterval(saveGameState, 30000); // 每30秒自動儲存
+    function startLife() {
+        // 初始狀態：江鈴喝茶，江依吃餅
+        playAct('ling', 'tea', 'item-tea');
+        playAct('yi', 'cake', 'item-cake');
     }
 
-    function saveGameState() {
-        localStorage.setItem('jiangCityState', JSON.stringify(playerState));
-        localStorage.setItem('jiangCityOutfits', JSON.stringify(outfitDB));
-        addChatMsg('系統', '遊戲進度已自動儲存。');
+    function playAct(teacher, type, className) {
+        const layer = document.getElementById(`${teacher}-action`);
+        const img = document.getElementById(`${teacher}-item`);
+        img.src = IMGS[type];
+        img.className = className;
+        layer.classList.add('active');
     }
 
-    function loadGameState() {
-        const savedState = localStorage.getItem('jiangCityState');
-        const savedOutfits = localStorage.getItem('jiangCityOutfits');
-        if (savedState) {
-            playerState = JSON.parse(savedState);
-        }
-        if (savedOutfits) {
-            const loadedOutfits = JSON.parse(savedOutfits);
-            // 合併新舊服裝，確保新增的服裝也會被載入
-            outfitDB.forEach(newOutfit => {
-                const existing = loadedOutfits.find(o => o.id === newOutfit.id);
-                if (existing) {
-                    Object.assign(newOutfit, existing); // 載入舊的狀態
-                }
-            });
-        }
-    }
-
-    function updateUI() {
-        document.getElementById('coin-val').innerText = playerState.coin;
-        document.getElementById('hp-val').innerText = playerState.hp;
-        document.getElementById('hp-fill').style.width = playerState.hp + "%";
-        if (playerState.hp <= 20 && playerState.hp > 0) {
-            document.getElementById('hp-fill').style.background = 'linear-gradient(90deg, #ff0000, #ff7700)';
-        } else if (playerState.hp === 0) {
-            document.getElementById('hp-fill').style.background = '#888';
-        } else {
-            document.getElementById('hp-fill').style.background = 'linear-gradient(90deg, var(--neon-pink), #ff77ff)';
-        }
-    }
-
-    function showView(id) {
-        document.querySelectorAll('.viewport').forEach(v => v.style.display = 'none');
-        document.querySelectorAll('.nav-orb').forEach(n => n.classList.remove('active'));
-        document.getElementById('view-' + id).style.display = 'block';
-        document.getElementById('nav-' + id).classList.add('active');
-
-        // 根據視圖執行初始化邏輯
-        if (id === 'study') loadQuiz();
-        if (id === 'shop') renderOutfitShop();
-        if (id === 'chat') addChatMsg('系統', '歡迎來到群聊，老師們都在這裡。'); // 確保進入聊天室有歡迎語
+    function showSelect(mode) {
+        const pop = document.getElementById('pop');
+        const content = document.getElementById('pop-content');
+        pop.style.display = 'flex';
         
-        // 老師根據玩家行為說話
-        if (id !== 'lobby') { // 離開大廳時老師會說話
-            speakTeacher('ling', `去${idText(id)}了啊，別玩太晚。`);
-            speakTeacher('yi', `記得把重要的事辦好喔。`);
-        } else { // 回到大廳
-             speakTeacher('ling', `歡迎回家！`);
-        }
-    }
-
-    function idText(id) {
-        if (id === 'study') return '課程';
-        if (id === 'chat') return '群聊';
-        if (id === 'shop') return '商城';
-        return '未知區域';
-    }
-
-    // --- AI 家長互動與生活 ---
-    function startTeacherLifeCycle() {
-        teacherLifeInterval = setInterval(() => {
-            gameTime++;
-            // 隨機觸發老師狀態變化 (吃喝玩睡)
-            if (gameTime % 5 === 0) { // 每5秒檢查一次
-                if (Math.random() < 0.4) { // 40%機率改變狀態
-                    const r = Math.random();
-                    if (r < 0.25) teacherMood.ling = 'hungry';
-                    else if (r < 0.5) teacherMood.ling = 'sleepy';
-                    else if (r < 0.75) teacherMood.ling = 'playing';
-                    else teacherMood.ling = 'normal';
-                }
-                if (Math.random() < 0.4) { // 40%機率改變狀態
-                    const r = Math.random();
-                    if (r < 0.25) teacherMood.yi = 'hungry';
-                    else if (r < 0.5) teacherMood.yi = 'sleepy';
-                    else if (r < 0.75) teacherMood.yi = 'playing';
-                    else teacherMood.yi = 'normal';
-                }
-            }
-            updateTeacherVisualsAndDialogue();
-        }, 1000); // 每秒更新
-    }
-
-    function updateTeacherVisualsAndDialogue() {
-        const lingChar = document.getElementById('ling-char');
-        const yiChar = document.getElementById('yi-char');
-        const lingBubble = document.getElementById('ling-bubble');
-        const yiBubble = document.getElementById('yi-bubble');
-
-        // 重置動畫
-        lingChar.classList.remove('active', 'sleeping');
-        yiChar.classList.remove('active', 'sleeping');
-        lingBubble.classList.remove('show');
-        yiBubble.classList.remove('show');
-
-        // 江鈴狀態
-        let lingDialogue = "";
-        switch (teacherMood.ling) {
-            case 'hungry': lingDialogue = "有點餓了，想吃點心..."; break;
-            case 'sleepy': lingDialogue = "zzz... 好睏啊..."; lingChar.classList.add('sleeping'); break;
-            case 'playing': lingDialogue = "這個遊戲真有趣！"; break;
-            default: lingDialogue = "今天過得如何？"; break;
-        }
-        lingBubble.innerText = lingDialogue;
-        lingBubble.classList.add('show'); // 顯示氣泡
-
-        // 江依狀態
-        let yiDialogue = "";
-        switch (teacherMood.yi) {
-            case 'hungry': yiDialogue = "晚餐吃什麼好呢？"; break;
-            case 'sleepy': yiDialogue = "哈欠... 該休息一下了。"; yiChar.classList.add('sleeping'); break;
-            case 'playing': yiDialogue = "嗯... 這一步棋怎麼走？"; break;
-            default: yiDialogue = "有任何問題都可以問我喔。"; break;
-        }
-        yiBubble.innerText = yiDialogue;
-        yiBubble.classList.add('show'); // 顯示氣泡
-
-        // 移除舊的氣泡顯示
-        setTimeout(() => {
-            lingBubble.classList.remove('show');
-            yiBubble.classList.remove('show');
-        }, 3000); // 氣泡顯示3秒
-    }
-
-    function interact(teacherId) {
-        const charElement = document.getElementById(`${teacherId}-char`);
-        charElement.classList.add('active'); // 增加互動動畫
-        setTimeout(() => charElement.classList.remove('active'), 800);
-
-        let msg = "";
-        if (teacherId === 'ling') {
-            msg = `江鈴老師的狀態：${teacherMood.ling}。與妳對話：妳最近的理科課程進度如何？`;
+        if(mode === 'quiz') {
+            content.innerHTML = `
+                <div class="select-card" onclick="alert('理科題目載入...')">理科訓練 (江鈴)</div>
+                <div class="select-card" onclick="alert('文科題目載入...')">文科訓練 (江依)</div>
+            `;
         } else {
-            msg = `江依老師的狀態：${teacherMood.yi}。與妳對話：文科方面有什麼想討論的嗎？`;
+            content.innerHTML = `
+                <div class="select-card" onclick="unlock('ling')">解鎖：江鈴摸頭<br>(出現鼓勵之手)</div>
+                <div class="select-card" onclick="unlock('yi')">解鎖：江依餵食<br>(燒餅遞向螢幕)</div>
+            `;
         }
-        speakTeacher(teacherId, msg);
-        addChatMsg(teacherId === 'ling' ? '江鈴' : '江依', msg); // 同步到聊天室
     }
 
-    function speakTeacher(teacherId, message) {
-        const bubble = document.getElementById(`${teacherId}-bubble`);
-        bubble.innerText = message;
-        bubble.classList.add('show');
-        setTimeout(() => bubble.classList.remove('show'), 3000);
-    }
-
-    // --- 課程功能 ---
-    function setDifficulty(d) {
-        playerState.difficulty = d;
-        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`diff-${d === '國小' ? 'elem' : 'univ'}`).classList.add('active');
-        loadQuiz();
-        addChatMsg('系統', `課程難度已設定為：${d}。`);
-        speakTeacher('ling', `這次的${d}課程，妳準備好了嗎？`);
-    }
-
-    function loadQuiz() {
-        clearInterval(activeTimer);
-        const currentQuizSet = quizDB[playerState.difficulty];
-        const quiz = currentQuizSet[Math.floor(Math.random() * currentQuizSet.length)]; // 隨機選題
-
-        document.getElementById('quiz-text').innerText = quiz.q;
-        document.getElementById('quiz-options').innerHTML = quiz.o.map((opt, i) =>
-            `<button class="opt-btn" onclick="submitAnswer(${i === quiz.a}, '${quiz.rewardOutfit}')">${opt}</button>`
-        ).join('');
-
-        if (quiz.time > 0) startQuizTimer(quiz.time);
-        else document.getElementById('timer-display').innerText = "∞";
-    }
-
-    function startQuizTimer(seconds) {
-        let remaining = seconds;
-        activeTimer = setInterval(() => {
-            remaining--;
-            document.getElementById('timer-display').innerText = `${Math.floor(remaining / 60)}:${(remaining % 60).toString().padStart(2, '0')}`;
-            if (remaining <= 0) {
-                clearInterval(activeTimer);
-                submitAnswer(false, null); // 時間到未答，視為錯誤
-            }
-        }, 1000);
-    }
-
-    function submitAnswer(isCorrect, rewardOutfitId) {
-        clearInterval(activeTimer);
-        let teacherSay = '';
-        if (isCorrect) {
-            playerState.coin += 500;
-            teacherSay = `太棒了！答對了，這是妳的 500 明燈！`;
-            if (rewardOutfitId) {
-                const outfit = outfitDB.find(o => o.id === rewardOutfitId);
-                if (outfit && !outfit.obtained && !outfit.missed) {
-                    // 「錯過即失」邏輯：如果離上次獲得獎勵超過一定時間，這次的獎勵就錯過了
-                    const now = Date.now();
-                    const oneMinute = 60 * 1000; // 範例：如果1分鐘內沒拿，就錯過
-
-                    if (playerState.lastOutfitAwardTime > 0 && (now - playerState.lastOutfitAwardTime > oneMinute)) {
-                        outfit.missed = true;
-                        addChatMsg('系統', `⚠️ 妳錯過了稀有服裝「${outfit.name}」！下次請把握機會。`);
-                    } else {
-                        outfit.obtained = true;
-                        playerState.unlockedOutfits[outfit.id] = true;
-                        addChatMsg('系統', `🎉 恭喜！妳解鎖了稀有服裝：「${outfit.name}」！前往商城查看。`);
-                        playerState.lastOutfitAwardTime = now; // 更新獲得獎勵時間
-                        speakTeacher('ling', `妳的眼光不錯，這件衣服很適合妳！`);
-                    }
-                }
-            }
+    function unlock(t) {
+        document.getElementById('pop').style.display = 'none';
+        if(t === 'ling') {
+            // 暫時切換動作為摸頭
+            playAct('ling', 'hand', 'item-hand');
+            setTimeout(()=>playAct('ling', 'tea', 'item-tea'), 5000);
         } else {
-            playerState.hp -= 5;
-            teacherSay = `可惜，答錯了，生命值扣除 5 點！`;
-        }
-        addChatMsg(playerState.difficulty === '國小' ? '江依' : '江鈴', teacherSay);
-        updateUI();
-        if (playerState.hp <= 0) {
-            alert("生命值耗盡！遊戲結束。請管理員同步資源。");
-            playerState.hp = 0;
-            updateUI();
-        } else {
-            loadQuiz(); // 繼續下一題
+            // 強化餵食動作
+            playAct('yi', 'cake', 'item-cake'); // 這裡可以換成更靠近螢幕的動畫
+            alert("江依老師把燒餅遞到了妳嘴邊！");
         }
     }
-
-    // --- 群聊功能 ---
-    function addChatMsg(sender, text) {
-        const chatBox = document.getElementById('chat-box');
-        const msgElement = document.createElement('div');
-        msgElement.className = `chat-msg ${sender === '妳' ? 'user' : 'teacher'}`;
-        msgElement.innerHTML = `<strong>${sender}:</strong> ${text}`;
-        chatBox.appendChild(msgElement);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function sendChatMessage() {
-        const input = document.getElementById('chat-
+</script>
+</body>
+</html>
