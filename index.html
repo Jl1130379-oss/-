@@ -2,25 +2,34 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | 專注學術系統</title>
+    <link rel="manifest" href="https://progressier.app/hdNgeSvaaxo6Nzua0edF/progressier.json"/>
+    <script defer src="https://progressier.app/hdNgeSvaaxo6Nzua0edF/script.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#010206">
+    <link rel="apple-touch-icon" href="IMG_4392.jpeg">
+
+    <title>江家智慧城市 | 完整 PWA 版</title>
     <style>
         :root { --blue: #00f2fe; --pink: #ff00de; --gold: #ffd700; --bg: #010206; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; overflow-x: hidden; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; overflow: hidden; }
         .viewport { width: 100vw; height: 100vh; display: flex; flex-direction: column; position: relative; }
         
         /* 頂部數據狀態 */
-        .hud { display: flex; justify-content: space-between; padding: 20px 40px; background: rgba(0,0,0,0.6); border-bottom: 2px solid var(--blue); }
+        .hud { display: flex; justify-content: space-between; padding: 25px 40px; background: rgba(0,0,0,0.7); border-bottom: 2px solid var(--blue); }
         .stat-box { font-size: 1.2rem; font-weight: bold; text-shadow: 0 0 10px var(--blue); }
 
-        /* 導師生命艙 */
-        .stage { display: flex; justify-content: center; align-items: center; gap: 80px; flex: 1; transition: 0.5s; }
-        .char-pod { text-align: center; cursor: pointer; transition: 0.5s ease; width: 220px; position: relative; }
+        /* 導師舞台 */
+        .stage { display: flex; justify-content: center; align-items: center; gap: 80px; flex: 1; }
+        .char-pod { text-align: center; cursor: pointer; transition: 0.5s ease; width: 220px; }
         .avatar { 
             width: 200px; height: 200px; border-radius: 50%; border: 4px solid var(--blue);
             background-size: cover; background-position: center; box-shadow: 0 0 30px rgba(0, 242, 254, 0.3); margin-bottom: 10px;
         }
         
-        /* 【規則】中途不可換課鎖定 */
+        /* 強制鎖定：中途不可換課 */
         .locked { filter: grayscale(1) brightness(0.2) blur(2px); opacity: 0.3; pointer-events: none; transform: scale(0.9); }
 
         /* 智慧交互面板 */
@@ -33,7 +42,7 @@
         .timer-ui { float: right; font-size: 2.2rem; color: var(--pink); font-family: 'Courier New', monospace; }
         .btn { padding: 12px 30px; border-radius: 50px; border: 1px solid var(--blue); background: transparent; color: #fff; cursor: pointer; font-weight: bold; margin: 8px; transition: 0.3s; }
         .btn:hover { background: var(--blue); color: #000; box-shadow: 0 0 15px var(--blue); }
-        .opt-btn { width: 100%; text-align: left; margin: 8px 0; background: rgba(255,255,255,0.05); border-color: rgba(0,242,254,0.3); }
+        .opt-btn { width: 100%; text-align: left; margin: 8px 0; background: rgba(255,255,255,0.05); }
 
         .diff-selector { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
     </style>
@@ -49,12 +58,12 @@
 
     <div class="stage">
         <div class="char-pod" id="pod-ling" onclick="handleTeacher('ling')">
-            <div class="avatar" style="background-image: url('https://i.postimg.cc/mrhp4G1r/ling.png');"></div>
+            <div class="avatar" style="background-image: url('IMG_4392.jpeg');"></div>
             <h3 style="color:var(--blue)">江鈴 (理科)</h3>
             <div style="font-size:0.8rem; color:var(--gold)">👗 流動極光裙</div>
         </div>
         <div class="char-pod" id="pod-yi" onclick="handleTeacher('yi')">
-            <div class="avatar" style="background-image: url('https://i.postimg.cc/pT3Y0yB0/yi.png'); border-color:var(--pink)"></div>
+            <div class="avatar" style="background-image: url('IMG_3812.jpeg'); border-color:var(--pink)"></div>
             <h3 style="color:var(--pink)">江依 (文科)</h3>
             <div style="font-size:0.8rem; color:var(--gold)">👘 落櫻繽紛漢服</div>
         </div>
@@ -70,7 +79,7 @@
     </div>
 
     <div style="text-align:center; padding-bottom: 40px;">
-        <button id="add-course-btn" class="btn" style="border-color:var(--gold); color:var(--gold)" onclick="autoLoad()">⚡ 自動加課 (線上真題)</button>
+        <button id="add-course-btn" class="btn" style="border-color:var(--gold); color:var(--gold)" onclick="autoLoad()">⚡ 自動加題 (線上獲取)</button>
         <button class="btn" onclick="exchange()">動作演化 (扣5000)</button>
     </div>
 </div>
@@ -78,17 +87,17 @@
 <script>
     let state = { coin: 0, hp: 100, mode: 'idle', level: '', teacher: '', currentTopic: null, timer: null };
 
-    // 真實題庫與深度數據
+    // 真實五階題庫 (部分示例，可依此格式擴充)
     const DATA_BANK = [
-        { topic: "黑洞物理學", levels: {
-            '國小': { q: "黑洞之所以被稱為黑洞，是因為連什麼都跑不出來？", opts: ["光", "聲波", "小鳥"], a: "光", t: "黑洞的重力極強，連宇宙中最快的光也會被吸入。" },
-            '國中': { q: "黑洞的邊界被稱為什麼？", opts: ["事件視界", "地平線", "終止線"], a: "事件視界", t: "一旦越過事件視界，任何訊息都無法傳回外部宇宙。" },
-            '碩博': { q: "關於黑洞資訊悖論，霍金輻射意味著黑洞會？", opts: ["蒸發並丟失資訊", "永久擴張", "變成恆星"], a: "蒸發並丟失資訊", t: "這引發了量子力學么正性與廣義相對論的衝突討論。" }
+        { topic: "量子糾纏", levels: {
+            '國小': { q: "兩顆魔法球無論分開多遠都會同時變色，這叫什麼？", opts: ["量子糾纏", "心靈感應", "魔術"], a: "量子糾纏", t: "想像兩顆球有隱形的連線，這就是量子的神奇聯繫。" },
+            '大學': { q: "關於貝爾不等式的實驗結果說明了什麼？", opts: ["定域實在論失效", "光速可被超越", "能量不守恆"], a: "定域實在論失效", t: "這證明了量子力學的非定域特徵，愛因斯坦曾稱其為幽靈般的遠距作用。" },
+            '碩博': { q: "在量子資訊中，GHZ 態主要用於證實什麼？", opts: ["多體非定域性", "單粒子相干", "熱力學第二定律"], a: "多體非定域性", t: "GHZ 態展現了三體或更多粒子之間比貝爾對更強的非經典關聯。" }
         }},
-        { topic: "古典文學", levels: {
-            '國小': { q: "《靜夜思》中李白把月光比喻成什麼？", opts: ["霜", "雪", "糖"], a: "霜", t: "「疑是地上霜」形容月光潔白凝重。" },
-            '大學': { q: "王維詩句「行到水窮處，坐看雲起時」體現了哪種佛家境界？", opts: ["空靈禪意", "痛苦執著", "積極入世"], a: "空靈禪意", t: "這反映了隨遇而安、物我兩忘的灑脫境界。" },
-            '碩博': { q: "《紅樓夢》中「草蛇灰線，伏脈千里」是指？", opts: ["敘事結構的隱喻與鋪墊", "描寫手法生動", "背景故事宏大"], a: "敘事結構的隱喻與鋪墊", t: "脂批以此形容曹雪芹極其嚴密的伏筆佈局能力。" }
+        { topic: "古典詩詞", levels: {
+            '國小': { q: "「春眠不覺曉」的下一句是？", opts: ["處處聞啼鳥", "低頭思故鄉", "舉頭望明月"], a: "處處聞啼鳥", t: "這是孟浩然的《春曉》，描寫春天早晨的景色。" },
+            '高中': { q: "蘇軾《定風波》中「回首向來蕭瑟處」的下一句是？", opts: ["歸去，也無風雨也無晴", "一蓑煙雨任平生", "料峭春風吹酒醒"], a: "歸去，也無風雨也無晴", t: "這體現了作者在逆境中超然物外、寵辱不驚的豁達胸懷。" },
+            '碩博': { q: "王國維在《人間詞話》中提到的「三重境界」，最高境界是？", opts: ["驀然回首，那人卻在，燈火闌珊處", "衣帶漸寬終不悔", "昨夜西風凋碧樹"], a: "驀然回首，那人卻在，燈火闌珊處", t: "這象徵了經過艱辛探索後，靈感與真理的不期而遇。" }
         }}
     ];
 
@@ -98,8 +107,8 @@
         if(state.mode !== 'idle') return;
         state.currentTopic = DATA_BANK[Math.floor(Math.random() * DATA_BANK.length)];
         document.getElementById('main-panel').style.display = 'block';
-        document.getElementById('panel-title').innerText = `選擇難度：${state.currentTopic.topic}`;
-        document.getElementById('panel-text').innerText = "請選定學習難度 (國小享 3 分鐘思考，大學以上不限時)：";
+        document.getElementById('panel-title').innerText = `選題：${state.currentTopic.topic}`;
+        document.getElementById('panel-text').innerText = "請選擇難度級別：";
         document.getElementById('diff-grid').innerHTML = Object.keys(CONFIG).map(l => 
             `<button class="btn" onclick="setLevel('${l}')">${l}</button>`
         ).join('');
@@ -117,13 +126,11 @@
         if(!state.level || state.mode !== 'idle') return;
         state.mode = 'teaching';
         state.teacher = t;
-        
-        // 鎖定老師
         document.getElementById(t === 'ling' ? 'pod-yi' : 'pod-ling').classList.add('locked');
         
-        const qData = state.currentTopic.levels[state.level] || state.currentTopic.levels['國小']; // 備份
+        const qData = state.currentTopic.levels[state.level] || state.currentTopic.levels['國小'];
         document.getElementById('panel-title').innerText = `導師：江${t==='ling'?'鈴':'依'} [${state.level}]`;
-        document.getElementById('panel-text').innerText = `【專注授課】${qData.t}`;
+        document.getElementById('panel-text').innerText = `【導師授課】${qData.t}`;
         document.getElementById('footer-ctrl').innerHTML = `<button class="btn" onclick="startExam()">研習完畢，進入考驗</button>`;
     }
 
@@ -154,10 +161,10 @@
         if(ans === qData.a) {
             const gain = Math.floor(1000 * conf.r);
             state.coin += gain;
-            alert(`正確！獎勵 ${gain} 盞明燈。`);
+            alert(`正確！獲得 ${gain} 盞明燈。`);
         } else {
             state.hp -= conf.p;
-            alert(`錯誤！扣除 ${conf.p} HP。\n正解：${qData.a}`);
+            alert(`錯誤！江老師感到失望，扣除 ${conf.p} HP。\n正解：${qData.a}`);
         }
         reset();
     }
@@ -172,9 +179,13 @@
     }
 
     function exchange() {
-        if(state.coin < 5000) return alert("明燈不足 5000，無法演化動作。");
+        // [記憶設定]：每5000明燈換新動作一次只扣5000
+        if(state.coin < 5000) {
+            alert("明燈不足 5000，無法演化動作。");
+            return;
+        }
         state.coin -= 5000;
-        alert("演化成功！消耗 5000 明燈，動作庫已更新。");
+        alert("演化成功！消耗 5000 明燈，動作庫已更新，剩餘明燈已保留。");
         updateUI();
     }
 
