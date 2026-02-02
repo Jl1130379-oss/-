@@ -2,175 +2,164 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | Cyber-Premium 3.0</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>江家智慧城市 | Cyber-Verse Infinity</title>
     <style>
-        /* 視覺核心：復刻 IMG_7238 的螢光藍與深邃感 */
         :root {
-            --neon: #00f2fe; --neon-pink: #ff00de;
-            --glass-bg: rgba(6, 11, 20, 0.9);
-            --border-glow: 0 0 15px rgba(0, 242, 254, 0.5);
+            --neon-blue: #00f2fe; --neon-pink: #ff00de; --gold: #ffd700;
+            --glass: rgba(5, 12, 22, 0.95);
         }
-        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; cursor: crosshair; }
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; color: #fff; }
+        * { box-sizing: border-box; cursor: crosshair; font-family: "PingFang TC", sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; overflow: hidden; }
 
-        /* 全屏動漫動態背景 */
-        #bg-canvas {
+        /* 全場景背景：江家庭院 (動態光影) */
+        #garden-bg {
             position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=1920');
-            background-size: cover; background-position: center; z-index: -1; filter: saturate(1.5) contrast(1.1);
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), 
+                        url('https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; background-position: center; z-index: -2;
+            filter: contrast(1.1) brightness(0.8);
         }
 
-        /* 霓虹 HUD 外框系統 */
-        .cyber-frame {
-            position: fixed; inset: 15px; border: 2px solid var(--neon);
-            border-radius: 30px; box-shadow: inset var(--border-glow), var(--border-glow);
+        /* 螢光 HUD 邊框 (復刻 IMG_7238) */
+        .hud-border {
+            position: fixed; inset: 25px; border: 2px solid var(--neon-blue);
+            border-radius: 40px; box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px var(--neon-blue);
             pointer-events: none; z-index: 1000;
         }
 
-        /* 左側：精美導航與狀態欄 */
-        #side-panel {
-            position: fixed; left: 40px; top: 100px; width: 100px;
-            display: flex; flex-direction: column; gap: 25px; z-index: 1100;
+        /* 導航側欄：半透明發光 */
+        #side-nav {
+            position: fixed; left: 50px; top: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 1100;
         }
         .nav-orb {
-            width: 70px; height: 70px; background: var(--glass-bg); border: 1px solid var(--neon);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; color: var(--neon); transition: 0.4s; backdrop-filter: blur(10px);
+            width: 65px; height: 65px; border-radius: 18px; background: var(--glass);
+            border: 1px solid var(--neon-blue); display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: var(--neon-blue); transition: 0.4s; box-shadow: 0 0 10px rgba(0,242,254,0.2);
         }
-        .nav-orb:hover { background: var(--neon); color: #000; box-shadow: 0 0 30px var(--neon); transform: scale(1.1); }
+        .nav-orb:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 30px var(--neon-blue); transform: scale(1.1); }
 
-        /* 中央內容區：精美卡片渲染 */
-        .content-view {
-            position: fixed; left: 160px; right: 50px; top: 100px; bottom: 50px;
-            background: rgba(255,255,255,0.02); border-radius: 25px; display: none;
-            padding: 40px; overflow-y: auto; pointer-events: auto; backdrop-filter: blur(20px);
-        }
-
-        /* AI 風格商品卡片 (核心要求) */
-        .item-card {
-            background: var(--glass-bg); border: 1px solid rgba(0,242,254,0.3);
-            border-radius: 20px; overflow: hidden; transition: 0.3s; position: relative;
-        }
-        .item-card:hover { border-color: var(--neon); transform: translateY(-5px); box-shadow: var(--border-glow); }
-        
-        .item-img-box {
-            width: 100%; height: 180px; background-size: cover; background-position: center;
-            border-bottom: 1px solid rgba(0,242,254,0.3); position: relative;
-        }
-        .item-img-box::after {
-            content: ""; position: absolute; inset: 0; background: linear-gradient(to top, var(--glass-bg), transparent);
-        }
-        .price-tag { color: var(--neon); font-size: 1.2rem; font-weight: 900; margin: 10px 0; }
-
-        /* 群聊泡泡 (江家設定) */
-        .chat-msg {
-            background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px;
-            margin-bottom: 20px; border-left: 5px solid var(--neon); position: relative;
+        /* 核心內容視窗：江家相簿、商店、課程 */
+        .viewport {
+            position: fixed; left: 160px; right: 80px; top: 100px; bottom: 60px;
+            background: var(--glass); border-radius: 35px; border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(25px); display: none; padding: 45px; overflow-y: auto;
         }
 
-        /* 傳奇服飾獲取顯示 (雪花入口) */
-        #admin-snow { position: fixed; bottom: 30px; right: 30px; font-size: 45px; color: var(--neon); filter: drop-shadow(0 0 15px var(--neon)); z-index: 2000; cursor: pointer; }
+        /* 產品與家具卡片：精美 AI 畫風 (非貼圖) */
+        .premium-card {
+            background: rgba(255,255,255,0.03); border-radius: 20px; overflow: hidden;
+            border: 1px solid rgba(0,242,254,0.2); transition: 0.5s; position: relative;
+        }
+        .premium-card:hover { transform: translateY(-8px); border-color: var(--neon-blue); background: rgba(0,242,254,0.08); }
+        .card-img {
+            width: 100%; height: 220px; background-size: cover; background-position: center;
+            border-bottom: 1px solid rgba(0,242,254,0.2);
+        }
+        .card-info { padding: 20px; text-align: center; }
+
+        /* 江老師精美展示區 */
+        .teacher-stage {
+            display: flex; gap: 40px; padding: 30px; background: rgba(255,255,255,0.02);
+            border-radius: 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .teacher-portrait {
+            width: 250px; height: 350px; border-radius: 20px; border: 2px solid var(--neon-blue);
+            background-size: cover; background-position: center; box-shadow: 0 0 20px rgba(0,242,254,0.3);
+        }
     </style>
 </head>
-<body onload="startup()">
+<body onload="init()">
 
-<div id="bg-canvas"></div>
-<div class="cyber-frame"></div>
-<div id="admin-snow" onclick="adminSync()"><i class="fas fa-snowflake"></i></div>
+<div id="garden-bg"></div>
+<div class="hud-border"></div>
 
-<div style="position:fixed; top:40px; left:160px; right:50px; display:flex; justify-content:space-between; z-index:1100;">
-    <div style="background:var(--glass-bg); padding:10px 30px; border-radius:50px; border:1px solid var(--neon);">
-        <i class="fas fa-bolt" style="color:var(--neon)"></i> <span id="val-sta">10</span>
-        <span style="margin:0 20px">|</span>
-        <i class="fas fa-coins" style="color:gold"></i> <span id="val-coin">1000</span>
+<div style="position:fixed; top:45px; right:100px; display:flex; gap:30px; z-index:1100;">
+    <div style="background:var(--glass); padding:8px 25px; border-radius:50px; border:1px solid var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue);">
+        <i class="fas fa-bolt" style="color:var(--neon-blue)"></i> <span id="sta">10</span>
+        <span style="margin:0 15px">|</span>
+        <i class="fas fa-coins" style="color:var(--gold)"></i> <span id="coin">5000</span>
     </div>
-    <div style="font-size:1.5rem; letter-spacing:8px; font-weight:900; text-shadow: var(--border-glow);">JIANG CITY 3.0</div>
 </div>
 
-<div id="side-panel">
-    <div class="nav-orb" onclick="jump('chat')"><i class="fas fa-comments"></i></div>
-    <div class="nav-orb" onclick="jump('study')"><i class="fas fa-brain"></i></div>
-    <div class="nav-orb" onclick="jump('shop')"><i class="fas fa-shopping-bag"></i></div>
-    <div class="nav-orb" onclick="jump('closet')"><i class="fas fa-magic"></i></div>
+<div id="side-nav">
+    <div class="nav-orb" onclick="openMod('garden')"><i class="fas fa-torii-gate"></i></div>
+    <div class="nav-orb" onclick="openMod('study')"><i class="fas fa-book-open"></i></div>
+    <div class="nav-orb" onclick="openMod('shop')"><i class="fas fa-shopping-bag"></i></div>
+    <div class="nav-orb" onclick="openMod('gallery')"><i class="fas fa-images"></i></div>
 </div>
 
-<div id="win-chat" class="content-view">
-    <h1 style="color:var(--neon); border-bottom:1px solid var(--neon); padding-bottom:10px;">江家群聊中心</h1>
-    <div class="chat-msg"><strong style="color:var(--neon)">江鈴：</strong> 同學，今天的自動加課內容已準備好，請準時同步。</div>
-    <div class="chat-msg" style="border-left-color:var(--neon-pink)"><strong style="color:var(--neon-pink)">江依：</strong> 管理員剛發放了 1000 明燈。記得去看看我的落櫻繽紛漢服喔！</div>
+<div id="view-garden" class="viewport">
+    <h1 style="letter-spacing:5px; color:var(--neon-blue)">江家庭院 <span style="font-size:12px; opacity:0.6;">COURTYARD</span></h1>
+    <div class="teacher-stage">
+        <div class="teacher-portrait" id="ling-portrait" style="background-image:url('https://images.unsplash.com/photo-1578632287117-c594419aa38c?w=500')"></div>
+        <div style="flex:1">
+            <h2 style="color:var(--neon-blue)">江鈴 老師</h2>
+            <p style="font-size:1.1rem; line-height:1.8; opacity:0.8;">正在「庭院研討室」準備碩博難度題庫。今天的流動極光裙在星光下顯得格外耀眼。</p>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <span style="background:rgba(0,242,254,0.1); padding:5px 15px; border-radius:5px; border:1px solid var(--neon-blue);">理科核心</span>
+                <span style="background:rgba(255,215,0,0.1); padding:5px 15px; border-radius:5px; border:1px solid var(--gold);">傳奇服飾裝備</span>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div id="win-shop" class="content-view">
-    <h2 style="margin-bottom:30px;">精品商場 <span style="font-size:14px; color:#ff00de;">(全場 1 折特惠)</span></h2>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:30px;" id="shop-grid"></div>
+<div id="view-shop" class="viewport">
+    <h1 style="color:var(--neon-blue)">江家精品虛擬商場 <span style="font-size:14px; color:red;">(全場一折)</span></h1>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:30px;" id="shop-grid">
+        </div>
 </div>
 
 <script>
-    let state = { coins: 1000, stamina: 10, items: [], equipped: "Default" };
-    
-    // 這裡定義符合 AI 動漫畫風的商品庫
-    const DB = {
-        shop: [
-            { id: 's1', name: '星空流體髮帶', price: 200, img: 'https://images.unsplash.com/photo-1601924638867-3a6de6b7a500?w=400' },
-            { id: 's2', name: '賽博學院裝', price: 800, img: 'https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=400' },
-            { id: 's3', name: '極限動漫瞳色', price: 150, img: 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=400' }
-        ],
-        legend: [
-            { id: 'L1', name: '流動極光裙', teacher: '江鈴', img: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400' },
-            { id: 'L2', name: '落櫻繽紛漢服', teacher: '江依', img: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=400' }
-        ]
-    };
+    let state = { coin: 5500, sta: 10, items: [] };
 
-    function startup() { jump('chat'); updateUI(); }
+    const items = [
+        { id: 'f1', name: '極簡賽博沙發', type: '家具', price: 1200, img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500' },
+        { id: 'f2', name: '櫻花屏風', type: '庭院家具', price: 800, img: 'https://images.unsplash.com/photo-1528164344705-47542687000d?w=500' },
+        { id: 'c1', name: '江家學院服', type: '服飾', price: 600, img: 'https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=500' }
+    ];
 
-    function jump(id) {
-        document.querySelectorAll('.content-view').forEach(v => v.style.display = 'none');
-        document.getElementById('win-' + id).style.display = 'block';
+    function init() {
+        openMod('garden');
+        updateUI();
+    }
+
+    function openMod(id) {
+        document.querySelectorAll('.viewport').forEach(v => v.style.display = 'none');
+        document.getElementById('view-' + id).style.display = 'block';
         if(id === 'shop') renderShop();
     }
 
     function renderShop() {
         const grid = document.getElementById('shop-grid');
-        grid.innerHTML = DB.shop.map(item => {
-            const sale = Math.floor(item.price * 0.1);
-            const isOwned = state.items.includes(item.id);
+        grid.innerHTML = items.map(item => {
+            const salePrice = Math.floor(item.price * 0.1); // 一折標配
             return `
-                <div class="item-card">
-                    <div class="item-img-box" style="background-image:url('${item.img}')"></div>
-                    <div style="padding:15px; text-align:center;">
-                        <div style="font-weight:bold">${item.name}</div>
-                        <div class="price-tag">🏮 ${sale}</div>
-                        <button onclick="buy('${item.id}', ${sale})" style="width:100%; padding:10px; background:var(--neon); color:#000; border:none; border-radius:10px; font-weight:bold; cursor:pointer;" ${isOwned?'disabled':''}>
-                            ${isOwned ? '已同步' : '立即購買'}
-                        </button>
+                <div class="premium-card">
+                    <div style="position:absolute; top:15px; right:15px; background:red; padding:3px 8px; border-radius:4px; font-size:11px;">1折</div>
+                    <div class="card-img" style="background-image:url('${item.img}')"></div>
+                    <div class="card-info">
+                        <div style="font-size:0.8rem; color:var(--neon-blue); margin-bottom:5px;">${item.type}</div>
+                        <h3 style="margin:5px 0">${item.name}</h3>
+                        <div style="color:var(--neon-blue); font-size:1.3rem; font-weight:900;">🏮 ${salePrice}</div>
+                        <button onclick="buy('${item.id}', ${salePrice})" style="margin-top:15px; width:100%; padding:12px; background:transparent; border:1px solid var(--neon-blue); color:var(--neon-blue); border-radius:10px; cursor:pointer; font-weight:bold;">同步購買</button>
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    function buy(id, p) {
-        if(state.coins >= p) {
-            state.coins -= p; state.items.push(id);
-            alert("🛒 購買成功！畫風已同步至個人庫。"); renderShop(); updateUI();
-        }
-    }
-
-    function adminSync() {
-        const key = prompt("管理員通行證：");
-        if(key === "江憶婷") {
-            state.coins += 1000;
-            if(!state.items.includes('L1')) state.items.push('L1');
-            if(!state.items.includes('L2')) state.items.push('L2');
+    function buy(id, price) {
+        if(state.coin >= price) {
+            state.coin -= price;
+            state.items.push(id);
+            alert("✨ 物件已成功同步至江家庭院。");
             updateUI();
-            alert("👑 認證成功：1000明燈已入帳，【流動極光裙】與【落櫻繽紛漢服】已解鎖至更衣室！");
-        }
+        } else { alert("🏮 明燈能量不足！"); }
     }
 
     function updateUI() {
-        document.getElementById('val-sta').innerText = state.stamina;
-        document.getElementById('val-coin').innerText = state.coins;
+        document.getElementById('coin').innerText = state.coin;
+        document.getElementById('sta').innerText = state.sta;
     }
 </script>
 </body>
