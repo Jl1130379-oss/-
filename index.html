@@ -3,69 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>江家姊妹雲端教室</title>
+    <title>江家姊妹：醫道與文心</title>
     <style>
-        :root { --sci: #4FC3F7; --art: #9575CD; --dark: #263238; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --sci: #4FC3F7; --art: #9575CD; --dark: #263238; --win: #FFD700; }
+        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
         
-        body {
-            margin: 0; height: 100vh; font-family: "PingFang TC", sans-serif;
-            background: linear-gradient(135deg, #e1f5fe 0%, #f3e5f5 100%);
-            display: flex; flex-direction: column; overflow: hidden;
-        }
+        body { margin: 0; height: 100vh; background: #f4f7f9; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* 導航與側欄 */
-        #top-nav { background: var(--dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 101; }
+        /* 導覽列 */
+        header { background: var(--dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 100; }
+        .menu-btn { background: none; border: 1px solid white; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+
+        /* 側欄選單 */
         #sidebar {
             position: fixed; left: 0; top: 0; bottom: 0; width: 280px; 
-            background: rgba(38, 50, 56, 0.95); backdrop-filter: blur(15px);
-            z-index: 100; transform: translateX(-100%); transition: 0.3s; padding-top: 60px;
+            background: rgba(38, 50, 56, 0.95); backdrop-filter: blur(10px);
+            transform: translateX(-100%); transition: 0.3s; z-index: 150; padding-top: 70px;
         }
         #sidebar.open { transform: translateX(0); }
+        .course-item { padding: 20px; color: white; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
+        .course-item:hover { background: rgba(255,255,255,0.1); }
 
-        .course-card {
-            background: rgba(255,255,255,0.1); border-radius: 15px;
-            padding: 15px; margin: 10px; cursor: pointer; color: white;
-        }
-
-        /* 主舞台 */
-        #main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+        /* 主畫面佈局 */
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
         
-        .char-container { position: relative; width: 250px; height: 250px; margin-bottom: 20px; }
-        .avatar {
-            width: 100%; height: 100%; border-radius: 50%; border: 6px solid white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover;
-            animation: breathe 4s ease-in-out infinite; background: white;
+        /* 老師圖式容器 */
+        .avatar-container { position: relative; width: 260px; height: 260px; margin-bottom: 20px; }
+        .avatar-img { 
+            width: 100%; height: 100%; border-radius: 50%; border: 8px solid white; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover; background: #eee;
+            animation: breathe 4s ease-in-out infinite; display: none;
         }
-        @keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes breathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.02); } }
 
-        .bubble {
-            position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-            background: white; padding: 15px 20px; border-radius: 20px;
-            min-width: 200px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            display: none; z-index: 10;
+        /* 對話泡泡 */
+        .bubble { 
+            background: white; padding: 15px 25px; border-radius: 25px; margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 90%; max-width: 350px; 
+            text-align: center; font-size: 1.1rem; line-height: 1.5; color: #444;
         }
 
-        /* 題目區 */
-        #quiz-box {
-            width: 100%; max-width: 500px; background: rgba(255,255,255,0.9);
-            padding: 25px; border-radius: 30px; text-align: center;
+        /* 答題區 */
+        .quiz-card { background: white; padding: 30px; border-radius: 35px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        .option-btn { 
+            width: 100%; padding: 18px; margin: 10px 0; border: 2px solid #eee; 
+            border-radius: 20px; background: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s;
         }
-        .btn {
-            width: 100%; padding: 16px; margin: 10px 0; border: 1px solid #ddd;
-            border-radius: 15px; background: white; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
-        }
-        .btn:active { transform: scale(0.98); background: #f5f5f5; }
+        .option-btn:active { transform: scale(0.97); background: #fafafa; }
 
-        /* 遮罩與管理員 */
-        #loading { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 200; }
-        #admin-btn { position: fixed; bottom: 0; right: 0; width: 40px; height: 40px; z-index: 99; }
+        /* 獎勵特效 */
+        #reward-overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(255,215,0,0.2); 
+            z-index: 200; pointer-events: none; align-items: center; justify-content: center;
+            font-size: 5rem; animation: celebrate 1s ease-out forwards;
+        }
+        @keyframes celebrate { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1.2); } }
+
+        /* 管理員入口 */
+        #admin-trigger { position: fixed; bottom: 0; right: 0; width: 50px; height: 50px; z-index: 99; cursor: default; }
+        #admin-panel { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
+            z-index: 300; align-items: center; justify-content: center; color: white;
+        }
+        
+        #loader { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 1000; }
     </style>
 </head>
 <body>
 
-<div id="loading">📡 接通雲端教室中...</div>
+<div id="loader">📡 正在載入課程...</div>
+<div id="reward-overlay">🌟</div>
 
-<div id="top-nav">
-    <span onclick="toggleSidebar()" style="cursor:pointer; font-size:1.2rem;">☰ 課程選單</span>
-    <span>江家姊妹：醫道與文
+<header>
+    <button class="menu-btn" onclick="toggleMenu()">☰ 選擇課程</button>
+    <div style="font-weight: bold;">江家姊妹雲端教室</div>
+    <div style="width: 80px;"></div>
+</header>
+
+<div id="sidebar">
+    <div id="course-list"></div>
+</div>
+
+<main>
+    <div id="talk-bubble" class="bubble">歡迎來到教室！請點擊選單開始學習。</div>
+    
+    <div class="avatar-container">
+        <img id="avatar-sci" class="avatar-img" src="IMG_3812.jpeg">
+        <img id="avatar-art" class="avatar-img" src="IMG_4392.jpg">
+    </div>
+
+    <div class="quiz-card">
+        <h2 id="q-text" style="margin-top:0; color:var(--dark);">準備好了嗎？</h2>
+        <div id="q-options"></div>
+    </div>
+</main>
+
+<div id="admin-trigger" onclick="openAdmin()"></div>
+<div id="admin-panel" onclick="this.style.display='none'">
+    <div style="background:white; color:#333; padding:40px; border-radius:30px; text-align:center;">
+        <h2 style="color:var(--art);">🌸 管理員模式 (冬櫻)</h2>
+        <p>目前資料讀取自 Google Sheets</p>
+        <button class="option-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pubhtml')">進入後台修改題目</button>
+    </div>
+</div>
+
+<script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pub?output=csv";
+    let allData = [];
+
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    async function loadSheets() {
+        try {
+            const res = await fetch(CSV_URL + '&t=' + Date.now());
+            const text = await res.text();
+            const rows = text.split("\n").map(r => r.split(","));
+            allData = rows.slice(1).filter(r => r[1]); // 排除標題與空行
+            
+            const list = document.getElementById('course-list');
+            list.innerHTML = "";
+            allData.forEach((row, index) => {
+                let div = document.createElement('div');
+                div.className = "course-item";
+                div.innerText = `● ${row[1].trim()}`;
+                div.onclick = () => { selectCourse(index); toggleMenu(); };
+                list.appendChild(div);
+            });
+            document.getElementById('loader').style.display = 'none';
+        } catch (e) {
+            document.getElementById('loader').innerText = "連線失敗，請檢查網路或試算表發佈設定。";
+        }
+    }
+
+    function selectCourse(idx) {
+        const data = allData[idx];
+        const bubble = document.getElementById('talk-bubble');
+        const qText = document.getElementById('q-text');
+        const optBox = document.getElementById('q-options');
+        
+        // 切換老師圖片
+        const isSci = data[0].trim().toLowerCase() === 'sci';
+        document.getElementById('avatar-sci').style.display = isSci ? 'block' : 'none';
+        document.getElementById('avatar-art').style.display = isSci ? 'none' : 'block';
+
+        bubble.innerText = isSci ? "我是江鈴，讓我們用醫學邏輯來解題。" : "我是江依，讓我們從文學中尋找答案。";
+        qText.innerText = data[2];
+        
+        optBox.innerHTML = "";
+        [data[3], data[4]].forEach((txt, i) => {
+            let btn = document.createElement('button');
+            btn.className = "option-btn";
+            btn.innerText = txt;
+            btn.onclick = () => checkAnswer(i, data[5].trim(), isSci);
+            optBox.appendChild(btn);
+        });
+        speak(bubble.innerText + " 題目是：" + data[2]);
+    }
+
+    function checkAnswer(userIdx, correctIdx, isSci) {
+        const bubble = document.getElementById('talk-bubble');
+        if (userIdx == correctIdx) {
+            bubble.innerText = "太棒了！答對了，獲得 1 枚智慧金幣！";
+            showReward();
+            speak("太棒了！答對了。");
+        } else {
+            bubble.innerText = "很有趣的想法，但正確答案不是這個喔，再試試看？";
+            speak("再想一下？");
+        }
+    }
+
+    function showReward() {
+        const rw = document.getElementById('reward-overlay');
+        rw.style.display = 'flex';
+        setTimeout(() => { rw.style.display = 'none'; }, 1500);
+    }
+
+    function openAdmin() {
+        if (prompt("輸入冬櫻暗號：") === "江鈴的損友冬櫻") {
+            document.getElementById('admin-panel').style.display = 'flex';
+        }
+    }
+
+    function speak(t) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(t);
+        u.lang = 'zh-TW';
+        window.speechSynthesis.speak(u);
+    }
+
+    loadSheets();
+</script>
+</body>
+</html>
