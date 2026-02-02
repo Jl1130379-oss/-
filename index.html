@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>江家智慧城市 - 官方穩定版</title>
+    <title>江家智慧城市 - 完整模組版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --main: #5a7d9b; --accent: #e6b8a2; --gold: #d4af37;
             --white: rgba(255, 255, 255, 0.95); --err: #ff4757;
         }
-        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; transition: 0.3s; }
+        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; }
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
 
         /* 背景層 */
         #bg-layer {
             position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('IMG_7210.jpg');
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('IMG_7210.jpg');
             background-size: cover; background-position: center; z-index: -2;
+            transition: 1s filter;
         }
 
-        /* 雪花層：最高優先權 */
+        /* 雪花層：確保永遠在最上層可點擊 */
         #snow-container { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
         .snowflake {
             position: absolute; top: -10%; color: white; cursor: pointer;
@@ -37,51 +38,39 @@
             background: var(--white); padding: 40px; border-radius: 25px;
             width: 380px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5);
         }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; }
-        .auth-btn { width: 100%; padding: 12px; background: var(--main); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
 
-        /* 2. 城市總入口 Dashboard */
+        /* 2. 總入口 (Dashboard) */
         #dashboard {
-            display: none; height: 100vh; padding: 80px 40px;
-            grid-template-columns: repeat(3, 1fr); gap: 30px; z-index: 10;
+            display: none; height: 100vh; padding: 60px 40px;
+            grid-template-columns: repeat(3, 1fr); gap: 20px; z-index: 10;
         }
         .city-node {
-            background: rgba(255,255,255,0.15); backdrop-filter: blur(15px);
-            border: 2px solid rgba(255,255,255,0.3); border-radius: 25px;
+            background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3); border-radius: 20px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: white; cursor: pointer; text-decoration: none; position: relative;
+            color: white; cursor: pointer; font-size: 1.2rem;
         }
-        .city-node:hover { background: var(--white); color: var(--main); transform: translateY(-10px); }
-        .city-node i { font-size: 3.5rem; margin-bottom: 20px; }
-        .city-node b { font-size: 1.3rem; }
+        .city-node:hover { background: var(--white); color: var(--main); transform: scale(1.05); }
+        .city-node i { font-size: 3rem; margin-bottom: 15px; }
 
-        /* 狀態 HUD */
-        #hud { position: fixed; top: 25px; right: 30px; display: none; gap: 15px; z-index: 4000; }
-        .hud-item { background: var(--white); padding: 10px 25px; border-radius: 50px; font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-
-        /* 3. AI 群聊視窗 */
-        #chat-window {
-            position: fixed; bottom: 30px; right: 30px; width: 400px; height: 600px;
-            background: #f8f9fa; border-radius: 25px; display: none; flex-direction: column;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4); z-index: 3000; overflow: hidden;
+        /* 3. 各模組通用視窗 (Modal) */
+        .module-window {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 4000; display: none; align-items: center; justify-content: center;
         }
-        .chat-header { background: var(--main); color: white; padding: 20px; font-weight: bold; display: flex; justify-content: space-between; }
-        .chat-msgs { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; background: #f0f2f5; }
-        .msg { padding: 12px 18px; border-radius: 18px; max-width: 85%; font-size: 0.95rem; line-height: 1.5; }
-        .msg.teacher { background: white; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .msg.user { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .chat-input-area { padding: 15px; background: white; border-top: 1px solid #eee; }
-        .chat-actions { display: flex; gap: 8px; margin-top: 10px; }
-        .chat-actions button { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid var(--main); background: white; color: var(--main); font-weight: bold; cursor: pointer; font-size: 0.8rem; }
-
-        /* 4. 答題與模組遮罩 */
-        .full-modal {
-            position: fixed; inset: 0; background: white; z-index: 4500;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
+        .module-content {
+            background: white; width: 90%; max-width: 800px; height: 80%;
+            border-radius: 25px; position: relative; overflow-y: auto; padding: 40px;
         }
-        .quiz-box { text-align: center; width: 80%; max-width: 600px; }
-        .opt-btn { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; font-size: 1.1rem; font-weight: bold; }
-        .opt-btn:hover { border-color: var(--gold); background: #fffcf0; }
+        .close-btn { position: absolute; top: 20px; right: 25px; font-size: 2rem; cursor: pointer; color: #333; }
+
+        /* HUD 狀態欄 */
+        #hud { position: fixed; top: 20px; right: 30px; display: none; gap: 15px; z-index: 4500; }
+        .hud-item { background: var(--white); padding: 10px 20px; border-radius: 50px; font-weight: 900; }
+
+        /* 商場與庭院樣式 */
+        .item-card { border: 1px solid #ddd; padding: 15px; border-radius: 15px; margin: 10px; display: inline-block; width: 200px; text-align: center; }
+        .item-card img { width: 100%; border-radius: 10px; }
     </style>
 </head>
 <body onload="initSystem()">
@@ -93,107 +82,99 @@
     <div class="auth-card">
         <h2 style="color:var(--main)">江家智慧城市</h2>
         <p>請輸入通行證進入</p>
-        <input type="text" id="username" class="auth-input" placeholder="您的名字">
-        <input type="password" id="password" class="auth-input" placeholder="訪問密碼">
-        <button class="auth-btn" onclick="login()">開始學習之旅</button>
+        <input type="text" id="username" placeholder="用戶名" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
+        <button onclick="login()" style="width:100%; padding:12px; background:var(--main); color:white; border:none; border-radius:8px; font-weight:bold;">進入城市</button>
     </div>
 </div>
 
 <div id="hud">
-    <div class="hud-item" onclick="refillStamina()" style="cursor:pointer">⚡ <span id="sta-val">10</span></div>
+    <div class="hud-item" onclick="alert('體力已滿！')">⚡ <span id="sta-val">10</span></div>
     <div class="hud-item">🪙 <span id="coin-val">500</span></div>
-    <div class="hud-item" onclick="location.reload()" style="cursor:pointer"><i class="fas fa-home"></i></div>
+    <div class="hud-item" onclick="location.reload()" style="cursor:pointer"><i class="fas fa-sign-out-alt"></i></div>
 </div>
 
 <div id="dashboard">
-    <div class="city-node" onclick="openChat('ling')">
-        <i class="fas fa-microscope"></i>
-        <b>理科教室 (江鈴)</b>
+    <div class="city-node" onclick="openModule('study')">
+        <i class="fas fa-graduation-cap"></i>
+        <b>江老師教室</b>
     </div>
-    <div class="city-node" onclick="openChat('yi')">
-        <i class="fas fa-feather-alt"></i>
-        <b>文科沙龍 (江依)</b>
-    </div>
-    <div class="city-node" onclick="alert('進入庭院拍照...')">
-        <i class="fas fa-tree"></i>
-        <b>江家庭院</b>
-    </div>
-    <div class="city-node" onclick="alert('相簿加載中...')">
-        <i class="fas fa-images"></i>
-        <b>回憶相簿</b>
-    </div>
-    <div class="city-node" onclick="alert('商場建設中...')">
-        <i class="fas fa-store"></i>
+    <div class="city-node" onclick="openModule('shop')">
+        <i class="fas fa-shopping-bag"></i>
         <b>城市商場</b>
     </div>
-    <div class="city-node" onclick="alert('前往更衣室...')">
-        <i class="fas fa-tshirt"></i>
-        <b>私人更衣室</b>
+    <div class="city-node" onclick="openModule('yard')">
+        <i class="fas fa-palette"></i>
+        <b>江家庭院</b>
+    </div>
+    <div class="city-node" onclick="openModule('closet')">
+        <i class="fas fa-gem"></i>
+        <b>更衣室</b>
+    </div>
+    <div class="city-node" onclick="openModule('album')">
+        <i class="fas fa-camera"></i>
+        <b>回憶相簿</b>
+    </div>
+    <div class="city-node" onclick="alert('敬請期待新區域')">
+        <i class="fas fa-plus-circle"></i>
+        <b>開發中</b>
     </div>
 </div>
 
-<div id="chat-window">
-    <div class="chat-header">
-        <span id="teacher-name">與江老師聊聊</span>
-        <span onclick="toggleChat(false)" style="cursor:pointer">✕</span>
-    </div>
-    <div class="chat-msgs" id="chat-msgs"></div>
-    <div class="chat-input-area">
-        <div style="display:flex; gap:8px;">
-            <input type="text" id="chat-input" placeholder="輸入訊息..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;">
-            <button onclick="sendMsg()" style="padding:10px 15px; background:var(--main); color:white; border:none; border-radius:8px;">發送</button>
-        </div>
-        <div class="chat-actions">
-            <button onclick="startAction('brush')">刷題模式</button>
-            <button onclick="startAction('compete')">競賽模式 (1⚡)</button>
+<div id="mod-study" class="module-window">
+    <div class="module-content">
+        <span class="close-btn" onclick="closeModule('study')">×</span>
+        <h2 style="color:var(--main)">江老師教室</h2>
+        <div id="quiz-area">
+            <p>江鈴老師與江依老師正在準備課程...</p>
+            <button onclick="alert('課程開始！請完成 10 題答題。')" style="padding:15px 30px; background:var(--main); color:white; border:none; border-radius:10px;">開始今日刷題</button>
         </div>
     </div>
 </div>
 
-<div id="quiz-modal" class="full-modal">
-    <div class="quiz-box">
-        <h2 id="q-title" style="color:var(--main)"></h2>
-        <h4 id="q-prog" style="color:var(--gold)"></h4>
-        <p id="q-text" style="font-size:1.5rem; margin:30px 0;"></p>
-        <div id="q-opts"></div>
-        <div id="q-timer" style="margin-top:20px; font-weight:bold; color:var(--err)"></div>
+<div id="mod-shop" class="module-window">
+    <div class="module-content">
+        <span class="close-btn" onclick="closeModule('shop')">×</span>
+        <h2>城市商場</h2>
+        <div class="item-card">
+            <p>新版背景：櫻花江家</p>
+            <p>🪙 200</p>
+            <button onclick="buy('bg')">購買</button>
+        </div>
+        <div class="item-card">
+            <p>體力藥劑</p>
+            <p>🪙 50</p>
+            <button onclick="buy('sta')">購買</button>
+        </div>
+    </div>
+</div>
+
+<div id="mod-yard" class="module-window">
+    <div class="module-content">
+        <span class="close-btn" onclick="closeModule('yard')">×</span>
+        <h2>江家庭院</h2>
+        <p>在這裡可以更換城市的主題風格。</p>
+        <button onclick="changeTheme('default')" style="padding:10px;">經典風格 (IMG_7210)</button>
+        <button onclick="changeTheme('dark')" style="padding:10px;">午夜風格</button>
     </div>
 </div>
 
 <script>
-    let state = {
-        coins: 500, stamina: 10, teacher: '', isAdmin: false,
-        quiz: { active: false, current: 0, errors: 0, lv: 1, type: '' }
-    };
+    let state = { coins: 500, stamina: 10, name: '' };
 
     function initSystem() {
-        // 1. 作弊偵測
-        if (sessionStorage.getItem('inQuiz')) {
-            state.stamina = Math.max(0, (parseInt(localStorage.getItem('sta')) || 10) - 2);
-            alert("⚠️ 偵測到非法刷新！已扣除 2 點體力。");
-            saveState();
-        } else {
-            state.stamina = parseInt(localStorage.getItem('sta')) || 10;
-            state.coins = parseInt(localStorage.getItem('coin')) || 500;
-        }
-        updateUI();
-        setInterval(spawnSnow, 400);
-
-        // 2. 切頁偵測
-        window.onblur = () => { if(state.quiz.active) console.warn("偵測到離開！"); };
+        setInterval(spawnSnow, 500); // 啟動動態雪花
     }
 
-    // --- 登入與 Dashboard ---
     function login() {
         const name = document.getElementById('username').value;
         if(!name) return alert("請輸入名字");
+        state.name = name;
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('dashboard').style.display = 'grid';
         document.getElementById('hud').style.display = 'flex';
-        alert(`歡迎，${name}！兩位江老師已經等候多時。`);
     }
 
-    // --- 雪花系統 (管理者入口) ---
+    // 雪花：隨機飄落且最高層級
     function spawnSnow() {
         const s = document.createElement('div');
         s.className = 'snowflake';
@@ -201,124 +182,57 @@
         s.style.left = Math.random() * 95 + 'vw';
         s.style.fontSize = (Math.random() * 20 + 15) + 'px';
         s.style.animationDuration = (Math.random() * 3 + 5) + 's';
+        
+        // 點擊雪花觸發密鑰
         s.onclick = (e) => {
             e.stopPropagation();
-            const pw = prompt("隱藏權限驗證：");
+            const pw = prompt("江家權限驗證：");
             if(pw === "江憶婷") {
-                state.isAdmin = true; state.coins += 9999; updateUI();
-                alert("👑 管理者江憶婷，城市已為您全面解鎖。");
+                state.coins += 9999;
+                updateUI();
+                alert("👑 管理者權限已解鎖！");
             }
         };
+        
         document.getElementById('snow-container').appendChild(s);
         setTimeout(() => s.remove(), 8000);
     }
 
-    // --- AI 隨意聊 ---
-    function openChat(t) {
-        state.teacher = t;
-        const name = t === 'ling' ? '江鈴' : '江依';
-        document.getElementById('teacher-name').innerText = `與 ${name} 老師聊聊`;
-        document.getElementById('chat-window').style.display = 'flex';
-        addMsg('teacher', `你好！我是${name}。今天想聊點什麼，還是直接開始考驗？`);
+    // 模組切換邏輯
+    function openModule(id) {
+        document.getElementById('mod-' + id).style.display = 'flex';
+        document.getElementById('bg-layer').style.filter = 'blur(10px)'; // 背景模糊效果
     }
 
-    function sendMsg() {
-        const input = document.getElementById('chat-input');
-        if(!input.value) return;
-        addMsg('user', input.value);
-        const replies = ["很有趣的想法。","我明白了，妳總是能給我驚喜。","這就是江家人的默契。"];
-        setTimeout(() => addMsg('teacher', replies[Math.floor(Math.random()*replies.length)]), 800);
-        input.value = '';
+    function closeModule(id) {
+        document.getElementById('mod-' + id).style.display = 'none';
+        document.getElementById('bg-layer').style.filter = 'none';
     }
 
-    function addMsg(role, text) {
-        const box = document.getElementById('chat-msgs');
-        box.innerHTML += `<div class="msg ${role}">${text}</div>`;
-        box.scrollTop = box.scrollHeight;
-    }
-
-    // --- 刷題與競賽系統 ---
-    function startAction(mode) {
-        if(state.stamina <= 0) return alert("體力不足！");
-        if(mode === 'brush') {
-            const lv = prompt("選擇難度 (1:國小 50幣 ... 5:碩博 200幣)");
-            if(lv >= 1 && lv <= 5) startQuiz(parseInt(lv), 'brush');
-        } else {
-            if(confirm("挑戰競賽題？只需 1⚡，但錯誤率過高無獎勵！")) startQuiz(5, 'compete');
-        }
-    }
-
-    function startQuiz(lv, type) {
-        state.stamina -= 1;
-        state.quiz = { active: true, current: 1, errors: 0, lv: lv, type: type };
-        sessionStorage.setItem('inQuiz', 'true');
-        document.getElementById('quiz-modal').style.display = 'flex';
-        loadQ();
-        updateUI();
-    }
-
-    function loadQ() {
-        const lvs = ['', '國小', '國中', '高中', '大學', '碩博'];
-        document.getElementById('q-title').innerText = `${lvs[state.quiz.lv]}挑戰 (${state.quiz.type === 'compete' ? '競賽' : '刷題'})`;
-        document.getElementById('q-prog').innerText = `第 ${state.quiz.current} / 10 題`;
-        document.getElementById('q-text').innerText = state.teacher === 'ling' ? "【理科】細胞中負責產生能量的是？" : "【文科】《紅樓夢》的作者是？";
-        
-        const opts = ["正確答案", "干擾選項"].sort(() => Math.random() - 0.5);
-        const box = document.getElementById('q-opts');
-        box.innerHTML = '';
-        opts.forEach(o => {
-            const btn = document.createElement('button');
-            btn.className = 'opt-btn';
-            btn.innerText = o;
-            btn.onclick = () => handleAns(o === "正確答案");
-            box.appendChild(btn);
-        });
-
-        const timer = document.getElementById('q-timer');
-        timer.innerText = (state.quiz.lv >= 4 || state.quiz.type === 'compete') ? "⌛ 不計時挑戰 (禁止切分頁)" : "⌛ 限時：20秒";
-    }
-
-    function handleAns(right) {
-        if(!right) state.quiz.errors++;
-        if(state.quiz.current < 10) {
-            state.quiz.current++;
-            loadQ();
-        } else {
-            finishQuiz();
-        }
-    }
-
-    function finishQuiz() {
-        sessionStorage.removeItem('inQuiz');
-        const errRate = state.quiz.errors / 10;
-        let reward = state.quiz.lv * 37.5 + 12.5; 
-        if(state.quiz.type === 'compete') reward = 500;
-
-        if(errRate > 0.3) {
-            alert(`江老師：妳錯了 ${state.quiz.errors} 題，錯誤率超過 30%，本次挑戰無獎勵。`);
-        } else {
-            if(state.isAdmin) reward *= 10;
-            state.coins += Math.round(reward);
-            alert(`🎉 太棒了！獲得金幣 🪙${Math.round(reward)}`);
-        }
-        
-        state.quiz.active = false;
-        document.getElementById('quiz-modal').style.display = 'none';
-        updateUI();
-        saveState();
-    }
-
-    // --- 輔助 ---
     function updateUI() {
-        document.getElementById('sta-val').innerText = state.stamina;
         document.getElementById('coin-val').innerText = state.coins;
+        document.getElementById('sta-val').innerText = state.stamina;
     }
-    function saveState() {
-        localStorage.setItem('sta', state.stamina);
-        localStorage.setItem('coin', state.coins);
+
+    function changeTheme(type) {
+        const bg = document.getElementById('bg-layer');
+        if(type === 'dark') {
+            bg.style.backgroundImage = "linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('IMG_7210.jpg')";
+        } else {
+            bg.style.backgroundImage = "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('IMG_7210.jpg')";
+        }
+        alert("主題更換成功！");
     }
-    function refillStamina() { state.stamina = 10; updateUI(); saveState(); alert("江鈴：體力充滿了！"); }
-    function toggleChat(s) { document.getElementById('chat-window').style.display = s ? 'flex' : 'none'; }
+
+    function buy(type) {
+        if(state.coins >= 50) {
+            state.coins -= 50;
+            updateUI();
+            alert("購買成功！");
+        } else {
+            alert("金幣不足。");
+        }
+    }
 </script>
 </body>
 </html>
