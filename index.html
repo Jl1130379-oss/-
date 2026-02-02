@@ -3,254 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>江家智慧城市：導師教室系統</title>
+    <title>江家姐妹的溫馨客廳</title>
     <style>
-        :root { 
-            --sci: #22d3ee; --art: #fb7185; --gold: #facc15; 
-            --snow: #f0f9ff; --bg: #020617; --glass: rgba(255, 255, 255, 0.08);
-        }
-        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; }
-        body { margin: 0; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
+        :root { --sci: #a5f3fc; --art: #fecdd3; --gold: #fde047; --bg: #020617; }
+        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { margin: 0; background: #000; color: #333; height: 100vh; overflow: hidden; }
 
-        /* 動態背景層 */
-        #bg-layer { 
-            position: fixed; inset: 0; z-index: -1; opacity: 0.4; 
-            background-size: cover; background-position: center; transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .bg-sci { background-image: url('https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=2000'); }
-        .bg-art { background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2000'); }
-
-        /* 頂部導航 */
-        header { 
-            position: fixed; top: 0; width: 100%; padding: 25px 40px; 
-            display: flex; justify-content: space-between; align-items: center; z-index: 100;
-            background: linear-gradient(to bottom, rgba(2,6,23,0.8), transparent);
-        }
-        .menu-btn { 
-            font-size: 1.1rem; cursor: pointer; color: var(--snow); font-weight: bold;
-            padding: 10px 20px; background: var(--glass); border-radius: 15px;
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
-        }
-        .menu-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
-
-        /* 主舞台 */
-        .stage { 
-            height: 100vh; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; position: relative;
+        /* 背景：溫馨家室 */
+        #home-scene { 
+            position: fixed; inset: 0; 
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
+                        url('https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2000'); 
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center; opacity: 0;
         }
 
-        /* 導師立繪與對話 */
-        .teacher-container { position: relative; cursor: pointer; transition: 0.5s; }
-        .teacher-img { 
-            height: 520px; filter: drop-shadow(0 0 30px rgba(34,211,238,0.2));
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        /* 初始合照懸浮感 */
+        #photo-frame {
+            width: 320px; padding: 12px; background: #fff; border: 8px solid #fff;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8); transform: rotate(-2deg);
+            cursor: pointer; z-index: 1000; text-align: center;
         }
-        .teacher-container:hover .teacher-img { transform: scale(1.03); filter: drop-shadow(0 0 40px rgba(34,211,238,0.4)); }
+        #photo-frame img { width: 100%; filter: sepia(20%); }
+        #photo-frame:hover { transform: rotate(0deg) scale(1.05); }
 
-        .bubble { 
-            position: absolute; top: 10%; right: -180px; background: white; 
-            color: #1e293b; padding: 18px 25px; border-radius: 25px; 
-            width: 240px; font-weight: 900; box-shadow: 0 15px 45px rgba(0,0,0,0.4);
-            opacity: 0; transform: translateX(-20px); pointer-events: none; transition: 0.4s;
-            z-index: 50; line-height: 1.5;
+        /* 導師立繪 */
+        #living-room { display: none; width: 100%; height: 100%; position: relative; opacity: 0; }
+        .teacher {
+            position: absolute; bottom: -20px; height: 85vh; cursor: pointer;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
         }
-        .bubble.active { opacity: 1; transform: translateX(0); }
-        .bubble::after {
-            content: ''; position: absolute; left: -10px; top: 20px;
-            border-top: 10px solid transparent; border-bottom: 10px solid transparent;
-            border-right: 15px solid white;
-        }
+        #teacher-ling { left: 5%; }
+        #teacher-yi { right: 5%; }
+        .teacher:hover { transform: translateY(-10px) scale(1.02); filter: drop-shadow(0 0 40px var(--sci)); }
 
-        /* 下方資訊與按鈕 */
-        .info-panel { 
-            margin-top: -20px; text-align: center; z-index: 10;
-            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(15px);
-            padding: 25px 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);
-        }
-        .btn-main {
-            background: var(--sci); color: #020617; border: none;
-            padding: 15px 45px; border-radius: 50px; font-size: 1.1rem;
-            font-weight: 900; cursor: pointer; box-shadow: 0 0 25px var(--sci);
-            margin-top: 15px; transition: 0.3s;
-        }
-        .btn-main:hover { transform: scale(1.05); box-shadow: 0 0 40px var(--sci); }
-
-        /* 答題彈窗（還原妳提供的視覺） */
-        .quiz-modal { 
-            position: fixed; top: 55%; left: 50%; transform: translate(-50%, -50%);
-            background: white; color: #1e293b; padding: 40px; border-radius: 35px;
-            width: 90%; max-width: 480px; display: none; z-index: 1000;
-            box-shadow: 0 30px 100px rgba(0,0,0,0.8);
-        }
-        .quiz-modal h3 { margin: 0 0 20px 0; font-size: 1.3rem; color: #0f172a; }
-        .opt-btn { 
-            width: 100%; padding: 16px; margin: 10px 0; border: 2px solid #f1f5f9;
-            border-radius: 18px; font-weight: bold; cursor: pointer;
-            text-align: left; font-size: 1rem; color: #2563eb; transition: 0.2s;
-        }
-        .opt-btn:hover { border-color: var(--sci); background: #f0f9ff; }
-
-        /* 巨大雪花管理者特權 ❄️ */
-        .admin-snow { 
-            position: fixed; bottom: 40px; right: 40px; font-size: 65px; 
-            cursor: pointer; z-index: 2000; opacity: 0.7;
-            filter: drop-shadow(0 0 20px var(--sci));
-            animation: snowFloat 3s infinite ease-in-out;
-        }
-        @keyframes snowFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-            50% { transform: translateY(-15px) rotate(15deg) scale(1.15); opacity: 1; }
+        /* 對話氣泡 */
+        .bubble {
+            position: absolute; top: 15%; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.95); padding: 20px 35px; border-radius: 50px;
+            font-weight: 900; font-size: 1.1rem; box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            display: none; border: 3px solid var(--art); z-index: 500;
         }
 
-        /* 目錄選單 */
-        .overlay {
-            position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95);
-            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000;
+        /* 隱藏的互動點 */
+        .interact-box {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 20px;
         }
-        .menu-card { background: var(--glass); padding: 50px; border-radius: 40px; border: 1px solid var(--sci); text-align: center; }
-        .teacher-select-btn {
-            display: block; width: 280px; padding: 18px; margin: 15px;
-            border-radius: 20px; border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer;
+        .icon-btn {
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3); color: white;
+            padding: 15px 30px; border-radius: 50px; cursor: pointer; font-weight: bold;
+        }
+        .icon-btn:hover { background: var(--sci); color: #000; box-shadow: 0 0 20px var(--sci); }
+
+        /* 彈窗設計 */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-content {
+            background: white; padding: 40px; border-radius: 40px; width: 450px; text-align: center;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.5);
+        }
+        .opt-btn {
+            width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee;
+            border-radius: 15px; cursor: pointer; font-weight: bold; color: #444;
+        }
+        .opt-btn:hover { border-color: var(--sci); background: #f0f9ff; color: #2563eb; }
+
+        /* 商場卡片 */
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .item-card { background: #f8fafc; padding: 20px; border-radius: 20px; border: 1px solid #e2e8f0; }
+
+        .snow-admin {
+            position: fixed; top: 30px; left: 30px; font-size: 55px; cursor: pointer;
+            opacity: 0.4; filter: drop-shadow(0 0 10px var(--sci));
         }
     </style>
 </head>
 <body>
 
-<div id="bg-layer" class="bg-sci"></div>
+<div id="photo-frame" onclick="startApp()">
+    <img src="https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=1000">
+    <p style="margin-top:10px; font-weight:bold; color:#555;">江家姐妹合照.jpg</p>
+    <small style="color:#aaa;">點擊進入溫馨客廳</small>
+</div>
 
-<header>
-    <div class="menu-btn" onclick="toggleMenu(true)">☰ 目錄切換</div>
-    <div style="text-align: right;">
-        <div style="font-size: 0.8rem; color: var(--sci); font-weight: bold; letter-spacing: 1px;">江家智慧城市財富</div>
-        <div style="font-size: 1.4rem; font-weight: 900;">🪙 <span id="coin-val">500</span></div>
-    </div>
-</header>
+<div id="home-scene">
+    <div id="living-room">
+        <header style="position:fixed; top:30px; right:40px; color:white; font-size:1.5rem; font-weight:900;">
+            🪙 <span id="coin-val">500</span>
+        </header>
 
-<div class="stage">
-    <div class="teacher-container" onclick="triggerChat()">
-        <div id="bubble" class="bubble"></div>
-        <img id="teacher-img" class="teacher-img" src="IMG_3812.jpeg">
-    </div>
+        <div id="main-bubble" class="bubble"></div>
 
-    <div id="intro-panel" class="info-panel">
-        <h2 id="teacher-name" style="margin: 0; color: var(--sci);">江鈴 導師</h2>
-        <p id="intro-desc" style="color: #cbd5e1; font-size: 0.95rem; margin: 10px 0 20px 0; max-width: 320px;">
-            歡迎回到理科醫學系統。今日我們將針對人體邏輯進行深度研析。
-        </p>
-        <button class="btn-main" onclick="openClass()">開始授課</button>
+        <img id="teacher-ling" class="teacher" src="IMG_3812.jpeg" onclick="chat('ling')">
+        <img id="teacher-yi" class="teacher" src="IMG_4392.jpg" onclick="chat('yi')">
+
+        <div class="interact-box">
+            <div class="icon-btn" onclick="openShop()">👗 衣櫥商場</div>
+            <div class="icon-btn" onclick="openQuiz()">📚 翻看筆記</div>
+        </div>
     </div>
 </div>
 
-<div id="quiz-modal" class="quiz-modal">
-    <div style="font-size: 0.75rem; color: var(--sci); font-weight: 900; margin-bottom: 5px; text-transform: uppercase;">Medical Analysis System</div>
-    <h3 id="q-text">題目加載中...</h3>
-    <div id="q-options"></div>
+<div class="snow-admin" onclick="adminAuth()">❄️</div>
+
+<div id="modal-shop" class="modal" onclick="closeModals()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 style="color:var(--art);">🎀 姐妹的私人更衣室</h2>
+        <div class="shop-grid">
+            <div class="item-card">
+                <p>極光醫學長裙</p>
+                <button class="opt-btn" onclick="buy(2000)">💰 <span class="price">2000</span></button>
+            </div>
+            <div class="item-card">
+                <p>櫻色漢服洋裝</p>
+                <button class="opt-btn" onclick="buy(2000)">💰 <span class="price">2000</span></button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="admin-snow" onclick="activateAdmin()">❄️</div>
-
-<div id="menu-overlay" class="overlay">
-    <div class="menu-card">
-        <h2 style="color: var(--snow); margin-bottom: 30px;">選擇您的研究導師</h2>
-        <button class="teacher-select-btn" style="background: var(--sci); color: #020617;" onclick="switchTeacher('sci')">江鈴：醫學理科系統</button>
-        <button class="teacher-select-btn" style="background: var(--art); color: white;" onclick="switchTeacher('art')">江依：文學藝術系統</button>
-        <button class="teacher-select-btn" style="background: transparent; border: 1px solid #475569; color: #94a3b8; font-size: 0.9rem;" onclick="toggleMenu(false)">返回當前教室</button>
+<div id="modal-quiz" class="modal" onclick="closeModals()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 id="q-title" style="color:var(--sci); margin-bottom:20px;">理科邏輯測試</h3>
+        <p id="q-text" style="font-weight:bold; margin-bottom:25px; line-height:1.6;"></p>
+        <div id="q-options"></div>
     </div>
 </div>
 
 <script>
-    let state = {
-        teacher: 'sci',
-        coins: 500,
-        isAdmin: false,
-        inClass: false
-    };
+    let state = { coins: 500, isAdmin: false };
 
-    const teacherData = {
-        sci: {
-            name: "江鈴 導師",
-            intro: "醫學是邏輯與生命的交響。今日的課題將考驗妳的細節觀察力。",
-            img: "IMG_3812.jpeg",
-            bg: "bg-sci",
-            chats: ["這套醫學長裙是由抗菌纖維製成的。", "妳今天看起來非常有學術天份。", "記得，醫學容不下任何一個錯誤。"],
-            questions: [
-                { q: "關於血管的收縮與舒張，主要受哪個系統調控？", opts: ["自主神經系統 (正解)", "消化系統", "骨骼系統"], reward: 150 }
-            ]
-        },
-        art: {
-            name: "江依 導師",
-            intro: "文學能讓人看見靈魂的厚度。讓我們在詩句中尋找寧靜。",
-            img: "IMG_4392.jpg",
-            bg: "bg-art",
-            chats: ["這件櫻色漢服是為了今日的課程挑選的。", "藝術不是課本，是妳對生活的體會。", "妳的文字裡藏著溫柔的力量。"],
-            questions: [
-                { q: "「採菊東籬下，悠然見南山」體現了哪種處世態度？", opts: ["淡泊名利 (正解)", "積極入世", "憂國憂民"], reward: 150 }
-            ]
-        }
-    };
-
-    function triggerChat() {
-        if(state.inClass) return;
-        const b = document.getElementById('bubble');
-        const pool = teacherData[state.teacher].chats;
-        b.innerText = pool[Math.floor(Math.random() * pool.length)];
-        b.classList.add('active');
-        setTimeout(() => b.classList.remove('active'), 3500);
+    function startApp() {
+        document.getElementById('photo-frame').style.display = 'none';
+        document.getElementById('home-scene').style.opacity = '1';
+        document.getElementById('living-room').style.display = 'block';
+        setTimeout(() => document.getElementById('living-room').style.opacity = '1', 100);
+        chat('welcome');
     }
 
-    function toggleMenu(show) {
-        if(state.inClass) return alert("課程進行中，嚴禁擅離職守。");
-        document.getElementById('menu-overlay').style.display = show ? 'flex' : 'none';
-    }
-
-    function switchTeacher(t) {
-        state.teacher = t;
-        const d = teacherData[t];
-        document.getElementById('teacher-name').innerText = d.name;
-        document.getElementById('intro-desc').innerText = d.intro;
-        document.getElementById('teacher-img').src = d.img;
-        document.getElementById('bg-layer').className = d.bg;
-        toggleMenu(false);
-    }
-
-    function openClass() {
-        state.inClass = true;
-        document.getElementById('quiz-modal').style.display = 'block';
-        loadQuiz();
-    }
-
-    function loadQuiz() {
-        const d = teacherData[state.teacher].questions[0];
-        document.getElementById('q-text').innerText = d.q;
-        const box = document.getElementById('q-options');
-        box.innerHTML = "";
+    function chat(who) {
+        const b = document.getElementById('main-bubble');
+        let txt = "";
+        if(who === 'ling') txt = "江鈴：在學校累了吧？喝杯熱可可，我們聊聊醫學邏輯。";
+        else if(who === 'yi') txt = "江依：妳看這件洋裝的剪裁，是不是很有文學氣息？";
+        else txt = "姐妹倆：歡迎回家！今天想先試衣服，還是溫習功課呢？";
         
-        d.opts.sort(() => Math.random() - 0.5).forEach(o => {
+        b.innerText = txt;
+        b.style.display = 'block';
+        setTimeout(() => b.style.display = 'none', 4000);
+    }
+
+    function openShop() {
+        document.getElementById('modal-shop').style.display = 'flex';
+        // 管理員自動一折
+        const prices = document.querySelectorAll('.price');
+        prices.forEach(p => p.innerText = state.isAdmin ? "200" : "2000");
+    }
+
+    function openQuiz() {
+        document.getElementById('modal-quiz').style.display = 'flex';
+        const qData = {
+            q: "在江家智慧城市的醫療體系中，觀察微細血管損傷的首選工具是？",
+            opts: [
+                { text: "高倍顯微鏡", isRight: true },
+                { text: "普通放大鏡", isRight: false },
+                { text: "肉眼觀察", isRight: false }
+            ]
+        };
+
+        document.getElementById('q-text').innerText = qData.q;
+        const optBox = document.getElementById('q-options');
+        optBox.innerHTML = "";
+        
+        qData.opts.sort(() => Math.random() - 0.5).forEach(o => {
             const btn = document.createElement('button');
             btn.className = 'opt-btn';
-            btn.innerText = o;
+            btn.innerText = o.text; // 這裡不再顯示「正解」字樣
             btn.onclick = () => {
-                if(o.includes("正解")) {
-                    state.coins += d.reward;
+                if(o.isRight) {
+                    state.coins += 150;
                     updateUI();
-                    alert("✨ 導師讚許：見解獨到，非常優秀！");
-                    state.inClass = false;
-                    document.getElementById('quiz-modal').style.display = 'none';
+                    alert("✨ 江鈴導師點頭微笑：觀察力很敏銳！獲得 150 金幣。");
+                    closeModals();
                 } else {
-                    alert("❌ 導師提醒：再仔細思考一下。");
+                    alert("❌ 江鈴導師提醒：這個工具精度不夠喔，再想想。");
                 }
             };
-            box.appendChild(btn);
+            optBox.appendChild(btn);
         });
     }
 
-    function activateAdmin() {
-        if(prompt("❄️ 管理者授權碼：") === "江憶婷") {
+    function buy(p) {
+        let finalPrice = state.isAdmin ? p * 0.1 : p;
+        if(state.coins >= finalPrice) {
+            state.coins -= finalPrice;
+            updateUI();
+            alert("👗 江依老師：太好了！這件衣服跟妳的氣質真配。");
+        } else alert("錢幣不足喔，去筆記本那裡完成挑戰吧！");
+    }
+
+    function closeModals() {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    }
+
+    function adminAuth() {
+        if(prompt("江家最高管理者代碼：") === "江憶婷") {
             state.isAdmin = true;
             state.coins = 99999;
             updateUI();
-            document.querySelector('.admin-snow').style.filter = "drop-shadow(0 0 35px var(--gold))";
-            alert("👑 歡迎管理者江憶婷！雪花特權已全數解鎖，妳現在可以自由調度所有資源。");
+            document.querySelector('.snow-admin').style.color = "var(--gold)";
+            document.querySelector('.snow-admin').style.opacity = "1";
+            alert("👑 尊貴的管理員江憶婷，歡迎回家。已解鎖一折商場與無限雪花幣。");
         }
     }
 
