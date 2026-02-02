@@ -3,167 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>江家智慧城市：全能教育平台</title>
+    <title>江家智慧城市：沉浸互動教室</title>
     <style>
         :root { --sci: #22d3ee; --art: #fb7185; --gold: #facc15; --bg: #020617; }
-        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; transition: 0.4s; }
-        body { margin: 0; background: var(--bg); color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; transition: 0.6s; }
+        body { margin: 0; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
+
+        /* 動態背景 */
+        #bg-layer { position: fixed; inset: 0; z-index: -1; opacity: 0.4; background-size: cover; background-position: center; transition: 1s; }
+        .bg-sci { background-image: url('https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=2000'); }
+        .bg-art { background-image: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2000'); }
+
+        /* 介面佈局 */
+        header { position: fixed; top: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+        .menu-icon { font-size: 24px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 50%; }
+
+        .container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         
-        /* 頁面切換控制 */
-        .page { display: none; height: 100vh; flex-direction: column; }
-        .page.active { display: flex; }
-
-        /* 登入主畫面樣式 */
-        #page-welcome { justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #020617 100%); }
-        .welcome-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 350px; }
+        /* 老師立繪與對話 */
+        .teacher-stage { position: relative; cursor: pointer; transition: 0.3s; }
+        .teacher-stage:hover { transform: scale(1.02); }
+        .teacher-img { height: 450px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.2)); }
         
-        /* 頂部導航 */
-        header { padding: 15px 20px; background: rgba(15,23,42,0.95); border-bottom: 2px solid var(--sci); display: flex; justify-content: space-between; align-items: center; }
+        .dialog-bubble { 
+            background: white; color: #1e293b; padding: 15px 25px; border-radius: 20px; 
+            max-width: 300px; font-weight: bold; position: absolute; top: -20px; right: -150px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); opacity: 0; transform: translateY(10px);
+            pointer-events: none; transition: 0.4s;
+        }
+        .dialog-bubble.show { opacity: 1; transform: translateY(0); }
 
-        /* 內容區 */
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; }
-        .teacher-box { width: 220px; height: 300px; margin-bottom: 20px; }
-        .teacher-img { width: 100%; height: 100%; object-fit: contain; }
+        /* 答題面板 */
+        .quiz-panel { 
+            background: white; color: #1e293b; padding: 25px; border-radius: 25px; 
+            width: 380px; margin-top: 20px; display: none; box-shadow: 0 15px 40px rgba(0,0,0,0.5); 
+        }
 
-        /* 答題彈窗樣式 (修正你截圖中的視覺) */
-        .quiz-container { background: white; color: #1e293b; padding: 30px; border-radius: 30px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .timer-bar-bg { height: 6px; background: #e2e8f0; border-radius: 3px; margin: 15px 0; overflow: hidden; }
-        #timer-fill { height: 100%; width: 100%; background: var(--sci); transition: linear; }
-        .opt-btn { width: 100%; padding: 15px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 15px; background: #f8fafc; font-weight: bold; cursor: pointer; text-align: left; font-size: 1rem; color: #3b82f6; }
-        .opt-btn:hover { border-color: var(--sci); background: #f0f9ff; }
+        /* 目錄彈窗 */
+        #menu-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; 
+            justify-content: center; align-items: center; z-index: 200; 
+        }
+        .menu-card { background: #1e293b; padding: 30px; border-radius: 25px; text-align: center; border: 1px solid var(--sci); }
 
-        /* 底部按鈕 */
-        nav { height: 70px; background: #0f172a; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.2); }
-        .nav-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
-        
-        .secret-snow { position: fixed; bottom: 85px; right: 20px; opacity: 0.3; cursor: pointer; font-size: 24px; }
+        .btn { padding: 12px 30px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; margin: 10px; }
+        .btn-sci { background: var(--sci); color: #020617; }
+        .btn-art { background: var(--art); color: white; }
+
+        .snow-btn { position: fixed; bottom: 20px; right: 20px; font-size: 30px; cursor: pointer; opacity: 0.5; }
     </style>
 </head>
 <body>
 
-<div id="page-welcome" class="page active">
-    <div class="welcome-card">
-        <h1 style="color:var(--sci); margin-bottom:10px;">江家智慧城市</h1>
-        <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:30px;">全能教育平台 · 導師教室系統</p>
-        <input type="text" id="user-name" placeholder="輸入學員姓名" style="width:100%; padding:12px; margin-bottom:20px; border-radius:10px; border:none; text-align:center;">
-        <button class="opt-btn" style="text-align:center; background:var(--sci); color:white; border:none;" onclick="enterSystem()">進入教室</button>
+<div id="bg-layer" class="bg-sci"></div>
+
+<header>
+    <div class="menu-icon" onclick="toggleMenu()">☰</div>
+    <div style="font-weight: bold;">🪙 <span id="coin-val">500</span></div>
+</header>
+
+<div class="container">
+    <div class="teacher-stage" onclick="teacherTalk()">
+        <img id="teacher-img" class="teacher-img" src="IMG_3812.jpeg">
+        <div id="bubble" class="dialog-bubble"></div>
+    </div>
+
+    <div id="intro-box" style="margin-top: 20px; text-align: center;">
+        <div id="intro-text" style="background: rgba(0,0,0,0.6); padding: 15px; border-radius: 15px; margin-bottom: 15px;">
+            江鈴導師：準備好進入醫學的世界了嗎？
+        </div>
+        <button class="btn btn-sci" onclick="startClass()">開始授課</button>
+    </div>
+
+    <div id="quiz-panel" class="quiz-panel">
+        <div id="q-text" style="font-weight:bold; margin-bottom:15px;"></div>
+        <div id="q-options"></div>
     </div>
 </div>
 
-<div id="page-app" class="page">
-    <header>
-        <div>
-            <div id="admin-tag" style="font-size:0.7rem; color:var(--gold); display:none;">👑 榮譽管理員：江憶婷</div>
-            <div id="teacher-title" style="font-weight:900;">江鈴：醫學理科系統</div>
-        </div>
-        <div style="text-align:right">
-            <div style="font-weight:bold;"><span id="coin-icon">🪙</span> <span id="coin-count">500</span></div>
-            <div id="timer-text" style="font-family:monospace; font-size:0.8rem; color:var(--sci);">REMAINING: 180s</div>
-        </div>
-    </header>
-
-    <main>
-        <div class="teacher-box">
-            <img id="teacher-img" class="teacher-img" src="IMG_3812.jpeg">
-        </div>
-
-        <div id="quiz-module" class="quiz-container">
-            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#64748b; font-weight:bold;">
-                <span id="q-progress">關卡 1 - 第 1 題</span>
-                <span id="q-reward">獎勵: +20</span>
-            </div>
-            <div class="timer-bar-bg"><div id="timer-fill"></div></div>
-            <div id="q-text" style="font-weight:bold; margin:20px 0; font-size:1.1rem; line-height:1.5;">正在為您準備今日課題...</div>
-            <div id="q-options"></div>
-        </div>
-    </main>
-
-    <div class="secret-snow" onclick="handleAdmin()">❄️</div>
-    <nav>
-        <button class="nav-btn" onclick="location.reload()">🚪 登出系統</button>
-        <button class="nav-btn" style="color:var(--sci)">📚 課程答題</button>
-    </nav>
+<div id="menu-overlay" onclick="toggleMenu()">
+    <div class="menu-card" onclick="event.stopPropagation()">
+        <h3>切換授課導師</h3>
+        <button class="btn btn-sci" onclick="switchTeacher('sci')">江鈴 (醫學理科)</button>
+        <button class="btn btn-art" onclick="switchTeacher('art')">江依 (文學藝術)</button>
+        <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 15px;">* 課程進行中無法切換</p>
+    </div>
 </div>
 
+<div class="snow-btn" onclick="adminMode()">❄️</div>
+
 <script>
-    // 題庫設計
-    const questionBank = {
-        sci: [
-            { q: "在人體解剖學中，心臟主要位於胸腔的哪個位置？", options: ["偏左側 (正確)", "正中央", "偏右側"], reward: 20 },
-            { q: "醫學上常說的「BP」代表什麼生理數值？", options: ["血壓 (正確)", "血糖", "心率"], reward: 20 }
-        ],
-        admin_sci: [
-            { q: "【管理員專題】關於人體循環系統，左心室的主要功能為何？", options: ["將血液泵向全身 (正確)", "接收肺部回流血液", "儲存靜脈血液"], reward: 50 },
-            { q: "【管理員專題】在藥物動力學中，首關效應主要發生於哪個器官？", options: ["肝臟 (正確)", "腎臟", "胃部"], reward: 50 }
-        ]
-    };
-
     let state = {
-        coins: 500, isAdmin: false, timer: 180, currentQ: 0
+        teacher: 'sci', // sci or art
+        mode: 'idle', // idle, intro, class
+        coins: 500,
+        isAdmin: false
     };
 
-    function enterSystem() {
-        const name = document.getElementById('user-name').value;
-        if(!name) return alert("請輸入學員姓名");
-        document.getElementById('page-welcome').classList.remove('active');
-        document.getElementById('page-app').classList.add('active');
-        startTimer();
-        loadQuestion();
-    }
-
-    function handleAdmin() {
-        const key = prompt("請輸入管理者代碼：");
-        if(key === "江憶婷") {
-            state.isAdmin = true;
-            document.getElementById('admin-tag').style.display = 'block';
-            document.getElementById('coin-icon').innerText = "❄️";
-            state.currentQ = 0; // 重置題目為管理員難度
-            loadQuestion();
-            alert("👑 權限解鎖：歡迎江憶婷管理者。難度已自動調整。");
+    const data = {
+        sci: {
+            name: "江鈴",
+            img: "IMG_3812.jpeg",
+            bg: "bg-sci",
+            intro: "準備好進入醫學的世界了嗎？我們會探討人體的奧秘與邏輯。",
+            chat: ["這套實驗袍穿起來很專業吧？", "妳今天的眼神很專注，適合學習。", "記得隨時補充水分，健康是學習的基石。"],
+            q: "心臟瓣膜的主要功能是？",
+            opts: ["防止血液倒流 (正解)", "製造紅血球", "儲存氧氣"]
+        },
+        art: {
+            name: "江依",
+            img: "IMG_4392.jpg",
+            bg: "bg-art",
+            intro: "詩歌與藝術能療癒心靈。今天，我們來聊聊文字背後的溫度。",
+            chat: ["這件櫻色漢服很適合午後的閱讀。", "妳喜歡這句詩嗎？它寫出了春天的靈魂。", "藝術沒有標準答案，只有心靈的共鳴。"],
+            q: "《紅樓夢》的作者通常被公認為？",
+            opts: ["曹雪芹 (正解)", "羅貫中", "施耐庵"]
         }
+    };
+
+    function switchTeacher(t) {
+        if(state.mode === 'class') return alert("課程正在進行中，請完成後再下課切換。");
+        state.teacher = t;
+        const info = data[t];
+        document.getElementById('teacher-img').src = info.img;
+        document.getElementById('bg-layer').className = info.bg;
+        document.getElementById('intro-text').innerText = `${info.name}導師：${info.intro}`;
+        toggleMenu();
     }
 
-    function loadQuestion() {
-        const pool = state.isAdmin ? questionBank.admin_sci : questionBank.sci;
-        const qData = pool[state.currentQ % pool.length];
-        
-        document.getElementById('q-text').innerText = qData.q;
-        document.getElementById('q-progress').innerText = `關卡 1 - 第 ${state.currentQ + 1} 題`;
-        document.getElementById('q-reward').innerText = `獎勵: +${qData.reward}`;
-        
-        const optBox = document.getElementById('q-options');
-        optBox.innerHTML = "";
-        qData.options.sort(() => Math.random() - 0.5).forEach(opt => {
+    function toggleMenu() {
+        const m = document.getElementById('menu-overlay');
+        m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function startClass() {
+        state.mode = 'class';
+        document.getElementById('intro-box').style.display = 'none';
+        document.getElementById('quiz-panel').style.display = 'block';
+        loadQuiz();
+    }
+
+    function loadQuiz() {
+        const info = data[state.teacher];
+        document.getElementById('q-text').innerText = info.q;
+        const box = document.getElementById('q-options');
+        box.innerHTML = "";
+        info.opts.sort().forEach(o => {
             const btn = document.createElement('button');
-            btn.className = 'opt-btn';
-            btn.innerText = opt;
+            btn.style.width = "100%"; btn.style.margin = "5px 0"; btn.style.padding = "10px";
+            btn.innerText = o;
             btn.onclick = () => {
-                if(opt.includes("正確")) {
-                    state.coins += qData.reward;
-                    state.currentQ++;
-                    document.getElementById('coin-count').innerText = state.coins;
-                    alert("✨ 答對了！導師深感欣慰。");
-                    loadQuestion();
-                } else {
-                    alert("❌ 思考有誤，再試一次。");
+                if(o.includes("正解")) {
+                    state.coins += 100;
+                    document.getElementById('coin-val').innerText = state.coins;
+                    alert("✨ 導師讚許：見解正確！");
+                    state.mode = 'idle'; // 回到下課模式
+                    document.getElementById('quiz-panel').style.display = 'none';
+                    document.getElementById('intro-box').style.display = 'block';
                 }
             };
-            optBox.appendChild(btn);
+            box.appendChild(btn);
         });
-        state.timer = 180;
     }
 
-    function startTimer() {
-        setInterval(() => {
-            if(state.timer > 0) {
-                state.timer--;
-                document.getElementById('timer-text').innerText = `REMAINING: ${state.timer}s`;
-                document.getElementById('timer-fill').style.width = `${(state.timer/180)*100}%`;
-            } else if(state.isAdmin) {
-                document.getElementById('timer-text').innerText = "DEPTH PONDERING...";
-                document.getElementById('timer-fill').style.background = "var(--gold)";
-            }
-        }, 1000);
+    function teacherTalk() {
+        if(state.mode === 'class') return; // 上課中不進行隨性對話
+        const bubble = document.getElementById('bubble');
+        const chats = data[state.teacher].chat;
+        bubble.innerText = chats[Math.floor(Math.random() * chats.length)];
+        bubble.classList.add('show');
+        setTimeout(() => bubble.classList.remove('show'), 3000);
+    }
+
+    function adminMode() {
+        if(prompt("授權碼：") === "江憶婷") {
+            state.isAdmin = true;
+            document.getElementById('coin-val').innerText = "❄️ 99999";
+            alert("👑 歡迎管理者江憶婷。");
+        }
     }
 </script>
 </body>
