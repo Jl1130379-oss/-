@@ -2,210 +2,195 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家姊妹：108 課綱智慧考場</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江家智慧城市：醫文雙修終極版</title>
     <style>
-        :root { --sci: #A5F3FC; --art: #FBCFE8; --aurora: linear-gradient(45deg, #E0F2FE, #C084FC, #A5F3FC, #67E8F9); --gold: #FACC15; }
-        * { box-sizing: border-box; font-family: "PingFang TC", "Noto Sans TC", sans-serif; transition: all 0.3s ease; }
-        body { margin: 0; background: #F8FAFC; color: #1E293B; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { 
+            --sci: #A5F3FC; --art: #FBCFE8; 
+            --aurora: linear-gradient(45deg, #00f2ff, #7000ff, #00ff95); 
+            --sakura: linear-gradient(45deg, #ff9a9e, #fad0c4, #ffdde1);
+            --admin-gold: #FACC15; 
+        }
+        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { margin: 0; background: #0F172A; color: #F8FAFC; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* 防弊紅色警報 */
-        #cheat-guard { position: fixed; inset: 0; background: #EF4444; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
+        /* --- 系統開機畫面 --- */
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; }
+        .log-line { color: #00FF00; font-size: 0.9rem; margin: 2px; width: 80%; }
 
-        /* 入口大門 */
-        #entrance { position: fixed; inset: 0; background: white; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .door { width: 150px; height: 250px; background: #D97706; border: 5px solid #92400E; border-radius: 8px; cursor: pointer; position: relative; }
-        .door::after { content: '敲敲門'; position: absolute; top: -40px; width: 100%; text-align: center; color: #92400E; font-weight: bold; }
+        /* --- 特效背景層 --- */
+        .fx-layer { position: absolute; inset: -100px; opacity: 0; filter: blur(80px); z-index: 1; border-radius: 50%; pointer-events: none; }
+        .active-fx { opacity: 0.7; animation: pulse-flow 8s infinite alternate; }
+        @keyframes pulse-flow { 0% { transform: scale(1) rotate(0deg); } 100% { transform: scale(1.2) rotate(15deg); } }
 
-        header { padding: 15px 20px; background: white; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        .timer-tag { font-family: monospace; font-size: 1.5rem; color: #0891B2; background: #ECFEFF; padding: 5px 20px; border-radius: 50px; border: 2px solid #A5F3FC; box-shadow: 0 0 15px rgba(165,243,252,0.5); }
-        .stat-pill { background: #F1F5F9; padding: 6px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        /* --- 頂部導航 --- */
+        header { padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: rgba(0,0,0,0.7); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .badge { background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem; }
+        .admin-glow { color: var(--admin-gold); border-color: var(--admin-gold); box-shadow: 0 0 10px var(--admin-gold); }
 
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+        /* --- 主畫面 --- */
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; padding: 20px; }
+        .character-stage { position: relative; width: 320px; height: 480px; cursor: pointer; }
+        .teacher-img { width: 100%; height: 100%; object-fit: contain; z-index: 5; position: relative; filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)); }
         
-        /* 少女與極光裙 */
-        .character-box { position: relative; width: 280px; height: 400px; }
-        .teacher-img { width: 100%; height: 100%; object-fit: contain; z-index: 2; position: relative; }
-        .aurora-bg { position: absolute; inset: -20px; background: var(--aurora); opacity: 0; filter: blur(50px); transition: 2s; z-index: 1; border-radius: 50%; }
-        .active-aurora { opacity: 0.6; animation: aurora-move 6s infinite alternate; }
-        @keyframes aurora-move { 0% { transform: scale(1) rotate(0deg); } 100% { transform: scale(1.2) rotate(10deg); } }
+        .bubble { background: rgba(255,255,255,0.95); color: #1E293B; padding: 15px 25px; border-radius: 25px; margin-bottom: 20px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; max-width: 400px; }
 
-        .talk-bubble { background: white; padding: 15px 25px; border-radius: 25px; max-width: 450px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #F1F5F9; font-weight: 500; }
+        /* --- 操作面板 --- */
+        .control-panel { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 30px; width: 100%; max-width: 500px; border: 1px solid rgba(255,255,255,0.2); }
+        .btn { width: 100%; padding: 12px; margin: 6px 0; border: none; border-radius: 15px; background: white; color: #1E293B; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .btn:hover { background: var(--sci); transform: translateY(-3px); }
+        .btn-admin-only { background: var(--admin-gold); color: #451A03; display: none; }
 
-        /* 題目卡片 */
-        .quiz-card { background: white; padding: 30px; border-radius: 35px; width: 100%; max-width: 550px; box-shadow: 0 25px 60px rgba(0,0,0,0.1); border: 1px solid #E2E8F0; text-align: center; }
-        .opt-btn { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #F1F5F9; border-radius: 18px; background: white; cursor: pointer; text-align: left; font-size: 1rem; font-weight: 600; }
-        .opt-btn:hover { border-color: #A5F3FC; background: #F0FDFF; transform: translateX(5px); }
-        
-        .energy-mode { color: #16A34A; border: 2px solid #16A34A !important; }
+        /* --- 珍寶閣商場 --- */
+        #shop-ui { position: fixed; bottom: -100%; left: 0; width: 100%; height: 70%; background: white; color: #1E293B; border-radius: 30px 30px 0 0; z-index: 500; padding: 30px; display: flex; flex-direction: column; }
+        .shop-open { bottom: 0 !important; }
+        .item-list { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .item-card { background: #F1F5F9; padding: 15px; border-radius: 20px; text-align: center; border: 2px solid transparent; }
+        .item-card:hover { border-color: var(--admin-gold); }
 
-        nav { background: white; border-top: 1px solid #E2E8F0; display: flex; padding: 10px; gap: 10px; }
-        .nav-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; background: #F8FAFC; color: #64748B; font-weight: bold; cursor: pointer; }
-        .nav-btn.active { background: #ECFEFF; color: #0891B2; box-shadow: inset 0 0 0 2px #A5F3FC; }
+        #cheat-alert { position: fixed; inset: 0; background: #EF4444; z-index: 11000; display: none; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-<div id="cheat-guard">
-    <h1>🚫 禁止跳轉！</h1>
-    <p>江鈴：誠實是學習的第一步。妳離開了頁面，體力已扣除。</p>
-    <button onclick="location.reload()" style="padding:10px 30px; border-radius:15px; border:none; cursor:pointer;">重新進入系統</button>
+<div id="boot-screen">
+    <div id="logs"></div>
 </div>
 
-<div id="entrance" onclick="this.style.transform='translateY(-100%)'">
-    <h2 style="margin-bottom:40px; color:#475569;">江家姊妹：銀白色的智慧家園</h2>
-    <div class="door"></div>
-    <p style="margin-top:30px; color:#94A3B8;">點擊大門，開始今日的修煉</p>
+<div id="cheat-alert">
+    <h1>⚠️ 偵測到非法離開</h1>
+    <p>江鈴老師不喜歡妳在答題時分心喔。</p>
+    <button class="btn" onclick="location.reload()" style="width:200px">重啟城市系統</button>
 </div>
 
 <header>
-    <div id="timer-ui" class="timer-tag">03:00</div>
-    <div style="display:flex; gap:10px;">
-        <div class="stat-pill">⚡ <span id="u-e">100</span>%</div>
-        <div class="stat-pill">🪙 <span id="u-c">0</span></div>
+    <div id="role-tag" class="badge">身份：正式學員</div>
+    <div style="display:flex; gap:12px;">
+        <div class="badge">⚡ <span id="e-val">100</span></div>
+        <div class="badge">🪙 <span id="c-val">500</span></div>
+        <button id="shop-btn" class="badge" style="display:none; background:var(--admin-gold); color:black; cursor:pointer;" onclick="toggleShop()">💎 珍寶閣</button>
     </div>
 </header>
 
 <main>
-    <div id="talk" class="talk-bubble">你好！我是江鈴。今天的學習目標是什麼呢？</div>
-    <div class="character-box">
-        <div id="aurora" class="aurora-bg"></div>
-        <img id="img-sci" class="teacher-img" src="IMG_3812.jpeg"> <img id="img-art" class="teacher-img" src="IMG_4392.jpg" style="display:none;"> </div>
+    <div id="talk" class="bubble">系統診斷中...</div>
+    <div class="character-stage" onclick="handleTeacherClick()">
+        <div id="fx-aurora" class="fx-layer" style="background: var(--aurora);"></div>
+        <div id="fx-sakura" class="fx-layer" style="background: var(--sakura);"></div>
+        <img id="img-sci" class="teacher-img" src="IMG_3812.jpeg" alt="江鈴">
+        <img id="img-art" class="teacher-img" src="IMG_4392.jpg" style="display:none;" alt="江依">
+    </div>
 
-    <div class="quiz-card" id="quiz-ui">
-        <h2 id="q-text" style="margin-bottom:25px;">準備好接受挑戰了嗎？</h2>
-        <div id="options-box">
-            <button class="opt-btn" onclick="setGrade('primary')">🏫 小學：生活常識 (tcool.cc)</button>
-            <button class="opt-btn" onclick="setGrade('cap')">🎓 國中：會考素養 (rcpet)</button>
-            <button class="opt-btn" onclick="setGrade('gsat')">🧪 高中：物理學測 (CJHS)</button>
-            <button class="opt-btn" onclick="setGrade('master')">🌌 碩博：專研模式 (get.com.tw)</button>
-        </div>
+    <div class="control-panel">
+        <button class="btn" onclick="switchTeacher()">🔄 切換導師 (江鈴/江依)</button>
+        <button class="btn" onclick="window.open('https://cap.rcpet.edu.tw/')">🎓 國中會考中心</button>
+        <button class="btn" onclick="window.open('https://www.tcool.cc/')">🏫 小學 T-Cool 題庫</button>
+        <button id="adm-1" class="btn btn-admin-only" onclick="window.open('https://master.get.com.tw/')">🚀 碩博專業頻道</button>
+        <button id="adm-2" class="btn btn-admin-only" onclick="window.open('https://wp.cjhs.kh.edu.tw/')">🧪 高中物理專研</button>
     </div>
 </main>
 
-<nav>
-    <button id="btn-sci" class="nav-btn active" onclick="switchT('sci')">江鈴 (理科)</button>
-    <button id="btn-art" class="nav-btn" onclick="switchT('art')">江依 (文科)</button>
-    <button class="nav-btn" onclick="startRecovery()" style="background:#DCFCE7; color:#16A34A;">⚡ 補能題庫</button>
-</nav>
+<div id="shop-ui">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0">💎 江家智慧珍寶閣</h2>
+        <button class="btn" style="width:80px" onclick="toggleShop()">關閉</button>
+    </div>
+    <div class="item-list">
+        <div class="item-card"><h3>🧬 分子儀</h3><p>3000🪙</p><button class="btn" onclick="buy()">購買</button></div>
+        <div class="item-card"><h3>📜 永樂大典</h3><p>2500🪙</p><button class="btn" onclick="buy()">購買</button></div>
+        <div class="item-card"><h3>🌡️ 超導刀</h3><p>5000🪙</p><button class="btn" onclick="buy()">購買</button></div>
+        <div class="item-card"><h3>🖌️ 徽墨</h3><p>4500🪙</p><button class="btn" onclick="buy()">購買</button></div>
+    </div>
+</div>
 
 <script>
-    let user = { e: 100, c: 0, level: 0, teacher: 'sci', mode: '' };
-    let timer;
+    let user = { e: 100, c: 500, isAdmin: false, teacher: 'sci', clicks: 0 };
 
-    function switchT(t) {
-        user.teacher = t;
-        document.getElementById('img-sci').style.display = t === 'sci' ? 'block' : 'none';
-        document.getElementById('img-art').style.display = t === 'art' ? 'block' : 'none';
-        document.getElementById('btn-sci').classList.toggle('active', t === 'sci');
-        document.getElementById('btn-art').classList.toggle('active', t === 'art');
-        document.getElementById('talk').innerText = t === 'sci' ? "我是江鈴，科學的世界很溫暖喔！" : "我是江依，讓我們在文字中漫步吧。";
+    // --- 1. 自動診斷啟動流程 ---
+    async function initCity() {
+        const logBox = document.getElementById('logs');
+        const lines = [
+            "CONNECTING TO 108 CURRICULUM CLOUD...",
+            "VERIFYING DATA SOURCES: GET.COM, RCPET, TCOOL...",
+            "LOADING ASSETS: IMG_3812 (江鈴), IMG_4392 (江依)...",
+            "INITIALIZING AURORA & SAKURA ENGINE...",
+            "SECURITY CHECK: ANTI-CHEAT MODULE READY.",
+            "WELCOME TO JIANG'S SMART CITY."
+        ];
+        for(let line of lines) {
+            let d = document.createElement('div');
+            d.className = 'log-line';
+            d.innerText = `> ${line}`;
+            logBox.appendChild(d);
+            await new Promise(r => setTimeout(r, 400));
+        }
+        document.getElementById('boot-screen').style.opacity = 0;
+        setTimeout(() => {
+            document.getElementById('boot-screen').style.display = 'none';
+            document.getElementById('talk').innerText = "你好！我是江鈴。今天要開啟哪門課呢？";
+        }, 500);
     }
 
-    function setGrade(m) {
-        user.mode = m;
-        document.getElementById('q-text').innerText = "目標鎖定。準備進入 108 課綱雲端考場。";
-        document.getElementById('options-box').innerHTML = `<button class="opt-btn" style="background:#0891B2; color:white; text-align:center;" onclick="startExam()">確認進入 (消耗 20⚡)</button>`;
+    // --- 2. 管理員解鎖邏輯 ---
+    function handleTeacherClick() {
+        user.clicks++;
+        if(user.clicks === 5 && !user.isAdmin) {
+            unlockAdmin();
+        } else {
+            document.getElementById('talk').innerText = user.teacher === 'sci' ? 
+                "江鈴：科學的嚴謹中也帶著溫暖喔！" : "江依：讓我們在文學的海洋裡慢跑。";
+        }
     }
 
-    // --- 補能模式 ---
-    function startRecovery() {
-        document.getElementById('talk').innerText = "江鈴：累了嗎？我們來玩個小問答，幫妳回復體力吧！";
-        document.getElementById('q-text').innerText = "【補能模式】快速答對 3 題即可回復 20⚡";
-        renderQ("1+1=?", ["2", "3", "4"], 0, true);
-    }
-
-    // --- 正式考場邏輯 ---
-    async function startExam() {
-        if(user.e < 20) return alert("體力不足，請先去補能模式刷題喔！");
-        sessionStorage.setItem('EXAM_LOCK', 'true');
+    function unlockAdmin() {
+        user.isAdmin = true;
+        user.c = 999999;
+        document.getElementById('role-tag').innerText = "身份：管理員 (GOD)";
+        document.getElementById('role-tag').classList.add('admin-glow');
+        document.getElementById('shop-btn').style.display = 'block';
+        document.getElementById('c-val').innerText = "999,999";
         
-        let qCount = 0;
-        let wrongs = 0;
+        document.querySelectorAll('.btn-admin-only').forEach(b => b.style.display = 'block');
+        updateTeacherFX();
+        alert("🛡️ 最高權限解鎖！極光與櫻花特效已啟動，碩博頻道已開啟。");
+    }
 
-        function next() {
-            qCount++;
-            if(qCount > 10) return finish(wrongs);
-            
-            // 碩博不計時，其他最低3分鐘
-            if(user.mode !== 'master') startTimer(user.mode === 'primary' ? 3 : 5);
-            else document.getElementById('timer-ui').innerText = "🏆 競賽模式";
+    // --- 3. 角色與特效切換 ---
+    function switchTeacher() {
+        user.teacher = user.teacher === 'sci' ? 'art' : 'sci';
+        document.getElementById('img-sci').style.display = user.teacher === 'sci' ? 'block' : 'none';
+        document.getElementById('img-art').style.display = user.teacher === 'art' ? 'block' : 'none';
+        updateTeacherFX();
+    }
 
-            renderQ(`(108課綱模擬) 第 ${qCount}/10 題：關於資料庫抓取...`, ["正確答案", "誘答 A", "誘答 B"], 0);
+    function updateTeacherFX() {
+        const aurora = document.getElementById('fx-aurora');
+        const sakura = document.getElementById('fx-sakura');
+        if(!user.isAdmin) return;
+
+        if(user.teacher === 'sci') {
+            aurora.classList.add('active-fx');
+            sakura.classList.remove('active-fx');
+            document.getElementById('talk').innerText = "江鈴：極光實驗裙已啟動，正在分析數據...";
+        } else {
+            sakura.classList.add('active-fx');
+            aurora.classList.remove('active-fx');
+            document.getElementById('talk').innerText = "江依：櫻花漢服已就緒，感受文字的溫度。";
         }
-
-        window.handleAns = (isCorrect, isRecovery) => {
-            if(isRecovery) {
-                user.e = Math.min(100, user.e + 10);
-                alert("體力回復成功！");
-                updateUI();
-                return location.reload();
-            }
-            if(!isCorrect) wrongs++;
-            next();
-        };
-
-        next();
     }
 
-    function renderQ(q, opts, correctIdx, isRec = false) {
-        document.getElementById('q-text').innerText = q;
-        const box = document.getElementById('options-box');
-        box.innerHTML = "";
-        opts.forEach((txt, i) => {
-            let b = document.createElement('button');
-            b.className = isRec ? "opt-btn energy-mode" : "opt-btn";
-            b.innerText = txt;
-            b.onclick = () => handleAns(i === correctIdx, isRec);
-            box.appendChild(b);
-        });
-    }
+    // --- 4. 商場與防弊 ---
+    function toggleShop() { document.getElementById('shop-ui').classList.toggle('shop-open'); }
+    function buy() { alert("管理員專屬撥款成功！商品已發送至您的虛擬倉庫。"); }
 
-    function startTimer(m) {
-        let sec = m * 60;
-        clearInterval(timer);
-        timer = setInterval(() => {
-            let min = Math.floor(sec/60);
-            let s = sec%60;
-            document.getElementById('timer-ui').innerText = `${min}:${s < 10 ? '0' : ''}${s}`;
-            if(sec <= 0) { clearInterval(timer); alert("時間到！"); finish(10); }
-            sec--;
-        }, 1000);
-    }
-
-    function finish(wrongs) {
-        clearInterval(timer);
-        sessionStorage.removeItem('EXAM_LOCK');
-        user.e -= 20;
-        if(wrongs <= 3) {
-            user.c += 500;
-            user.level++;
-            alert("妳太厲害了！江鈴為妳感到驕傲。");
-            if(user.level >= 3) document.getElementById('aurora').classList.add('active-aurora'); // 極光裙觸發
-        }
-        updateUI();
-        location.reload();
-    }
-
-    // --- 防弊與 UI 更新 ---
     document.addEventListener("visibilitychange", () => {
-        if (document.hidden && sessionStorage.getItem('EXAM_LOCK')) {
-            user.e = Math.max(0, user.e - 20);
-            localStorage.setItem('jiang_final_save', JSON.stringify(user));
-            document.getElementById('cheat-guard').style.display = 'flex';
+        if (document.hidden && !user.isAdmin) {
+            document.getElementById('cheat-alert').style.display = 'flex';
         }
     });
 
-    function updateUI() {
-        document.getElementById('u-e').innerText = user.e;
-        document.getElementById('u-c').innerText = user.c;
-        localStorage.setItem('jiang_final_save', JSON.stringify(user));
-    }
-
-    window.onload = () => {
-        const s = localStorage.getItem('jiang_final_save');
-        if(s) user = JSON.parse(s);
-        updateUI();
-    };
+    // 啟動診斷
+    initCity();
 </script>
 </body>
 </html>
