@@ -3,127 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>江家姊妹雲端教室</title>
+    <title>江家姊妹：醫道與文心</title>
     <style>
-        :root { --sci: #4FC3F7; --art: #9575CD; }
+        :root { --sci-theme: #4FC3F7; --art-theme: #9575CD; }
         body {
             margin: 0; height: 100vh; overflow: hidden;
-            font-family: "PingFang TC", sans-serif;
-            background: linear-gradient(180deg, #e0f7fa 0%, #f3e5f5 100%);
-            display: flex; flex-direction: column;
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #e1f5fe 0%, #f3e5f5 100%);
+            display: flex;
         }
 
-        /* 頂部導覽 */
-        #top-bar { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); padding: 15px; text-align: center; font-weight: bold; color: #37474f; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        
-        /* 舞台區：老師的房間 */
-        #stage {
-            flex: 1; position: relative; display: flex;
-            justify-content: space-around; align-items: flex-end;
-            padding-bottom: 60px;
+        /* 側欄 */
+        #sidebar {
+            width: 300px; background: rgba(38, 50, 56, 0.85);
+            backdrop-filter: blur(15px); color: white;
+            display: flex; flex-direction: column; z-index: 10;
+        }
+        .sidebar-header { padding: 40px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .course-list { flex: 1; overflow-y: auto; padding: 20px; }
+        .course-card {
+            background: rgba(255,255,255,0.1); border-radius: 20px;
+            padding: 18px; margin-bottom: 15px; cursor: pointer; transition: 0.3s;
+        }
+        .course-card:hover { background: rgba(255,255,255,0.25); transform: translateX(8px); }
+
+        /* 主畫面與動態老師 */
+        #main { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .character-zone {
+            position: relative; width: 350px; height: 350px;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* 動態小人容器 */
-        .teacher-char {
-            position: relative; width: 280px; text-align: center;
-            animation: floating 4s ease-in-out infinite;
+        /* 呼吸特效動畫 */
+        .avatar-live {
+            width: 300px; height: 300px; border-radius: 50%;
+            border: 8px solid white; box-shadow: 0 15px 45px rgba(0,0,0,0.12);
+            object-fit: cover; background: white;
+            animation: liveAction 4s ease-in-out infinite;
+            transition: 0.5s;
+        }
+        @keyframes liveAction {
+            0%, 100% { transform: translateY(0) scale(1) rotate(-0.5deg); }
+            50% { transform: translateY(-15px) scale(1.02) rotate(0.5deg); }
         }
 
-        /* 呼吸浮動動畫 */
-        @keyframes floating {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        /* 對話泡泡 */
+        .bubble {
+            position: absolute; top: -30px; background: white; padding: 20px 30px;
+            border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            max-width: 380px; font-size: 1.2rem; line-height: 1.5; color: #37474f;
+            z-index: 5; animation: pop 0.4s ease-out;
         }
-
-        /* 圓形頭像框 */
-        .portrait {
-            width: 250px; height: 250px; border-radius: 50%;
-            border: 6px solid white; box-shadow: 0 15px 45px rgba(0,0,0,0.1);
-            object-fit: cover; background: white; transition: 0.3s;
-        }
-
-        /* 氣泡對話框 */
-        .speech-bubble {
-            position: absolute; top: -110px; left: 50%; transform: translateX(-50%);
-            background: white; padding: 15px 20px; border-radius: 20px;
-            width: 220px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            display: none; font-size: 1rem; border: 1px solid #eee; animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes pop { from { transform: translateX(-50%) scale(0.5); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
-
-        .speech-bubble::after {
-            content: ''; position: absolute; bottom: -10px; left: 50%;
-            border-width: 10px 10px 0; border-style: solid; border-color: white transparent;
+        .bubble::after {
+            content: ''; position: absolute; bottom: -12px; left: 50%;
+            border-width: 12px 12px 0; border-style: solid; border-color: white transparent;
             transform: translateX(-50%);
         }
+        @keyframes pop { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-        /* 課程操作區 */
-        #quiz-area {
-            background: white; padding: 25px;
-            border-radius: 35px 35px 0 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.03);
-            text-align: center; min-height: 200px;
+        /* 題目區域 */
+        #quiz-box {
+            width: 85%; max-width: 600px; background: rgba(255,255,255,0.8);
+            padding: 30px; border-radius: 40px; margin-top: 30px; text-align: center;
         }
-        .btn {
-            background: #f8f9fa; border: 1px solid #eee; padding: 12px 30px;
-            margin: 8px; border-radius: 25px; font-size: 1.1rem;
-            cursor: pointer; transition: 0.2s; color: #444;
+        .opt-btn {
+            width: 100%; padding: 18px; margin: 10px 0; border: 1px solid #eee;
+            border-radius: 20px; background: white; font-size: 1.2rem;
+            cursor: pointer; transition: 0.2s;
         }
-        .btn:active { transform: scale(0.95); background: #eee; }
+        .opt-btn:hover { border-color: var(--sci-theme); background: #f1f8e9; transform: scale(1.02); }
 
-        .name-tag { margin-top: 15px; font-weight: bold; font-size: 1.2rem; letter-spacing: 1px; }
-    </style>
-</head>
-<body>
-
-<div id="top-bar">江家姊妹：醫道與文心</div>
-
-<div id="stage">
-    <div id="char-sci" class="teacher-char">
-        <div id="bubble-sci" class="speech-bubble"></div>
-        <img class="portrait" src="https://i.imgur.com/G5K5C7i.jpeg" style="object-position: center;">
-        <div class="name-tag" style="color:var(--sci);">江鈴 醫生</div>
-    </div>
-
-    <div id="char-art" class="teacher-char">
-        <div id="bubble-art" class="speech-bubble"></div>
-        <img class="portrait" src="https://i.imgur.com/XqT7X9p.jpeg" style="object-position: center;">
-        <div class="name-tag" style="color:var(--art);">江依 博士</div>
-    </div>
-</div>
-
-<div id="quiz-area">
-    <p id="q-display" style="font-size: 1.2rem; color: #37474f;">👋 歡迎！兩位老師正等著您，點擊開始吧。</p>
-    <div id="btn-group">
-        <button class="btn" onclick="fetchLesson()">✨ 開始今日課程</button>
-    </div>
-</div>
-
-<script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pub?output=csv";
-
-    async function fetchLesson() {
-        try {
-            const res = await fetch(CSV_URL + '&cb=' + Date.now());
-            const text = await res.text();
-            const data = text.split("\n")[1].split(","); // 抓第一筆資料
-            
-            const lesson = {
-                teacher: data[0].trim(), // sci 或 art
-                q: data[2].trim(),
-                a1: data[3].trim(),
-                a2: data[4].trim(),
-                correct: data[5].trim()
-            };
-            displayLesson(lesson);
-        } catch (e) {
-            document.getElementById('q-display').innerText = "連線稍微不穩，請再試一次。";
-        }
-    }
-
-    function displayLesson(data) {
-        const isSci = data.teacher === 'sci';
-        const activeB = isSci ? document.getElementById('bubble-sci') : document.getElementById('bubble-art');
-        const inactiveB = isSci ? document.getElementById('bubble-art') : document.getElementById('bubble-sci');
-        
-        inactiveB.style.display = 'none';
-        activeB.style.display = 'block
+        /* 管理員模式樣式 */
+        #admin-trigger { position: fixed; bottom: 0; right: 0; width: 60px; height: 60px; z-index: 999; cursor: default; }
+        #admin-panel {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
