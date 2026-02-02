@@ -3,234 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>江家智慧城市 - 完整模組版</title>
+    <title>江家智慧城市 - 官方正式版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-            --main: #5a7d9b; --accent: #e6b8a2; --gold: #d4af37;
-            --white: rgba(255, 255, 255, 0.95); --err: #ff4757;
+            --jiang-blue: #a5c3d9; --jiang-gold: #e6b8a2; 
+            --jiang-white: #f8fbff; --glass: rgba(255, 255, 255, 0.9);
         }
         * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; }
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #f0f4f8; }
 
-        /* 背景層 */
-        #bg-layer {
+        /* 背景控制 */
+        #main-bg {
             position: fixed; inset: 0;
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('IMG_7210.jpg');
-            background-size: cover; background-position: center; z-index: -2;
-            transition: 1s filter;
+            background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), url('IMG_7210.jpg');
+            background-size: cover; background-position: center; z-index: -1;
         }
 
-        /* 雪花層：確保永遠在最上層可點擊 */
-        #snow-container { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
-        .snowflake {
-            position: absolute; top: -10%; color: white; cursor: pointer;
-            pointer-events: auto; user-select: none; animation: fall linear infinite;
+        /* 側邊導航 (與妳的截圖一致) */
+        #sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+            background: var(--glass); backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(0,0,0,0.05); z-index: 100;
         }
-        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+        .nav-item {
+            padding: 18px 25px; cursor: pointer; color: #333;
+            display: flex; align-items: center; gap: 12px; transition: 0.3s;
+        }
+        .nav-item:hover { background: rgba(165, 195, 217, 0.2); }
 
-        /* 1. 登入頁面 */
-        #auth-screen {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            display: flex; align-items: center; justify-content: center; z-index: 5000;
+        /* 頂部狀態列 - 明燈系統 */
+        .status-bar {
+            position: fixed; top: 20px; right: 20px; display: flex; gap: 15px; z-index: 200;
         }
-        .auth-card {
-            background: var(--white); padding: 40px; border-radius: 25px;
-            width: 380px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5);
+        .stat-card {
+            background: var(--glass); padding: 10px 20px; border-radius: 50px;
+            font-weight: bold; border: 1px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        /* 2. 總入口 (Dashboard) */
-        #dashboard {
-            display: none; height: 100vh; padding: 60px 40px;
-            grid-template-columns: repeat(3, 1fr); gap: 20px; z-index: 10;
+        /* 模組層容器 (解決跳不出來的問題) */
+        .module-layer {
+            position: fixed; left: 240px; inset: 0; background: rgba(255,255,255,0.92);
+            z-index: 50; display: none; flex-direction: column; padding: 40px;
+            overflow-y: auto; animation: fadeIn 0.3s ease;
         }
-        .city-node {
-            background: rgba(255,255,255,0.2); backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3); border-radius: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: white; cursor: pointer; font-size: 1.2rem;
-        }
-        .city-node:hover { background: var(--white); color: var(--main); transform: scale(1.05); }
-        .city-node i { font-size: 3rem; margin-bottom: 15px; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        /* 3. 各模組通用視窗 (Modal) */
-        .module-window {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            z-index: 4000; display: none; align-items: center; justify-content: center;
+        /* 商場商品卡片樣式 */
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 25px; margin-top: 20px; }
+        .product-card {
+            background: white; border-radius: 20px; padding: 20px; text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 1px solid #eee;
         }
-        .module-content {
-            background: white; width: 90%; max-width: 800px; height: 80%;
-            border-radius: 25px; position: relative; overflow-y: auto; padding: 40px;
+        .product-card i { font-size: 3rem; color: var(--jiang-blue); margin-bottom: 15px; }
+        .product-name { font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; }
+        .product-price { color: var(--jiang-gold); font-weight: 900; margin-bottom: 15px; }
+        .buy-btn {
+            background: var(--jiang-blue); color: white; border: none; padding: 10px 25px;
+            border-radius: 50px; cursor: pointer; width: 100%;
         }
-        .close-btn { position: absolute; top: 20px; right: 25px; font-size: 2rem; cursor: pointer; color: #333; }
+        .buy-btn:hover { background: #8fb1c9; }
 
-        /* HUD 狀態欄 */
-        #hud { position: fixed; top: 20px; right: 30px; display: none; gap: 15px; z-index: 4500; }
-        .hud-item { background: var(--white); padding: 10px 20px; border-radius: 50px; font-weight: 900; }
-
-        /* 商場與庭院樣式 */
-        .item-card { border: 1px solid #ddd; padding: 15px; border-radius: 15px; margin: 10px; display: inline-block; width: 200px; text-align: center; }
-        .item-card img { width: 100%; border-radius: 10px; }
+        /* 固定精美雪花 */
+        #master-snow {
+            position: fixed; bottom: 30px; right: 30px; font-size: 45px;
+            color: white; cursor: pointer; z-index: 1000;
+            filter: drop-shadow(0 0 15px rgba(165,195,217,0.8));
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
     </style>
 </head>
-<body onload="initSystem()">
+<body onload="updateUI()">
 
-<div id="bg-layer"></div>
-<div id="snow-container"></div>
+<div id="main-bg"></div>
+<div id="master-snow" onclick="adminLogin()">❄️</div>
 
-<div id="auth-screen">
-    <div class="auth-card">
-        <h2 style="color:var(--main)">江家智慧城市</h2>
-        <p>請輸入通行證進入</p>
-        <input type="text" id="username" placeholder="用戶名" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
-        <button onclick="login()" style="width:100%; padding:12px; background:var(--main); color:white; border:none; border-radius:8px; font-weight:bold;">進入城市</button>
-    </div>
+<div id="sidebar">
+    <div style="padding: 40px 25px; font-size: 1.5rem; font-weight: 900; color: var(--jiang-blue);">江家智慧城市</div>
+    <div class="nav-item" onclick="switchModule('study')"><i class="fas fa-graduation-cap"></i> 理科教研 (江鈴)</div>
+    <div class="nav-item" onclick="switchModule('study')"><i class="fas fa-book-open"></i> 文科品鑑 (江依)</div>
+    <div class="nav-item" onclick="switchModule('yard')"><i class="fas fa-home"></i> 江家庭院</div>
+    <div class="nav-item" onclick="switchModule('shop')"><i class="fas fa-shopping-bag"></i> 城市商場</div>
+    <div class="nav-item" onclick="switchModule('closet')"><i class="fas fa-tshirt"></i> 私人更衣室</div>
+    <div class="nav-item" onclick="switchModule('album')"><i class="fas fa-images"></i> 江老師相簿</div>
 </div>
 
-<div id="hud">
-    <div class="hud-item" onclick="alert('體力已滿！')">⚡ <span id="sta-val">10</span></div>
-    <div class="hud-item">🪙 <span id="coin-val">500</span></div>
-    <div class="hud-item" onclick="location.reload()" style="cursor:pointer"><i class="fas fa-sign-out-alt"></i></div>
+<div class="status-bar">
+    <div class="stat-card">⚡ 體力：<span id="sta-val">10</span></div>
+    <div class="stat-card">🏮 明燈：<span id="coin-val">500</span></div>
 </div>
 
-<div id="dashboard">
-    <div class="city-node" onclick="openModule('study')">
-        <i class="fas fa-graduation-cap"></i>
-        <b>江老師教室</b>
-    </div>
-    <div class="city-node" onclick="openModule('shop')">
-        <i class="fas fa-shopping-bag"></i>
-        <b>城市商場</b>
-    </div>
-    <div class="city-node" onclick="openModule('yard')">
-        <i class="fas fa-palette"></i>
-        <b>江家庭院</b>
-    </div>
-    <div class="city-node" onclick="openModule('closet')">
-        <i class="fas fa-gem"></i>
-        <b>更衣室</b>
-    </div>
-    <div class="city-node" onclick="openModule('album')">
-        <i class="fas fa-camera"></i>
-        <b>回憶相簿</b>
-    </div>
-    <div class="city-node" onclick="alert('敬請期待新區域')">
-        <i class="fas fa-plus-circle"></i>
-        <b>開發中</b>
-    </div>
-</div>
-
-<div id="mod-study" class="module-window">
-    <div class="module-content">
-        <span class="close-btn" onclick="closeModule('study')">×</span>
-        <h2 style="color:var(--main)">江老師教室</h2>
-        <div id="quiz-area">
-            <p>江鈴老師與江依老師正在準備課程...</p>
-            <button onclick="alert('課程開始！請完成 10 題答題。')" style="padding:15px 30px; background:var(--main); color:white; border:none; border-radius:10px;">開始今日刷題</button>
+<div id="shop-layer" class="module-layer">
+    <h1 style="color:var(--jiang-blue); border-bottom: 2px solid #eee; padding-bottom: 10px;">江家精品商場</h1>
+    <p>在這裡，妳可以使用「明燈」購買提升能力或美化城市的物品。</p>
+    
+    <div class="shop-grid">
+        <div class="product-card">
+            <i class="fas fa-bolt"></i>
+            <div class="product-name">體力藥水</div>
+            <div class="product-price">🏮 50 明燈</div>
+            <button class="buy-btn" onclick="buyItem('體力藥水', 50)">購買</button>
+        </div>
+        <div class="product-card">
+            <i class="fas fa-magic"></i>
+            <div class="product-name">智力光環</div>
+            <div class="product-price">🏮 300 明燈</div>
+            <button class="buy-btn" onclick="buyItem('智力光環', 300)">購買</button>
+        </div>
+        <div class="product-card">
+            <i class="fas fa-palette"></i>
+            <div class="product-name">極光背景</div>
+            <div class="product-price">🏮 1000 明燈</div>
+            <button class="buy-btn" onclick="buyItem('極光背景', 1000)">購買</button>
         </div>
     </div>
 </div>
 
-<div id="mod-shop" class="module-window">
-    <div class="module-content">
-        <span class="close-btn" onclick="closeModule('shop')">×</span>
-        <h2>城市商場</h2>
-        <div class="item-card">
-            <p>新版背景：櫻花江家</p>
-            <p>🪙 200</p>
-            <button onclick="buy('bg')">購買</button>
-        </div>
-        <div class="item-card">
-            <p>體力藥劑</p>
-            <p>🪙 50</p>
-            <button onclick="buy('sta')">購買</button>
-        </div>
-    </div>
-</div>
-
-<div id="mod-yard" class="module-window">
-    <div class="module-content">
-        <span class="close-btn" onclick="closeModule('yard')">×</span>
-        <h2>江家庭院</h2>
-        <p>在這裡可以更換城市的主題風格。</p>
-        <button onclick="changeTheme('default')" style="padding:10px;">經典風格 (IMG_7210)</button>
-        <button onclick="changeTheme('dark')" style="padding:10px;">午夜風格</button>
+<div id="yard-layer" class="module-layer">
+    <h1>江家庭院</h1>
+    <p>目前位置：主建築前院</p>
+    <div style="background: white; padding: 30px; border-radius: 20px; text-align: center;">
+        <i class="fas fa-sun" style="font-size: 5rem; color: #f1c40f;"></i>
+        <h3>天氣：晴朗</h3>
+        <button class="buy-btn" style="width: auto;" onclick="alert('快門按下！已存入相簿')">📸 拍攝庭院風景</button>
     </div>
 </div>
 
 <script>
-    let state = { coins: 500, stamina: 10, name: '' };
-
-    function initSystem() {
-        setInterval(spawnSnow, 500); // 啟動動態雪花
-    }
-
-    function login() {
-        const name = document.getElementById('username').value;
-        if(!name) return alert("請輸入名字");
-        state.name = name;
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'grid';
-        document.getElementById('hud').style.display = 'flex';
-    }
-
-    // 雪花：隨機飄落且最高層級
-    function spawnSnow() {
-        const s = document.createElement('div');
-        s.className = 'snowflake';
-        s.innerHTML = '❄️';
-        s.style.left = Math.random() * 95 + 'vw';
-        s.style.fontSize = (Math.random() * 20 + 15) + 'px';
-        s.style.animationDuration = (Math.random() * 3 + 5) + 's';
-        
-        // 點擊雪花觸發密鑰
-        s.onclick = (e) => {
-            e.stopPropagation();
-            const pw = prompt("江家權限驗證：");
-            if(pw === "江憶婷") {
-                state.coins += 9999;
-                updateUI();
-                alert("👑 管理者權限已解鎖！");
-            }
-        };
-        
-        document.getElementById('snow-container').appendChild(s);
-        setTimeout(() => s.remove(), 8000);
-    }
-
-    // 模組切換邏輯
-    function openModule(id) {
-        document.getElementById('mod-' + id).style.display = 'flex';
-        document.getElementById('bg-layer').style.filter = 'blur(10px)'; // 背景模糊效果
-    }
-
-    function closeModule(id) {
-        document.getElementById('mod-' + id).style.display = 'none';
-        document.getElementById('bg-layer').style.filter = 'none';
-    }
+    let state = { coins: 500, stamina: 10 };
 
     function updateUI() {
-        document.getElementById('coin-val').innerText = state.coins;
         document.getElementById('sta-val').innerText = state.stamina;
+        document.getElementById('coin-val').innerText = state.coins;
     }
 
-    function changeTheme(type) {
-        const bg = document.getElementById('bg-layer');
-        if(type === 'dark') {
-            bg.style.backgroundImage = "linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('IMG_7210.jpg')";
+    // 核心跳轉邏輯：確保視窗能「跳出來」
+    function switchModule(modId) {
+        // 先隱藏所有模組
+        document.querySelectorAll('.module-layer').forEach(layer => {
+            layer.style.display = 'none';
+        });
+        // 顯示指定的模組
+        const target = document.getElementById(modId + '-layer');
+        if (target) {
+            target.style.display = 'flex';
         } else {
-            bg.style.backgroundImage = "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('IMG_7210.jpg')";
+            alert("該區域正在施工中，請稍後再來！");
         }
-        alert("主題更換成功！");
     }
 
-    function buy(type) {
-        if(state.coins >= 50) {
-            state.coins -= 50;
+    // 購物邏輯
+    function buyItem(name, cost) {
+        if (state.coins >= cost) {
+            state.coins -= cost;
             updateUI();
-            alert("購買成功！");
+            alert(`成功購買 ${name}！剩餘明燈：🏮 ${state.coins}`);
         } else {
-            alert("金幣不足。");
+            alert("妳的明燈不足，快去完成江老師的課題賺取吧！");
+        }
+    }
+
+    // 管理者密鑰 (右下角雪花)
+    function adminLogin() {
+        const key = prompt("輸入江家通行碼：");
+        if (key === "江憶婷") {
+            state.coins += 9999;
+            updateUI();
+            alert("👑 明燈已充值！管理者江憶婷，商場現在是妳的遊樂場。");
         }
     }
 </script>
