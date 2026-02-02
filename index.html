@@ -3,140 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>江家姊妹雲端教室</title>
+    <title>江家姊妹：全方位 AI 智慧教室</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --sci: #4FC3F7; --art: #9575CD; --dark: #263238; }
-        * { box-sizing: border-box; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; height: 100vh; background: #f4f9fc; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --sci: #00BCD4; --art: #E91E63; --dark: #1A1A1B; --gold: #FFD700; }
+        * { box-sizing: border-box; font-family: "PingFang TC", sans-serif; }
+        body { margin: 0; background: #0F172A; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        header { background: var(--dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
-        #sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: #212121; color: white; transform: translateX(-100%); transition: 0.3s; z-index: 150; padding-top: 60px; }
-        #sidebar.open { transform: translateX(0); }
-        .menu-item { padding: 15px; border-bottom: 1px solid #333; cursor: pointer; }
+        /* 註冊門檻 */
+        #auth-screen { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .auth-box { background: white; color: #333; padding: 40px; border-radius: 30px; width: 90%; max-width: 400px; text-align: center; }
 
+        /* 頂部狀態 */
+        header { padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .user-info { display: flex; gap: 15px; font-size: 0.9rem; }
+        .badge { background: #334155; padding: 4px 12px; border-radius: 20px; color: var(--gold); border: 1px solid var(--gold); }
+
+        /* 主舞台 */
         main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .avatar-box { width: 220px; height: 220px; position: relative; margin-bottom: 20px; }
-        .t-img { width: 100%; height: 100%; border-radius: 50%; border: 6px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover; display: none; animation: float 4s infinite ease-in-out; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .avatar-wrap { position: relative; width: 200px; height: 200px; margin-bottom: 20px; }
+        .teacher-img { width: 100%; height: 100%; border-radius: 50%; border: 4px solid white; object-fit: cover; display: none; }
+        
+        .bubble { background: #1E293B; color: #F1F5F9; padding: 15px; border-radius: 20px; margin-bottom: 20px; text-align: center; width: 100%; max-width: 400px; border-left: 5px solid var(--sci); position: relative; }
 
-        .bubble { background: white; padding: 15px 20px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 320px; text-align: center; font-size: 1.1rem; }
-        .card { background: white; padding: 25px; border-radius: 30px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
-        .btn { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #eee; border-radius: 15px; background: white; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
-        .btn:active { background: #f0faff; transform: scale(0.98); }
+        .quiz-card { background: white; color: #333; padding: 25px; border-radius: 30px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .option { width: 100%; padding: 16px; margin: 10px 0; border: 2px solid #F1F5F9; border-radius: 15px; background: white; cursor: pointer; text-align: left; font-size: 1rem; transition: 0.3s; }
+        .option:hover { background: #F8FAFC; border-color: var(--sci); }
+
+        /* 難度標籤 */
+        .level-tag { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; background: #EEE; color: #666; margin-bottom: 10px; display: inline-block; }
     </style>
 </head>
 <body>
 
-<header>
-    <button class="btn" style="width:auto; margin:0; padding:5px 15px;" onclick="document.getElementById('sidebar').classList.toggle('open')">☰ 課程選單</button>
-    <span style="font-weight:bold;">江家姊妹：醫道與文心</span>
-    <div style="width:50px;"></div>
-</header>
-
-<div id="sidebar">
-    <div id="course-list"></div>
+<div id="auth-screen">
+    <div class="auth-box">
+        <h2 style="margin-top:0;">🎓 學生註冊</h2>
+        <input type="text" id="reg-name" placeholder="輸入姓名" style="width:100%; padding:12px; margin:10px 0;">
+        <select id="reg-level" style="width:100%; padding:12px; margin:10px 0;">
+            <option value="elementary">國小階段</option>
+            <option value="junior">國中會考階段</option>
+            <option value="senior">高中學測階段</option>
+            <option value="expert">碩博入學考/專業階段</option>
+        </select>
+        <button onclick="doRegister()" style="width:100%; padding:15px; background:var(--sci); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">建立學習檔案</button>
+    </div>
 </div>
 
+<header>
+    <div id="u-name">未登入</div>
+    <div class="user-info">
+        <div class="badge">🪙 金幣: <span id="u-coins">0</span></div>
+        <div class="badge">🔥 等級: <span id="u-rank">LV1</span></div>
+    </div>
+</header>
+
 <main>
-    <div id="talk" class="bubble">歡迎來到教室！</div>
-    <div class="avatar-box">
-        <img id="img-sci" class="t-img" src="./IMG_3812.jpeg">
-        <img id="img-art" class="t-img" src="./IMG_4392.jpg">
+    <div id="talk" class="bubble">正在為您從題庫抓取合適的考題...</div>
+    <div class="avatar-wrap">
+        <img id="pic-sci" class="teacher-img" src="IMG_3812.jpeg">
+        <img id="pic-art" class="teacher-img" src="IMG_4392.jpg">
     </div>
 
-    <div id="quiz-area" class="card">
-        <h2 id="q-text">江鈴老師正在等妳，準備好了嗎？</h2>
-        <div id="options">
-            <button class="btn" onclick="startFirstCourse()">準備好了</button>
-            <button class="btn" onclick="alert('沒關係，休息一下再回來！')">還想再玩一下下</button>
-        </div>
+    <div class="quiz-card">
+        <div id="diff-tag" class="level-tag">載入中...</div>
+        <h3 id="question" style="margin:0 0 20px 0;">題目載入中...</h3>
+        <div id="options-box"></div>
     </div>
 </main>
 
 <script>
-    // --- 這裡就是「寫進去」的課程內容備份 ---
-    let database = [
-        ["sci", "醫學邏輯入門", "如果病患感到頭痛且發燒，第一步應該？", "測量體溫", "立刻開強效藥", "0"],
-        ["art", "文學之美", "『床前明月光』的下一句是？", "疑是地上霜", "舉頭望明月", "0"],
-        ["sci", "防疫小常識", "正確的洗手時間應至少持續幾秒？", "5秒", "20秒", "1"]
-    ];
+    // --- AI 自動抓題模擬與題庫 (可隨時擴展至 API) ---
+    const aiQuestionBank = {
+        elementary: [
+            { t: "sci", q: "【國小自然】下列哪種植物是透過種子傳播的？", o: ["蒲公英", "地衣", "青苔"], c: 0, r: 10 },
+            { t: "art", q: "【國小國語】「春眠不覺曉」的下一句是？", o: ["處處聞啼鳥", "舉頭望明月", "夜來風雨聲"], c: 0, r: 10 }
+        ],
+        junior: [
+            { t: "sci", q: "【會考理化】關於質量的敘述，何者正確？", o: ["隨地點改變", "物體所含物質的量", "即是重量"], c: 1, r: 50 },
+            { t: "art", q: "【會考國文】下列詞語何者形容「書法流暢」？", o: ["龍飛鳳舞", "畫餅充飢", "呆若木雞"], c: 0, r: 50 }
+        ],
+        senior: [
+            { t: "sci", q: "【學測生物】DNA 雙螺旋結構中，腺嘌呤(A)與誰配對？", o: ["胞嘧啶(C)", "鳥嘌呤(G)", "胸腺嘧啶(T)"], c: 2, r: 100 }
+        ],
+        expert: [
+            { t: "sci", q: "【碩博士入學】關於「熱力學第二定律」的熵增原理，下列敘述何者精確？", o: ["孤立系統熵值不減", "能量百分百轉換", "絕對零度可達到"], c: 0, r: 500 }
+        ]
+    };
 
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pub?output=csv";
+    let user = { name: "", level: "junior", coins: 0, exp: 0 };
 
-    // 初始化：先讀取內置課程，再嘗試同步雲端
-    function init() {
-        renderSidebar();
-        syncWithCloud();
+    function doRegister() {
+        const name = document.getElementById('reg-name').value;
+        const lv = document.getElementById('reg-level').value;
+        if(!name) return alert("請輸入姓名！");
+        
+        user = { name: name, level: lv, coins: 0, exp: 0 };
+        saveAndSync();
+        document.getElementById('auth-screen').style.display = 'none';
+        startLesson();
     }
 
-    async function syncWithCloud() {
-        try {
-            const res = await fetch(CSV_URL + '&t=' + Date.now());
-            const text = await res.text();
-            const rows = text.split("\n").filter(r => r.trim() !== "").map(r => r.split(","));
-            if(rows.length > 1) {
-                database = rows.slice(1); // 用雲端資料替換內置資料
-                renderSidebar();
-            }
-        } catch (e) {
-            console.log("雲端連線失敗，使用內置備份課程。");
+    function startLesson() {
+        renderHeader();
+        const bank = aiQuestionBank[user.level];
+        const randomQ = bank[Math.floor(Math.random() * bank.length)];
+        
+        // 切換老師
+        const isSci = randomQ.t === 'sci';
+        document.getElementById('pic-sci').style.display = isSci ? 'block' : 'none';
+        document.getElementById('pic-art').style.display = !isSci ? 'block' : 'none';
+        
+        document.getElementById('talk').innerText = isSci ? "我是江鈴，這題理科考驗妳的邏輯喔！" : "我是江依，文科的奧祕就在這裡。";
+        document.getElementById('diff-tag').innerText = "目標： " + user.level.toUpperCase();
+        document.getElementById('question').innerText = randomQ.q;
+
+        const box = document.getElementById('options-box');
+        box.innerHTML = "";
+        randomQ.o.forEach((txt, i) => {
+            let b = document.createElement('button');
+            b.className = "option";
+            b.innerText = txt;
+            b.onclick = () => checkAns(i, randomQ.c, randomQ.r);
+            box.appendChild(b);
+        });
+    }
+
+    function checkAns(idx, correct, reward) {
+        if(idx == correct) {
+            user.coins += reward;
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            alert(`🎉 答對了！獲得 ${reward} 金幣！`);
+            saveAndSync();
+            startLesson();
+        } else {
+            alert("再想一下，妳一定可以的！");
         }
     }
 
-    function renderSidebar() {
-        const list = document.getElementById('course-list');
-        list.innerHTML = "";
-        database.forEach((row, i) => {
-            let d = document.createElement('div');
-            d.className = "menu-item";
-            d.innerText = "📖 " + row[1];
-            d.onclick = () => { loadQuiz(i); document.getElementById('sidebar').classList.remove('open'); };
-            list.appendChild(d);
-        });
+    function renderHeader() {
+        document.getElementById('u-name').innerText = "👤 " + user.name;
+        document.getElementById('u-coins').innerText = user.coins;
+        document.getElementById('u-rank').innerText = "LV." + (Math.floor(user.coins/200) + 1);
     }
 
-    function startFirstCourse() {
-        loadQuiz(0);
+    // --- 儲存資料庫邏輯 ---
+    function saveAndSync() {
+        // 目前儲存於本地，未來只需替換為 Firebase API 即可實現真正的雲端帳號
+        localStorage.setItem('jiangs_classroom_user', JSON.stringify(user));
     }
 
-    function loadQuiz(idx) {
-        const row = database[idx];
-        const type = row[0].trim().toLowerCase();
-        
-        document.getElementById('img-sci').style.display = (type === 'sci') ? 'block' : 'none';
-        document.getElementById('img-art').style.display = (type === 'art') ? 'block' : 'none';
-
-        document.getElementById('talk').innerText = (type === 'sci') ? "我是江鈴，準備好接受醫學挑戰了嗎？" : "我是江依，讓我們進入國學的世界。";
-        document.getElementById('q-text').innerText = row[2];
-
-        const box = document.getElementById('options');
-        box.innerHTML = "";
-        [row[3], row[4]].forEach((txt, i) => {
-            let b = document.createElement('button');
-            b.className = "btn";
-            b.innerText = txt;
-            b.onclick = () => {
-                if(i == row[5].trim()) {
-                    document.getElementById('talk').innerText = "🌟 答對了！太厲害了。";
-                    speak("答對了！");
-                } else {
-                    document.getElementById('talk').innerText = "哎呀，再想一下？";
-                    speak("再想一下？");
-                }
-            };
-            box.appendChild(b);
-        });
-        speak(document.getElementById('talk').innerText);
+    window.onload = () => {
+        const saved = localStorage.getItem('jiangs_classroom_user');
+        if(saved) {
+            user = JSON.parse(saved);
+            document.getElementById('auth-screen').style.display = 'none';
+            startLesson();
+        }
     }
-
-    function speak(t) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(t);
-        u.lang = 'zh-TW';
-        window.speechSynthesis.speak(u);
-    }
-
-    init();
 </script>
 </body>
 </html>
