@@ -2,144 +2,187 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | 動作實體化</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>江家智慧城市 | 先學後考模式</title>
     <style>
         :root { --blue: #00f2fe; --pink: #ff00de; --gold: #ffd700; --panel: rgba(5, 12, 25, 0.98); }
         body { margin: 0; background: #000; color: #fff; overflow: hidden; font-family: "PingFang TC", sans-serif; }
+        .viewport { position: fixed; inset: 20px; background: var(--panel); border-radius: 35px; display: flex; flex-direction: column; padding: 20px; border: 1px solid var(--blue); }
         
         /* 老師舞台 */
-        .viewport { position: fixed; inset: 30px; background: var(--panel); border-radius: 35px; display: flex; flex-direction: column; padding: 20px; border: 1px solid var(--blue); }
         .stage { display: flex; justify-content: space-around; align-items: center; flex: 1; }
+        .avatar-container { position: relative; width: 180px; height: 180px; cursor: pointer; }
+        .avatar-frame { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--blue); background-size: cover; overflow: hidden; }
         
-        /* 頭像框核心 */
-        .avatar-container { position: relative; width: 220px; height: 220px; margin: 0 auto; }
-        .avatar-frame {
-            width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--blue);
-            background-size: cover; position: relative; overflow: hidden; z-index: 1;
-        }
+        /* 教學與答題區 */
+        .edu-panel { position: relative; background: rgba(255,255,255,0.08); border-radius: 25px; padding: 25px; min-height: 200px; text-align: center; }
+        .timer-bar { height: 4px; background: var(--blue); width: 100%; position: absolute; top: 0; left: 0; transition: linear; }
+        
+        /* 鎖定狀態 */
+        .locked { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
 
-        /* 動作實體化層 (框內出現物品) */
-        .action-layer {
-            position: absolute; inset: 0; z-index: 5; pointer-events: none;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: 0.5s;
-        }
-        .action-layer.active { opacity: 1; }
-
-        /* 物品動畫 */
-        .item-tea { width: 60px; filter: drop-shadow(0 0 5px var(--blue)); animation: drinkMove 3s infinite; }
-        .item-cake { width: 70px; filter: drop-shadow(0 0 5px var(--gold)); animation: eatMove 0.8s infinite alternate; }
-        .item-hand { width: 100px; position: absolute; top: -20px; animation: patMove 1s infinite alternate; }
-
-        @keyframes drinkMove { 0%, 100% { transform: translate(30px, 40px) rotate(0); } 50% { transform: translate(0, -10px) rotate(-20deg); } }
-        @keyframes eatMove { from { transform: scale(0.8) translate(-20px, 40px); } to { transform: scale(1) translate(-20px, 30px); } }
-        @keyframes patMove { from { transform: translateY(0) rotate(0); } to { transform: translateY(20px) rotate(-10deg); } }
-
-        /* 特效層 */
-        .aurora-fx { position: absolute; inset: 0; background: linear-gradient(125deg, transparent, rgba(0,242,254,0.1), transparent); animation: aurora 4s infinite; z-index: 2; }
-        @keyframes aurora { 0% {transform:translateX(-100%)} 100% {transform:translateX(100%)} }
-
-        /* 選擇框與 UI */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .select-card { width: 200px; padding: 20px; border: 1px solid var(--gold); border-radius: 20px; text-align: center; cursor: pointer; margin: 0 20px; transition: 0.3s; }
-        .select-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.05); }
-        .btn-box { text-align: center; padding-bottom: 20px; }
-        .btn { padding: 12px 30px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; margin: 0 10px; }
+        /* 彈窗 */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .chat-box { width: 350px; background: #111; border: 1px solid var(--gold); border-radius: 20px; padding: 20px; }
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn-opt { padding: 12px; background: transparent; border: 1px solid var(--blue); color: #fff; border-radius: 10px; cursor: pointer; }
     </style>
 </head>
-<body onload="startLife()">
+<body onload="init()">
 
 <div class="viewport">
-    <div style="text-align:right; padding:10px;">
-        <span style="color:var(--gold)">🏮 明燈: <span id="coin-ui">5000</span></span>
-    </div>
-
-    <div class="stage">
-        <div class="char-box">
-            <div class="avatar-container">
-                <div id="ling-fx" class="aurora-fx"></div>
-                <div id="ling-avatar" class="avatar-frame" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=JiangLing&clothing=blazer&accessories=glasses')"></div>
-                <div id="ling-action" class="action-layer">
-                    <img id="ling-item" src="" class="">
-                </div>
-            </div>
-            <h3 style="color:var(--blue)">江鈴 (理科)</h3>
-            <small style="color:var(--gold)">👗 流動極光裙</small>
-        </div>
-
-        <div class="char-box">
-            <div class="avatar-container">
-                <div id="yi-avatar" class="avatar-frame" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=JiangYi&clothing=shirt'); border-color:var(--pink);"></div>
-                <div id="yi-action" class="action-layer">
-                    <img id="yi-item" src="" class="">
-                </div>
-            </div>
-            <h3 style="color:var(--pink)">江依 (文科)</h3>
-            <small style="color:var(--gold)">👘 落櫻繽紛漢服</small>
+    <div style="display:flex; justify-content: space-between; padding: 10px;">
+        <span id="status-tag" style="color:var(--gold)">🏛️ 大廳暫歇中</span>
+        <div>
+            <span style="margin-right:20px;">🏮 明燈: <span id="coin-ui">0</span></span>
+            <span>❤️ HP: <span id="hp-ui">100</span></span>
         </div>
     </div>
 
-    <div class="btn-box">
-        <button class="btn" style="background:var(--blue)" onclick="showSelect('quiz')">開始訓練</button>
-        <button class="btn" style="background:var(--gold)" onclick="showSelect('act')">互動解鎖</button>
+    <div class="stage" id="teacher-stage">
+        <div class="char-box" onclick="handleAvatarClick('ling')">
+            <div id="ling-frame" class="avatar-frame" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=JiangLing&accessories=glasses')"></div>
+            <h4 style="color:var(--blue); text-align:center">江鈴 (理科)</h4>
+        </div>
+        <div class="char-box" onclick="handleAvatarClick('yi')">
+            <div id="yi-frame" class="avatar-frame" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=JiangYi'); border-color:var(--pink)"></div>
+            <h4 style="color:var(--pink); text-align:center">江依 (文科)</h4>
+        </div>
+    </div>
+
+    <div id="edu-ui" class="edu-panel" style="display:none;">
+        <div id="t-bar" class="timer-bar"></div>
+        <h3 id="edu-title" style="color:var(--gold)">教學時間</h3>
+        <p id="edu-content" style="line-height:1.6; font-size:1.1rem;"></p>
+        <div id="quiz-options" class="opt-grid" style="display:none;"></div>
+        <button id="next-btn" onclick="startExam()" style="display:none; margin-top:15px; padding:10px 30px; border-radius:15px; background:var(--gold); border:none; cursor:pointer;">我學好了，開始考驗</button>
+    </div>
+
+    <div id="menu-ui" style="text-align:center; padding:15px;">
+        <button onclick="openSelector('course')" style="padding:12px 40px; border-radius:20px; background:var(--blue); border:none; font-weight:bold; cursor:pointer;">選擇今日課題 (不可中途換課)</button>
     </div>
 </div>
 
 <div id="pop" class="overlay">
-    <div id="pop-content" style="display:flex;"></div>
+    <div id="pop-content"></div>
 </div>
 
 <script>
-    const IMGS = {
-        tea: "https://cdn-icons-png.flaticon.com/512/3504/3504827.png",
-        cake: "https://cdn-icons-png.flaticon.com/512/3081/3081918.png",
-        hand: "https://cdn-icons-png.flaticon.com/512/1602/1602856.png"
+    let state = { coin: 0, hp: 100, mode: 'idle', currentTeacher: '', currentData: null };
+
+    // 擴充題庫：教學 + 相應題目
+    const courseDB = {
+        '理科': {
+            teacher: '江鈴',
+            teaching: "江鈴：『觀察這組導數公式，當 Δx 趨近於 0 時，我們能得到瞬時變化率。這是微積分的基石，務必記住公式的推導過程。』",
+            question: "根據剛才的教學，導數在幾何上代表什麼？",
+            options: ["切線斜率", "曲線長度", "圓面積"],
+            answer: "切線斜率",
+            time: 15
+        },
+        '文科': {
+            teacher: '江依',
+            teaching: "江依：『「落櫻繽紛」語出陶淵明的《桃花源記》。這不僅是景色的描寫，更寄託了詩人對理想社會的嚮往。感受文字間的寧靜。』",
+            question: "《桃花源記》中描述的景色與下列何者相符？",
+            options: ["芳草鮮美，落英繽紛", "小橋流水人家", "大漠孤煙直"],
+            answer: "芳草鮮美，落英繽紛",
+            time: 30
+        }
     };
 
-    function startLife() {
-        // 初始狀態：江鈴喝茶，江依吃餅
-        playAct('ling', 'tea', 'item-tea');
-        playAct('yi', 'cake', 'item-cake');
-    }
+    function init() { updateUI(); }
 
-    function playAct(teacher, type, className) {
-        const layer = document.getElementById(`${teacher}-action`);
-        const img = document.getElementById(`${teacher}-item`);
-        img.src = IMGS[type];
-        img.className = className;
-        layer.classList.add('active');
-    }
-
-    function showSelect(mode) {
+    function openSelector(type) {
         const pop = document.getElementById('pop');
         const content = document.getElementById('pop-content');
         pop.style.display = 'flex';
         
-        if(mode === 'quiz') {
-            content.innerHTML = `
-                <div class="select-card" onclick="alert('理科題目載入...')">理科訓練 (江鈴)</div>
-                <div class="select-card" onclick="alert('文科題目載入...')">文科訓練 (江依)</div>
-            `;
-        } else {
-            content.innerHTML = `
-                <div class="select-card" onclick="unlock('ling')">解鎖：江鈴摸頭<br>(出現鼓勵之手)</div>
-                <div class="select-card" onclick="unlock('yi')">解鎖：江依餵食<br>(燒餅遞向螢幕)</div>
-            `;
-        }
+        content.innerHTML = `
+            <div style="display:flex; gap:20px;">
+                <div style="padding:30px; border:1px solid var(--blue); border-radius:20px; cursor:pointer;" onclick="selectCourse('理科')">【江鈴】理科精選</div>
+                <div style="padding:30px; border:1px solid var(--pink); border-radius:20px; cursor:pointer;" onclick="selectCourse('文科')">【江依】文科精選</div>
+            </div>
+        `;
     }
 
-    function unlock(t) {
+    function selectCourse(type) {
+        state.mode = 'learning';
+        state.currentTeacher = type === '理科' ? 'ling' : 'yi';
+        state.currentData = courseDB[type];
+        
         document.getElementById('pop').style.display = 'none';
-        if(t === 'ling') {
-            // 暫時切換動作為摸頭
-            playAct('ling', 'hand', 'item-hand');
-            setTimeout(()=>playAct('ling', 'tea', 'item-tea'), 5000);
+        document.getElementById('menu-ui').style.display = 'none';
+        document.getElementById('edu-ui').style.display = 'block';
+        
+        // 鎖定另一位老師
+        document.getElementById(type === '理科' ? 'yi-frame' : 'ling-frame').parentElement.classList.add('locked');
+        
+        // 進入教學模式
+        document.getElementById('status-tag').innerText = `📖 正在授課：${type}`;
+        document.getElementById('edu-title').innerText = "📚 老師教學中...";
+        document.getElementById('edu-content').innerText = state.currentData.teaching;
+        document.getElementById('next-btn').style.display = 'inline-block';
+    }
+
+    function startExam() {
+        state.mode = 'exam';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('edu-title').innerText = "📝 隨堂考驗";
+        document.getElementById('edu-content').innerText = state.currentData.question;
+        
+        const opts = document.getElementById('quiz-options');
+        opts.style.display = 'grid';
+        opts.innerHTML = state.currentData.options.sort(()=>Math.random()-0.5).map(o => 
+            `<button class="btn-opt" onclick="check('${o}')">${o}</button>`
+        ).join('');
+
+        // 開始計時
+        let time = state.currentData.time;
+        const bar = document.getElementById('t-bar');
+        bar.style.width = "100%";
+        bar.style.transition = `width ${time}s linear`;
+        setTimeout(() => bar.style.width = "0%", 10);
+
+        state.timer = setTimeout(() => check(''), time * 1000);
+    }
+
+    function check(ans) {
+        clearTimeout(state.timer);
+        if(ans === state.currentData.answer) {
+            state.coin += 500; alert("江老師：『很好，看來妳有認真聽課。』");
         } else {
-            // 強化餵食動作
-            playAct('yi', 'cake', 'item-cake'); // 這裡可以換成更靠近螢幕的動畫
-            alert("江依老師把燒餅遞到了妳嘴邊！");
+            state.hp -= 10; alert("江老師：『剛才不是才講過嗎？專心點。』");
         }
+        
+        // 結束課程，重置狀態
+        state.mode = 'idle';
+        document.getElementById('edu-ui').style.display = 'none';
+        document.getElementById('menu-ui').style.display = 'block';
+        document.getElementById('quiz-options').style.display = 'none';
+        document.querySelectorAll('.char-box').forEach(e => e.classList.remove('locked'));
+        document.getElementById('status-tag').innerText = "🏛️ 大廳暫歇中";
+        updateUI();
+    }
+
+    function handleAvatarClick(teacher) {
+        if(state.mode === 'learning' || state.mode === 'exam') {
+            alert(`【警告】江${teacher==='ling'?'鈴':'依'}老師：『上課期間禁止私聊，請專注於眼前的課題！』`);
+            return;
+        }
+        
+        const pop = document.getElementById('pop');
+        pop.style.display = 'flex';
+        document.getElementById('pop-content').innerHTML = `
+            <div class="chat-box">
+                <h3 style="color:var(--gold)">與 江${teacher==='ling'?'鈴':'依'} 老師私聊中</h3>
+                <p>${teacher==='ling'?'「剛才的理科公式還有哪裡不懂嗎？」':'「累了的話，要不要一起喝杯茶？」'}</p>
+                <button onclick="document.getElementById('pop').style.display='none'" style="width:100%; padding:10px; background:var(--blue); border:none; border-radius:10px; cursor:pointer;">結束對話</button>
+            </div>
+        `;
+    }
+
+    function updateUI() {
+        document.getElementById('coin-ui').innerText = state.coin;
+        document.getElementById('hp-ui').innerText = state.hp;
     }
 </script>
 </body>
