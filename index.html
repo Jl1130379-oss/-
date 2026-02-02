@@ -2,182 +2,186 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>江家智慧城市 | 先學後考模式</title>
+    <title>江家智慧城市 | 五階演進系統</title>
     <style>
-        :root { --blue: #00f2fe; --pink: #ff00de; --gold: #ffd700; --panel: rgba(5, 12, 25, 0.98); }
-        body { margin: 0; background: #000; color: #fff; overflow: hidden; font-family: "PingFang TC", sans-serif; }
-        .viewport { position: fixed; inset: 20px; background: var(--panel); border-radius: 35px; display: flex; flex-direction: column; padding: 20px; border: 1px solid var(--blue); }
+        :root { --blue: #00f2fe; --pink: #ff00de; --gold: #ffd700; --bg: #010205; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; overflow: hidden; }
+        .viewport { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
         
-        /* 老師舞台 */
-        .stage { display: flex; justify-content: space-around; align-items: center; flex: 1; }
-        .avatar-container { position: relative; width: 180px; height: 180px; cursor: pointer; }
-        .avatar-frame { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--blue); background-size: cover; overflow: hidden; }
-        
-        /* 教學與答題區 */
-        .edu-panel { position: relative; background: rgba(255,255,255,0.08); border-radius: 25px; padding: 25px; min-height: 200px; text-align: center; }
-        .timer-bar { height: 4px; background: var(--blue); width: 100%; position: absolute; top: 0; left: 0; transition: linear; }
-        
-        /* 鎖定狀態 */
-        .locked { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+        /* HUD 頂部面板 */
+        .hud { display: flex; justify-content: space-between; padding: 20px 45px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--blue); }
+        .stat-item { font-size: 1.1rem; font-weight: bold; text-shadow: 0 0 10px var(--blue); }
 
-        /* 彈窗 */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .chat-box { width: 350px; background: #111; border: 1px solid var(--gold); border-radius: 20px; padding: 20px; }
-        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .btn-opt { padding: 12px; background: transparent; border: 1px solid var(--blue); color: #fff; border-radius: 10px; cursor: pointer; }
+        /* 導師生命艙 */
+        .stage { display: flex; justify-content: center; align-items: center; gap: 90px; flex: 1; }
+        .avatar-pod { text-align: center; cursor: pointer; transition: 0.5s ease; position: relative; }
+        .avatar-circle { 
+            width: 230px; height: 230px; border-radius: 50%; border: 4px solid var(--blue);
+            background-size: cover; background-position: center; box-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
+        }
+        
+        /* 鎖定邏輯：中途不可換人 */
+        .forbidden { filter: grayscale(1) brightness(0.15) blur(1px); opacity: 0.3; pointer-events: none; transform: scale(0.85); }
+
+        /* 智慧教學面板 */
+        .edu-overlay {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            width: 88%; max-width: 1000px; background: rgba(5, 10, 20, 0.98);
+            border: 2px solid var(--gold); border-radius: 40px; padding: 35px;
+            display: none; z-index: 1000; box-shadow: 0 0 60px #000;
+        }
+        .timer-ui { float: right; font-size: 2.2rem; color: var(--pink); font-family: 'Courier New', monospace; }
+        .btn { padding: 15px 45px; border-radius: 50px; border: 1px solid var(--blue); background: transparent; color: #fff; cursor: pointer; font-weight: bold; transition: 0.3s; margin: 5px; }
+        .btn:hover:not(:disabled) { background: var(--blue); color: #000; box-shadow: 0 0 20px var(--blue); }
     </style>
 </head>
-<body onload="init()">
+<body>
 
 <div class="viewport">
-    <div style="display:flex; justify-content: space-between; padding: 10px;">
-        <span id="status-tag" style="color:var(--gold)">🏛️ 大廳暫歇中</span>
-        <div>
-            <span style="margin-right:20px;">🏮 明燈: <span id="coin-ui">0</span></span>
-            <span>❤️ HP: <span id="hp-ui">100</span></span>
+    <div class="hud">
+        <div class="stat-item" style="color:var(--gold)"><i class="fas fa-coins"></i> 明燈: <span id="coin-ui">0</span></div>
+        <div id="status-msg" class="stat-item">🏮 歡迎回到智慧城市</div>
+        <div class="stat-item" style="color:var(--pink)"><i class="fas fa-heart"></i> HP: <span id="hp-ui">100</span></div>
+    </div>
+
+    <div class="stage">
+        <div class="avatar-pod" id="pod-ling" onclick="selectTeacher('ling')">
+            <div class="avatar-circle" style="background-image: url('https://i.imgur.com/KzDqMhH.png');"></div>
+            <h3 style="color:var(--blue)">江鈴 (理科)</h3>
+            <div style="font-size:0.8rem; color:var(--gold)">👗 流動極光裙</div>
+        </div>
+        <div class="avatar-pod" id="pod-yi" onclick="selectTeacher('yi')">
+            <div class="avatar-circle" style="background-image: url('https://i.imgur.com/vH0I1Gj.png'); border-color:var(--pink)"></div>
+            <h3 style="color:var(--pink)">江依 (文科)</h3>
+            <div style="font-size:0.8rem; color:var(--gold)">👘 落櫻繽紛漢服</div>
         </div>
     </div>
 
-    <div class="stage" id="teacher-stage">
-        <div class="char-box" onclick="handleAvatarClick('ling')">
-            <div id="ling-frame" class="avatar-frame" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=JiangLing&accessories=glasses')"></div>
-            <h4 style="color:var(--blue); text-align:center">江鈴 (理科)</h4>
-        </div>
-        <div class="char-box" onclick="handleAvatarClick('yi')">
-            <div id="yi-frame" class="avatar-frame" style="background-image:url('https://api.dicebear.com/7.x/avataaars/svg?seed=JiangYi'); border-color:var(--pink)"></div>
-            <h4 style="color:var(--pink); text-align:center">江依 (文科)</h4>
-        </div>
+    <div class="edu-overlay" id="edu-panel">
+        <div id="timer-val" class="timer-ui"></div>
+        <h2 id="topic-name" style="color:var(--gold)"></h2>
+        <div id="teaching-text" style="font-size:1.2rem; line-height:1.8; margin:25px 0;"></div>
+        <div id="option-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
+        <div id="footer-ctrl" style="text-align:center; margin-top:20px;"></div>
     </div>
 
-    <div id="edu-ui" class="edu-panel" style="display:none;">
-        <div id="t-bar" class="timer-bar"></div>
-        <h3 id="edu-title" style="color:var(--gold)">教學時間</h3>
-        <p id="edu-content" style="line-height:1.6; font-size:1.1rem;"></p>
-        <div id="quiz-options" class="opt-grid" style="display:none;"></div>
-        <button id="next-btn" onclick="startExam()" style="display:none; margin-top:15px; padding:10px 30px; border-radius:15px; background:var(--gold); border:none; cursor:pointer;">我學好了，開始考驗</button>
+    <div style="text-align:center; padding-bottom: 40px;">
+        <button id="load-btn" class="btn" style="border-color:var(--gold); color:var(--gold)" onclick="triggerCourse()">⚡ 自動加課 (5階難度)</button>
+        <button class="btn" onclick="exchange()">解鎖動作 (歸零)</button>
     </div>
-
-    <div id="menu-ui" style="text-align:center; padding:15px;">
-        <button onclick="openSelector('course')" style="padding:12px 40px; border-radius:20px; background:var(--blue); border:none; font-weight:bold; cursor:pointer;">選擇今日課題 (不可中途換課)</button>
-    </div>
-</div>
-
-<div id="pop" class="overlay">
-    <div id="pop-content"></div>
 </div>
 
 <script>
-    let state = { coin: 0, hp: 100, mode: 'idle', currentTeacher: '', currentData: null };
+    let state = { coin: 0, hp: 100, mode: 'idle', level: '', teacher: '', currentQ: null, timer: null };
 
-    // 擴充題庫：教學 + 相應題目
-    const courseDB = {
-        '理科': {
-            teacher: '江鈴',
-            teaching: "江鈴：『觀察這組導數公式，當 Δx 趨近於 0 時，我們能得到瞬時變化率。這是微積分的基石，務必記住公式的推導過程。』",
-            question: "根據剛才的教學，導數在幾何上代表什麼？",
-            options: ["切線斜率", "曲線長度", "圓面積"],
-            answer: "切線斜率",
-            time: 15
+    // 5 難度等級設定
+    const DIFFICULTY_MAP = {
+        '國小': { time: 180, reward: 0.1, penalty: 2 },
+        '國中': { time: 60,  reward: 0.5, penalty: 5 },
+        '高中': { time: 30,  reward: 1.0, penalty: 10 },
+        '大學': { time: 0,   reward: 2.5, penalty: 20 },
+        '碩博': { time: 0,   reward: 5.0, penalty: 40 }
+    };
+
+    // 模擬自動抓題 (同主題異深度)
+    const DynamicCloud = {
+        async fetch() {
+            return { topic: "量子力學：測不準原理" };
         },
-        '文科': {
-            teacher: '江依',
-            teaching: "江依：『「落櫻繽紛」語出陶淵明的《桃花源記》。這不僅是景色的描寫，更寄託了詩人對理想社會的嚮往。感受文字間的寧靜。』",
-            question: "《桃花源記》中描述的景色與下列何者相符？",
-            options: ["芳草鮮美，落英繽紛", "小橋流水人家", "大漠孤煙直"],
-            answer: "芳草鮮美，落英繽紛",
-            time: 30
+        getContent(topic, level, teacher) {
+            const contents = {
+                '國小': `導師：『就像妳在拍一個很快的球，妳拍到它的時候，它就已經不在原本的位置了。』`,
+                '國中': `導師：『海森堡發現，微觀粒子的位置和動量無法同時被精確測量。』`,
+                '高中': `導師：『這不是測量技術問題，而是波包塌縮的必然。$\Delta x \Delta p \geq \frac{h}{4\pi}$。』`,
+                '大學': `導師：『算符非對易性 $[x, p] = i\hbar$ 決定了物理量的標準差乘積下限。』`,
+                '碩博': `導師：『探討希爾伯特空間中的相干態演化。這反映了量子力學中相空間與資訊熵的深層聯繫...』`
+            };
+            return contents[level];
         }
     };
 
-    function init() { updateUI(); }
+    async function triggerCourse() {
+        if(state.mode !== 'idle') return;
+        const levels = Object.keys(DIFFICULTY_MAP);
+        state.level = prompt(`請輸入難度級別：\n${levels.join(' / ')}`, '大學');
+        if(!DIFFICULTY_MAP[state.level]) return;
 
-    function openSelector(type) {
-        const pop = document.getElementById('pop');
-        const content = document.getElementById('pop-content');
-        pop.style.display = 'flex';
-        
-        content.innerHTML = `
-            <div style="display:flex; gap:20px;">
-                <div style="padding:30px; border:1px solid var(--blue); border-radius:20px; cursor:pointer;" onclick="selectCourse('理科')">【江鈴】理科精選</div>
-                <div style="padding:30px; border:1px solid var(--pink); border-radius:20px; cursor:pointer;" onclick="selectCourse('文科')">【江依】文科精選</div>
-            </div>
-        `;
+        state.currentQ = await DynamicCloud.fetch();
+        document.getElementById('edu-panel').style.display = 'block';
+        document.getElementById('topic-name').innerText = `課題：${state.currentQ.topic} [${state.level}]`;
+        document.getElementById('teaching-text').innerText = "請選定一位導師授課。一旦開始，中途不可換課。";
+        document.getElementById('status-msg').innerText = "📍 等待導師進入...";
     }
 
-    function selectCourse(type) {
+    function selectTeacher(t) {
+        if(state.mode !== 'idle' || !state.level) return;
         state.mode = 'learning';
-        state.currentTeacher = type === '理科' ? 'ling' : 'yi';
-        state.currentData = courseDB[type];
-        
-        document.getElementById('pop').style.display = 'none';
-        document.getElementById('menu-ui').style.display = 'none';
-        document.getElementById('edu-ui').style.display = 'block';
-        
+        state.teacher = t;
+
         // 鎖定另一位老師
-        document.getElementById(type === '理科' ? 'yi-frame' : 'ling-frame').parentElement.classList.add('locked');
-        
-        // 進入教學模式
-        document.getElementById('status-tag').innerText = `📖 正在授課：${type}`;
-        document.getElementById('edu-title').innerText = "📚 老師教學中...";
-        document.getElementById('edu-content').innerText = state.currentData.teaching;
-        document.getElementById('next-btn').style.display = 'inline-block';
+        const other = t === 'ling' ? 'pod-yi' : 'pod-ling';
+        document.getElementById(other).classList.add('forbidden');
+
+        const content = DynamicCloud.getContent(state.currentQ.topic, state.level, t);
+        document.getElementById('teaching-text').innerText = content;
+        document.getElementById('footer-ctrl').innerHTML = `<button class="btn" onclick="startExam()">領悟完畢，接受考驗</button>`;
     }
 
     function startExam() {
         state.mode = 'exam';
-        document.getElementById('next-btn').style.display = 'none';
-        document.getElementById('edu-title').innerText = "📝 隨堂考驗";
-        document.getElementById('edu-content').innerText = state.currentData.question;
+        const config = DIFFICULTY_MAP[state.level];
+        document.getElementById('teaching-text').innerText = `【考驗】難度 [${state.level}]：測不準原理說明了什麼？`;
         
-        const opts = document.getElementById('quiz-options');
-        opts.style.display = 'grid';
-        opts.innerHTML = state.currentData.options.sort(()=>Math.random()-0.5).map(o => 
-            `<button class="btn-opt" onclick="check('${o}')">${o}</button>`
+        // 渲染選項
+        const opts = ["位置與動量的權衡", "技術精確度不夠", "時間停止了"];
+        document.getElementById('option-grid').innerHTML = opts.map(o => 
+            `<button class="btn" style="width:100%" onclick="submit('${o}')">${o}</button>`
         ).join('');
 
-        // 開始計時
-        let time = state.currentData.time;
-        const bar = document.getElementById('t-bar');
-        bar.style.width = "100%";
-        bar.style.transition = `width ${time}s linear`;
-        setTimeout(() => bar.style.width = "0%", 10);
-
-        state.timer = setTimeout(() => check(''), time * 1000);
+        // 時間處理
+        if(config.time > 0) {
+            let s = config.time;
+            state.timer = setInterval(() => {
+                s--;
+                document.getElementById('timer-val').innerText = `${s}s`;
+                if(s <= 0) submit('');
+            }, 1000);
+        } else {
+            document.getElementById('timer-val').innerText = "∞ 研討";
+        }
     }
 
-    function check(ans) {
-        clearTimeout(state.timer);
-        if(ans === state.currentData.answer) {
-            state.coin += 500; alert("江老師：『很好，看來妳有認真聽課。』");
+    function submit(ans) {
+        clearInterval(state.timer);
+        const isCorrect = ans === "位置與動量的權衡";
+        const config = DIFFICULTY_MAP[state.level];
+
+        if(isCorrect) {
+            const gain = Math.floor(1000 * config.reward);
+            state.coin += gain;
+            alert(`正確！獲得 ${gain} 盞明燈。`);
         } else {
-            state.hp -= 10; alert("江老師：『剛才不是才講過嗎？專心點。』");
+            state.hp -= config.penalty;
+            alert(`錯誤！江老師對妳的邏輯感到不悅。`);
         }
         
-        // 結束課程，重置狀態
-        state.mode = 'idle';
-        document.getElementById('edu-ui').style.display = 'none';
-        document.getElementById('menu-ui').style.display = 'block';
-        document.getElementById('quiz-options').style.display = 'none';
-        document.querySelectorAll('.char-box').forEach(e => e.classList.remove('locked'));
-        document.getElementById('status-tag').innerText = "🏛️ 大廳暫歇中";
+        resetAll();
+    }
+
+    function resetAll() {
+        state.mode = 'idle'; state.level = '';
+        document.getElementById('edu-panel').style.display = 'none';
+        document.getElementById('pod-ling').classList.remove('forbidden');
+        document.getElementById('pod-yi').classList.remove('forbidden');
+        document.getElementById('timer-val').innerText = "";
         updateUI();
     }
 
-    function handleAvatarClick(teacher) {
-        if(state.mode === 'learning' || state.mode === 'exam') {
-            alert(`【警告】江${teacher==='ling'?'鈴':'依'}老師：『上課期間禁止私聊，請專注於眼前的課題！』`);
-            return;
-        }
-        
-        const pop = document.getElementById('pop');
-        pop.style.display = 'flex';
-        document.getElementById('pop-content').innerHTML = `
-            <div class="chat-box">
-                <h3 style="color:var(--gold)">與 江${teacher==='ling'?'鈴':'依'} 老師私聊中</h3>
-                <p>${teacher==='ling'?'「剛才的理科公式還有哪裡不懂嗎？」':'「累了的話，要不要一起喝杯茶？」'}</p>
-                <button onclick="document.getElementById('pop').style.display='none'" style="width:100%; padding:10px; background:var(--blue); border:none; border-radius:10px; cursor:pointer;">結束對話</button>
-            </div>
-        `;
+    function exchange() {
+        if(state.coin <= 0) return alert("明燈不足以演化！");
+        state.coin = 0; // 兌換歸零
+        alert("動作解鎖！明燈已全數燃盡。");
+        updateUI();
     }
 
     function updateUI() {
