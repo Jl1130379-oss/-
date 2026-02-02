@@ -3,194 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>江家智慧城市：醫文雙修終極版</title>
+    <title>江家姊妹私人收藏</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --sci: #A5F3FC; --art: #FBCFE8; 
-            --aurora: linear-gradient(45deg, #00f2ff, #7000ff, #00ff95); 
-            --sakura: linear-gradient(45deg, #ff9a9e, #fad0c4, #ffdde1);
-            --admin-gold: #FACC15; 
+        :root {
+            --primary-pink: #ffb6c1;
+            --aurora-blue: #a0e9ff;
+            --sakura-red: #ffb7c5;
         }
-        * { box-sizing: border-box; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        body { margin: 0; background: #0F172A; color: #F8FAFC; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        body {
+            margin: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+            background: #fffafa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        .image-card {
+            width: 100%;
+            max-width: 400px;
+            height: 65vh;
+            border-radius: 25px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 20px;
+            border: 5px solid white;
+        }
+        h2 { color: #d63384; margin: 10px 0 5px 0; font-size: 1.5rem; }
+        p { color: #777; font-size: 0.95rem; line-height: 1.4; padding: 0 10px; }
 
-        /* --- 系統開機畫面 --- */
-        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: monospace; }
-        .log-line { color: #00FF00; font-size: 0.9rem; margin: 2px; width: 80%; }
-
-        /* --- 特效背景層 --- */
-        .fx-layer { position: absolute; inset: -100px; opacity: 0; filter: blur(80px); z-index: 1; border-radius: 50%; pointer-events: none; }
-        .active-fx { opacity: 0.7; animation: pulse-flow 8s infinite alternate; }
-        @keyframes pulse-flow { 0% { transform: scale(1) rotate(0deg); } 100% { transform: scale(1.2) rotate(15deg); } }
-
-        /* --- 頂部導航 --- */
-        header { padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: rgba(0,0,0,0.7); border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .badge { background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2); font-size: 0.9rem; }
-        .admin-glow { color: var(--admin-gold); border-color: var(--admin-gold); box-shadow: 0 0 10px var(--admin-gold); }
-
-        /* --- 主畫面 --- */
-        main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; padding: 20px; }
-        .character-stage { position: relative; width: 320px; height: 480px; cursor: pointer; }
-        .teacher-img { width: 100%; height: 100%; object-fit: contain; z-index: 5; position: relative; filter: drop-shadow(0 0 15px rgba(255,255,255,0.2)); }
-        
-        .bubble { background: rgba(255,255,255,0.95); color: #1E293B; padding: 15px 25px; border-radius: 25px; margin-bottom: 20px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; max-width: 400px; }
-
-        /* --- 操作面板 --- */
-        .control-panel { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 30px; width: 100%; max-width: 500px; border: 1px solid rgba(255,255,255,0.2); }
-        .btn { width: 100%; padding: 12px; margin: 6px 0; border: none; border-radius: 15px; background: white; color: #1E293B; cursor: pointer; font-weight: bold; font-size: 1rem; }
-        .btn:hover { background: var(--sci); transform: translateY(-3px); }
-        .btn-admin-only { background: var(--admin-gold); color: #451A03; display: none; }
-
-        /* --- 珍寶閣商場 --- */
-        #shop-ui { position: fixed; bottom: -100%; left: 0; width: 100%; height: 70%; background: white; color: #1E293B; border-radius: 30px 30px 0 0; z-index: 500; padding: 30px; display: flex; flex-direction: column; }
-        .shop-open { bottom: 0 !important; }
-        .item-list { flex: 1; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .item-card { background: #F1F5F9; padding: 15px; border-radius: 20px; text-align: center; border: 2px solid transparent; }
-        .item-card:hover { border-color: var(--admin-gold); }
-
-        #cheat-alert { position: fixed; inset: 0; background: #EF4444; z-index: 11000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        /* 導覽列 */
+        .navbar {
+            height: 75px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.05);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item {
+            cursor: pointer;
+            text-align: center;
+            color: #bbb;
+            transition: 0.3s;
+            flex: 1;
+        }
+        .nav-item.active { color: #ff69b4; }
+        .nav-icon { font-size: 26px; margin-bottom: 2px; }
+        .nav-text { font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div id="boot-screen">
-    <div id="logs"></div>
-</div>
-
-<div id="cheat-alert">
-    <h1>⚠️ 偵測到非法離開</h1>
-    <p>江鈴老師不喜歡妳在答題時分心喔。</p>
-    <button class="btn" onclick="location.reload()" style="width:200px">重啟城市系統</button>
-</div>
-
-<header>
-    <div id="role-tag" class="badge">身份：正式學員</div>
-    <div style="display:flex; gap:12px;">
-        <div class="badge">⚡ <span id="e-val">100</span></div>
-        <div class="badge">🪙 <span id="c-val">500</span></div>
-        <button id="shop-btn" class="badge" style="display:none; background:var(--admin-gold); color:black; cursor:pointer;" onclick="toggleShop()">💎 珍寶閣</button>
-    </div>
-</header>
-
-<main>
-    <div id="talk" class="bubble">系統診斷中...</div>
-    <div class="character-stage" onclick="handleTeacherClick()">
-        <div id="fx-aurora" class="fx-layer" style="background: var(--aurora);"></div>
-        <div id="fx-sakura" class="fx-layer" style="background: var(--sakura);"></div>
-        <img id="img-sci" class="teacher-img" src="IMG_3812.jpeg" alt="江鈴">
-        <img id="img-art" class="teacher-img" src="IMG_4392.jpg" style="display:none;" alt="江依">
+    <div class="content" id="mainContent">
+        <div class="image-card" id="displayImage"></div>
+        <h2 id="displayTitle">載入中...</h2>
+        <p id="displayDesc"></p>
     </div>
 
-    <div class="control-panel">
-        <button class="btn" onclick="switchTeacher()">🔄 切換導師 (江鈴/江依)</button>
-        <button class="btn" onclick="window.open('https://cap.rcpet.edu.tw/')">🎓 國中會考中心</button>
-        <button class="btn" onclick="window.open('https://www.tcool.cc/')">🏫 小學 T-Cool 題庫</button>
-        <button id="adm-1" class="btn btn-admin-only" onclick="window.open('https://master.get.com.tw/')">🚀 碩博專業頻道</button>
-        <button id="adm-2" class="btn btn-admin-only" onclick="window.open('https://wp.cjhs.kh.edu.tw/')">🧪 高中物理專研</button>
-    </div>
-</main>
+    <nav class="navbar">
+        <div class="nav-item" onclick="switchPage(0)">
+            <div class="nav-icon">🏰</div>
+            <div class="nav-text">商場入口</div>
+        </div>
+        <div class="nav-item active" onclick="switchPage(1)">
+            <div class="nav-icon">💎</div>
+            <div class="nav-text">兩位江老師</div>
+        </div>
+        <div class="nav-item" onclick="switchPage(2)">
+            <div class="nav-icon">✨</div>
+            <div class="nav-text">商場內部</div>
+        </div>
+    </nav>
 
-<div id="shop-ui">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="margin:0">💎 江家智慧珍寶閣</h2>
-        <button class="btn" style="width:80px" onclick="toggleShop()">關閉</button>
-    </div>
-    <div class="item-list">
-        <div class="item-card"><h3>🧬 分子儀</h3><p>3000🪙</p><button class="btn" onclick="buy()">購買</button></div>
-        <div class="item-card"><h3>📜 永樂大典</h3><p>2500🪙</p><button class="btn" onclick="buy()">購買</button></div>
-        <div class="item-card"><h3>🌡️ 超導刀</h3><p>5000🪙</p><button class="btn" onclick="buy()">購買</button></div>
-        <div class="item-card"><h3>🖌️ 徽墨</h3><p>4500🪙</p><button class="btn" onclick="buy()">購買</button></div>
-    </div>
-</div>
-
-<script>
-    let user = { e: 100, c: 500, isAdmin: false, teacher: 'sci', clicks: 0 };
-
-    // --- 1. 自動診斷啟動流程 ---
-    async function initCity() {
-        const logBox = document.getElementById('logs');
-        const lines = [
-            "CONNECTING TO 108 CURRICULUM CLOUD...",
-            "VERIFYING DATA SOURCES: GET.COM, RCPET, TCOOL...",
-            "LOADING ASSETS: IMG_3812 (江鈴), IMG_4392 (江依)...",
-            "INITIALIZING AURORA & SAKURA ENGINE...",
-            "SECURITY CHECK: ANTI-CHEAT MODULE READY.",
-            "WELCOME TO JIANG'S SMART CITY."
+    <script>
+        // 這裡已經換上妳最後確認的兩位老師合照連結
+        const data = [
+            {
+                title: "夢幻商場入口",
+                desc: "通往江家姊妹世界的華麗大門",
+                img: "https://r.jina.ai/i/1121172490983283349_0" 
+            },
+            {
+                title: "江鈴(左) 與 江依(右)",
+                desc: "潔白長髮的醫學菁英與開朗女孩<br>極光裙與櫻漢服的珍貴合影",
+                img: "https://r.jina.ai/i/25032906b3e34f68be5f5f4803964175" // 此為兩姐妹合照
+            },
+            {
+                title: "商場內部景觀",
+                desc: "充滿動漫氛圍的奢華購物空間",
+                img: "https://r.jina.ai/i/15156582324246369377_0"
+            }
         ];
-        for(let line of lines) {
-            let d = document.createElement('div');
-            d.className = 'log-line';
-            d.innerText = `> ${line}`;
-            logBox.appendChild(d);
-            await new Promise(r => setTimeout(r, 400));
+
+        function switchPage(index) {
+            document.getElementById('displayImage').style.backgroundImage = `url('${data[index].img}')`;
+            document.getElementById('displayTitle').innerText = data[index].title;
+            document.getElementById('displayDesc').innerHTML = data[index].desc;
+
+            const items = document.querySelectorAll('.nav-item');
+            items.forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
         }
-        document.getElementById('boot-screen').style.opacity = 0;
-        setTimeout(() => {
-            document.getElementById('boot-screen').style.display = 'none';
-            document.getElementById('talk').innerText = "你好！我是江鈴。今天要開啟哪門課呢？";
-        }, 500);
-    }
 
-    // --- 2. 管理員解鎖邏輯 ---
-    function handleTeacherClick() {
-        user.clicks++;
-        if(user.clicks === 5 && !user.isAdmin) {
-            unlockAdmin();
-        } else {
-            document.getElementById('talk').innerText = user.teacher === 'sci' ? 
-                "江鈴：科學的嚴謹中也帶著溫暖喔！" : "江依：讓我們在文學的海洋裡慢跑。";
-        }
-    }
-
-    function unlockAdmin() {
-        user.isAdmin = true;
-        user.c = 999999;
-        document.getElementById('role-tag').innerText = "身份：管理員 (GOD)";
-        document.getElementById('role-tag').classList.add('admin-glow');
-        document.getElementById('shop-btn').style.display = 'block';
-        document.getElementById('c-val').innerText = "999,999";
-        
-        document.querySelectorAll('.btn-admin-only').forEach(b => b.style.display = 'block');
-        updateTeacherFX();
-        alert("🛡️ 最高權限解鎖！極光與櫻花特效已啟動，碩博頻道已開啟。");
-    }
-
-    // --- 3. 角色與特效切換 ---
-    function switchTeacher() {
-        user.teacher = user.teacher === 'sci' ? 'art' : 'sci';
-        document.getElementById('img-sci').style.display = user.teacher === 'sci' ? 'block' : 'none';
-        document.getElementById('img-art').style.display = user.teacher === 'art' ? 'block' : 'none';
-        updateTeacherFX();
-    }
-
-    function updateTeacherFX() {
-        const aurora = document.getElementById('fx-aurora');
-        const sakura = document.getElementById('fx-sakura');
-        if(!user.isAdmin) return;
-
-        if(user.teacher === 'sci') {
-            aurora.classList.add('active-fx');
-            sakura.classList.remove('active-fx');
-            document.getElementById('talk').innerText = "江鈴：極光實驗裙已啟動，正在分析數據...";
-        } else {
-            sakura.classList.add('active-fx');
-            aurora.classList.remove('active-fx');
-            document.getElementById('talk').innerText = "江依：櫻花漢服已就緒，感受文字的溫度。";
-        }
-    }
-
-    // --- 4. 商場與防弊 ---
-    function toggleShop() { document.getElementById('shop-ui').classList.toggle('shop-open'); }
-    function buy() { alert("管理員專屬撥款成功！商品已發送至您的虛擬倉庫。"); }
-
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden && !user.isAdmin) {
-            document.getElementById('cheat-alert').style.display = 'flex';
-        }
-    });
-
-    // 啟動診斷
-    initCity();
-</script>
+        // 預設顯示第二頁（兩位老師）
+        switchPage(1);
+    </script>
 </body>
 </html>
