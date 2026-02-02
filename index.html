@@ -3,195 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>江家姊妹：醫道與文心</title>
+    <title>江家姊妹雲端教室</title>
     <style>
-        :root { --sci-theme: #4FC3F7; --art-theme: #9575CD; --dark: #263238; }
+        :root { --sci: #4FC3F7; --art: #9575CD; --dark: #263238; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
-            margin: 0; height: 100vh; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            margin: 0; height: 100vh; font-family: "PingFang TC", sans-serif;
             background: linear-gradient(135deg, #e1f5fe 0%, #f3e5f5 100%);
-            display: flex; overflow: hidden; flex-direction: row;
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* 側欄響應式設計 */
+        /* 導航與側欄 */
+        #top-nav { background: var(--dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 101; }
         #sidebar {
-            width: 280px; background: rgba(38, 50, 56, 0.9);
-            backdrop-filter: blur(15px); color: white; display: flex; flex-direction: column;
-            transition: transform 0.3s ease; z-index: 100;
+            position: fixed; left: 0; top: 0; bottom: 0; width: 280px; 
+            background: rgba(38, 50, 56, 0.95); backdrop-filter: blur(15px);
+            z-index: 100; transform: translateX(-100%); transition: 0.3s; padding-top: 60px;
         }
+        #sidebar.open { transform: translateX(0); }
 
-        /* 手機版自動隱藏側欄 */
-        @media (max-width: 768px) {
-            #sidebar { position: fixed; height: 100%; transform: translateX(-100%); width: 250px; }
-            #sidebar.open { transform: translateX(0); }
-            #menu-toggle { display: block !important; }
-        }
-
-        #menu-toggle {
-            display: none; position: fixed; top: 15px; left: 15px;
-            z-index: 101; background: var(--dark); color: white;
-            border: none; border-radius: 10px; padding: 10px 15px; font-size: 1rem;
-        }
-
-        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .course-list { flex: 1; overflow-y: auto; padding: 15px; }
         .course-card {
             background: rgba(255,255,255,0.1); border-radius: 15px;
-            padding: 15px; margin-bottom: 10px; cursor: pointer; transition: 0.2s;
+            padding: 15px; margin: 10px; cursor: pointer; color: white;
         }
-        .course-card:hover { background: rgba(255,255,255,0.2); }
 
-        /* 主舞台與老師動態 */
-        #main { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        /* 主舞台 */
+        #main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
         
-        .character-zone {
-            position: relative; width: 100%; max-width: 300px; aspect-ratio: 1;
-            display: flex; justify-content: center; align-items: center;
+        .char-container { position: relative; width: 250px; height: 250px; margin-bottom: 20px; }
+        .avatar {
+            width: 100%; height: 100%; border-radius: 50%; border: 6px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover;
+            animation: breathe 4s ease-in-out infinite; background: white;
         }
-
-        .avatar-live {
-            width: 100%; height: 100%; border-radius: 50%;
-            border: 6px solid white; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            object-fit: cover; background: white;
-            animation: liveAction 4s ease-in-out infinite;
-        }
-
-        @keyframes liveAction {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-15px) scale(1.02); }
-        }
+        @keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
         .bubble {
-            position: absolute; top: -50px; background: white; padding: 15px 25px;
-            border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            width: 90%; max-width: 300px; font-size: 1.1rem; text-align: center;
-            z-index: 5; animation: pop 0.4s ease; display: none;
+            position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+            background: white; padding: 15px 20px; border-radius: 20px;
+            min-width: 200px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: none; z-index: 10;
         }
 
-        /* 題目卡片適配任何設備 */
+        /* 題目區 */
         #quiz-box {
-            width: 100%; max-width: 500px; background: rgba(255,255,255,0.85);
-            padding: 25px; border-radius: 30px; margin-top: 20px; text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+            width: 100%; max-width: 500px; background: rgba(255,255,255,0.9);
+            padding: 25px; border-radius: 30px; text-align: center;
         }
-
-        .opt-btn {
-            width: 100%; padding: 15px; margin: 8px 0; border: 1px solid #ddd;
-            border-radius: 15px; background: white; font-size: 1.1rem; cursor: pointer;
+        .btn {
+            width: 100%; padding: 16px; margin: 10px 0; border: 1px solid #ddd;
+            border-radius: 15px; background: white; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
         }
+        .btn:active { transform: scale(0.98); background: #f5f5f5; }
 
-        /* 冬櫻管理員專區 */
-        #admin-trigger { position: fixed; bottom: 0; right: 0; width: 40px; height: 40px; z-index: 999; }
-        #admin-panel {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-            z-index: 1000; color: white; align-items: center; justify-content: center; padding: 20px;
-        }
-        .admin-card { background: white; color: #333; padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; }
-
+        /* 遮罩與管理員 */
         #loading { position: fixed; inset: 0; background: white; display: flex; align-items: center; justify-content: center; z-index: 200; }
+        #admin-btn { position: fixed; bottom: 0; right: 0; width: 40px; height: 40px; z-index: 99; }
     </style>
 </head>
 <body>
 
-<div id="loading">📡 正在接通老師頻道...</div>
-<button id="menu-toggle" onclick="toggleSidebar()">☰ 課程</button>
-<div id="admin-trigger" onclick="checkAdmin()"></div>
+<div id="loading">📡 接通雲端教室中...</div>
 
-<nav id="sidebar">
-    <div class="sidebar-header"><h3>江家姊妹教室</h3></div>
-    <div id="course-list" class="course-list"></div>
-</nav>
-
-<main id="main">
-    <div class="character-zone">
-        <div id="bubble" class="bubble"></div>
-        <img id="teacher-img" class="avatar-live" src="" style="display:none;">
-    </div>
-    <div id="quiz-box">
-        <h2 id="q-text" style="font-size: 1.4rem;">👋 歡迎！請先選擇課程</h2>
-        <div id="q-options"></div>
-    </div>
-</main>
-
-<div id="admin-panel">
-    <div class="admin-card">
-        <h2>🌸 冬櫻管理員</h2>
-        <button class="opt-btn" onclick="window.open('https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pubhtml')">開啟試算表後台</button>
-        <p onclick="closeAdmin()" style="cursor:pointer; color: #888;">退出</p>
-    </div>
-</div>
-
-<script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUgIoeIVP3h4C7hoHlAN7gtg_r0AYPMlX5CewmhSMCmE5faKjYD_a--Jo8u3uRmRlS2x6TzgTkvfj4/pub?output=csv";
-
-    async function init() {
-        try {
-            const res = await fetch(CSV_URL + '&t=' + Date.now());
-            const csv = await res.text();
-            const rows = csv.split("\n").filter(r => r.trim() !== "").map(r => r.split(","));
-            const data = rows.slice(1).map(r => ({
-                teacher: r[0].trim(), title: r[1].trim(), q: r[2].trim(), a1: r[3].trim(), a2: r[4].trim(), c: r[5].trim()
-            }));
-            renderMenu(data);
-            document.getElementById('loading').style.display = 'none';
-        } catch (e) {
-            document.getElementById('loading').innerText = "連線失敗";
-        }
-    }
-
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-
-    function renderMenu(courses) {
-        const list = document.getElementById('course-list');
-        courses.forEach(c => {
-            const card = document.createElement('div');
-            card.className = 'course-card';
-            card.innerHTML = `<strong>${c.title}</strong>`;
-            card.onclick = () => { startLesson(c); if(window.innerWidth <= 768) toggleSidebar(); };
-            list.appendChild(card);
-        });
-    }
-
-    function startLesson(data) {
-        const img = document.getElementById('teacher-img');
-        const bubble = document.getElementById('bubble');
-        
-        img.src = (data.teacher === 'sci') ? 'IMG_3812.jpeg' : 'IMG_4392.jpg';
-        img.style.display = 'block';
-        bubble.style.display = 'block';
-        bubble.innerText = (data.teacher === 'sci') ? "我是江鈴，讓我們開始醫學邏輯訓練。" : "我是江依，一起進入文學世界。";
-
-        document.getElementById('q-text').innerText = data.q;
-        const optBox = document.getElementById('q-options');
-        optBox.innerHTML = '';
-
-        [data.a1, data.a2].forEach((txt, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'opt-btn';
-            btn.innerText = txt;
-            btn.onclick = () => {
-                const feedback = (i == data.c) ? "答對了！太厲害了。" : "再想一下？";
-                bubble.innerText = feedback;
-                speak(feedback);
-            };
-            optBox.appendChild(btn);
-        });
-        speak(bubble.innerText + "題目是：" + data.q);
-    }
-
-    function checkAdmin() {
-        if (prompt("輸入暗號：") === "江鈴的損友冬櫻") document.getElementById('admin-panel').style.display = 'flex';
-    }
-    function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
-
-    function speak(t) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(t);
-        u.lang = 'zh-TW';
-        window.speechSynthesis.speak(u);
-    }
-    init();
-</script>
-</body>
-</html>
+<div id="top-nav">
+    <span onclick="toggleSidebar()" style="cursor:pointer; font-size:1.2rem;">☰ 課程選單</span>
+    <span>江家姊妹：醫道與文
